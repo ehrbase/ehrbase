@@ -342,6 +342,15 @@ public class EhrServiceImp implements EhrService {
             ContributionChangeType.deleted,
             AuditDetailsTargetType.EHR_STATUS
         );
+
+        //todo: fails because for ehr status it expects a modification cct
+        // maybe can use 2 contribution ids? one for ehr modification/one for cascaded deletes
+        UUID ehrStatusContributionId = contributionRepository.createDefault(
+            ehrId,
+            ContributionDataType.ehr,
+            ContributionChangeType.modification
+        );
+
         UUID contributionId = contributionRepository.createDefault(
             ehrId,
             ContributionDataType.ehr,
