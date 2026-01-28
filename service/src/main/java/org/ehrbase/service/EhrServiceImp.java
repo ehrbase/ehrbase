@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.buildObjectVersionId;
+import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractVersion;
 import static org.ehrbase.util.OriginalVersionUtil.originalVersionCopyWithData;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -49,7 +50,11 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.enums.ContributionDataType;
+import org.ehrbase.repository.AuditDetailsTargetType;
 import org.ehrbase.repository.CompositionRepository;
+import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
@@ -71,6 +76,7 @@ public class EhrServiceImp implements EhrService {
 
     private final EhrFolderRepository ehrFolderRepository;
     private final CompositionRepository compositionRepository;
+    private final ContributionRepository contributionRepository;
     private final ItemTagRepository itemTagRepository;
 
     private final EhrRepository ehrRepository;
@@ -82,6 +88,7 @@ public class EhrServiceImp implements EhrService {
             SystemService systemService,
             EhrFolderRepository ehrFolderRepository,
             CompositionRepository compositionRepository,
+            ContributionRepository contributionRepository,
             EhrRepository ehrRepository,
             ItemTagRepository itemTagRepository) {
 
@@ -89,6 +96,7 @@ public class EhrServiceImp implements EhrService {
 
         this.ehrFolderRepository = ehrFolderRepository;
         this.compositionRepository = compositionRepository;
+        this.contributionRepository = contributionRepository;
         this.ehrRepository = ehrRepository;
         this.itemTagRepository = itemTagRepository;
 
@@ -320,6 +328,54 @@ public class EhrServiceImp implements EhrService {
         compositionRepository.adminDeleteAll(ehrId);
         itemTagRepository.adminDeleteAll(ehrId);
         ehrRepository.adminDelete(ehrId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UUID deleteEhr(UUID ehrId) {
+        checkEhrExistsAndIsModifiable(ehrId);
+
+        UUID contributionId =
+                contributionRepository.createDefault(ehrId, ContributionDataType.ehr, ContributionChangeType.deleted);
+
+        compositionRepository.findAllHeadVersionsForEhr(ehrId).forEach(c -> {
+            UUID deleteAuditId = contributionRepository.createDefaultAudit(
+                    ContributionChangeType.deleted, AuditDetailsTargetType.COMPOSITION);
+            compositionRepository.delete(ehrId, c.value1(), c.value2(), contributionId, deleteAuditId);
+        });
+
+        ehrFolderRepository.findHead(ehrId, 1).ifPresent(folder -> {
+            UUID deleteAuditId = contributionRepository.createDefaultAudit(
+                    ContributionChangeType.deleted, AuditDetailsTargetType.EHR_FOLDER);
+
+            ObjectVersionId versionId = (ObjectVersionId) folder.getUid();
+            UUID folderId = UUID.fromString(versionId.getRoot().getValue());
+            int folderVersion = extractVersion(versionId);
+            ehrFolderRepository.delete(ehrId, folderId, folderVersion, 1, contributionId, deleteAuditId);
+        });
+
+        EhrStatus currentStatus = ehrRepository
+                .findHead(ehrId)
+                .orElseThrow(() -> new ObjectNotFoundException("EHR_STATUS", "No EHR_STATUS in ehr: " + ehrId));
+
+        ObjectVersionId statusVersionId = (ObjectVersionId) currentStatus.getUid();
+        ObjectVersionId nextVersionId = buildObjectVersionId(
+                UUID.fromString(statusVersionId.getObjectId().getValue()),
+                Integer.parseInt(statusVersionId.getVersionTreeId().getValue()) + 1,
+                systemService);
+
+        currentStatus.setUid(nextVersionId);
+        currentStatus.setQueryable(false);
+        currentStatus.setModifiable(false);
+
+        UUID ehrStatusModificationAuditId = contributionRepository.createDefaultAudit(
+                ContributionChangeType.modification, AuditDetailsTargetType.EHR_STATUS);
+
+        ehrRepository.update(ehrId, currentStatus, contributionId, ehrStatusModificationAuditId);
+
+        return contributionId;
     }
 
     @Override
