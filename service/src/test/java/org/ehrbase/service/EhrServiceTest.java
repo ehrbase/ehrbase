@@ -20,6 +20,7 @@ package org.ehrbase.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doReturn;
@@ -32,12 +33,15 @@ import static org.mockito.Mockito.verify;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.dto.EhrStatusDto;
@@ -46,6 +50,8 @@ import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.repository.AuditDetailsTargetType;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
@@ -53,6 +59,7 @@ import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.service.maping.EhrStatusMapper;
 import org.ehrbase.test.assertions.EhrStatusAssert;
+import org.jooq.Record2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -83,7 +90,8 @@ class EhrServiceTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(validationService, ehrFolderRepository, compositionRepository, ehrRepository);
+        Mockito.reset(
+                validationService, ehrFolderRepository, compositionRepository, contributionRepository, ehrRepository);
     }
 
     private EhrService service() {
@@ -324,5 +332,113 @@ class EhrServiceTest {
 
         assertThat(versionId.getObjectId()).isEqualTo(ifMatch.getObjectId());
         assertThat(versionId.getVersionTreeId().getValue()).isEqualTo("8");
+    }
+
+    @Test
+    void deleteUnmodifiableEhr() {
+        UUID ehrId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+
+        doReturn(null).when(ehrRepository).fetchIsModifiable(ehrId);
+        assertThatThrownBy(() -> service().deleteEhr(ehrId))
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessageContaining("EHR with id %s not found".formatted(ehrId));
+
+        doReturn(false).when(ehrRepository).fetchIsModifiable(ehrId);
+        assertThatThrownBy(() -> service().deleteEhr(ehrId))
+                .isInstanceOf(StateConflictException.class)
+                .hasMessageContaining("EHR with id %s does not allow modification".formatted(ehrId));
+    }
+
+    @Test
+    void deleteEhrWithoutCompositionsOrFolder() {
+        UUID ehrId = UUID.fromString("33333333-3333-3333-3333-333333333333");
+        UUID contributionId = UUID.fromString("44444444-4444-4444-4444-444444444444");
+        UUID statusId = UUID.fromString("55555555-5555-5555-5555-555555555555");
+        UUID auditId = UUID.fromString("66666666-6666-6666-6666-666666666666");
+
+        EhrStatus ehrStatus = EhrStatusMapper.fromDto(
+                ehrStatusDto(new ObjectVersionId(statusId.toString(), "test-ehr-service", "1"), new PartySelf()));
+
+        doReturn(true).when(ehrRepository).fetchIsModifiable(ehrId);
+        doReturn(contributionId).when(contributionRepository).createDefault(eq(ehrId), any(), any());
+        doReturn(auditId).when(contributionRepository).createDefaultAudit(any(), any());
+        doReturn(Collections.emptyList()).when(compositionRepository).findAllHeadVersionsForEhr(ehrId);
+        doReturn(Optional.empty()).when(ehrFolderRepository).findHead(ehrId, 1);
+        doReturn(Optional.of(ehrStatus)).when(ehrRepository).findHead(ehrId);
+
+        UUID result = service().deleteEhr(ehrId);
+
+        assertThat(result).isEqualTo(contributionId);
+
+        verify(compositionRepository, never()).delete(any(), any(), anyInt(), any(), any());
+        verify(ehrFolderRepository, never()).delete(any(), any(), anyInt(), anyInt(), any(), any());
+        ArgumentCaptor<EhrStatus> statusCaptor = ArgumentCaptor.forClass(EhrStatus.class);
+        verify(ehrRepository).update(eq(ehrId), statusCaptor.capture(), eq(contributionId), eq(auditId));
+
+        EhrStatus updatedStatus = statusCaptor.getValue();
+        assertThat(updatedStatus.isQueryable()).isFalse();
+        assertThat(updatedStatus.isModifiable()).isFalse();
+        assertThat(updatedStatus.getUid().toString()).contains("::2");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void deleteEhrWithCompositionsAndFolder() {
+        UUID ehrId = UUID.fromString("77777777-7777-7777-7777-777777777777");
+        UUID contributionId = UUID.fromString("88888888-8888-8888-8888-888888888888");
+        UUID statusId = UUID.fromString("99999999-9999-9999-9999-999999999999");
+        UUID comp1Id = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID comp2Id = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        UUID folderId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        UUID compAuditId = UUID.fromString("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        UUID folderAuditId = UUID.fromString("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
+        UUID statusAuditId = UUID.fromString("ffffffff-ffff-ffff-ffff-ffffffffffff");
+
+        EhrStatus ehrStatus = EhrStatusMapper.fromDto(
+                ehrStatusDto(new ObjectVersionId(statusId.toString(), "test-ehr-service", "1"), new PartySelf()));
+
+        Record2<UUID, Integer> comp1 = mock(Record2.class);
+        doReturn(comp1Id).when(comp1).value1();
+        doReturn(1).when(comp1).value2();
+
+        Record2<UUID, Integer> comp2 = mock(Record2.class);
+        doReturn(comp2Id).when(comp2).value1();
+        doReturn(2).when(comp2).value2();
+
+        Folder folder = new Folder();
+        folder.setUid(new ObjectVersionId(folderId.toString(), "test-ehr-service", "1"));
+        folder.setName(new DvText("root"));
+        folder.setArchetypeNodeId("openEHR-EHR-FOLDER.generic.v1");
+
+        doReturn(true).when(ehrRepository).fetchIsModifiable(ehrId);
+        doReturn(contributionId).when(contributionRepository).createDefault(eq(ehrId), any(), any());
+        doReturn(compAuditId)
+                .when(contributionRepository)
+                .createDefaultAudit(eq(ContributionChangeType.deleted), eq(AuditDetailsTargetType.COMPOSITION));
+        doReturn(folderAuditId)
+                .when(contributionRepository)
+                .createDefaultAudit(eq(ContributionChangeType.deleted), eq(AuditDetailsTargetType.EHR_FOLDER));
+        doReturn(statusAuditId)
+                .when(contributionRepository)
+                .createDefaultAudit(eq(ContributionChangeType.modification), eq(AuditDetailsTargetType.EHR_STATUS));
+
+        doReturn(List.of(comp1, comp2)).when(compositionRepository).findAllHeadVersionsForEhr(ehrId);
+        doReturn(Optional.of(folder)).when(ehrFolderRepository).findHead(ehrId, 1);
+        doReturn(Optional.of(ehrStatus)).when(ehrRepository).findHead(ehrId);
+
+        UUID result = service().deleteEhr(ehrId);
+
+        assertThat(result).isEqualTo(contributionId);
+
+        verify(compositionRepository).delete(ehrId, comp1Id, 1, contributionId, compAuditId);
+        verify(compositionRepository).delete(ehrId, comp2Id, 2, contributionId, compAuditId);
+        verify(ehrFolderRepository).delete(ehrId, folderId, 1, 1, contributionId, folderAuditId);
+
+        ArgumentCaptor<EhrStatus> statusCaptor = ArgumentCaptor.forClass(EhrStatus.class);
+        verify(ehrRepository).update(eq(ehrId), statusCaptor.capture(), eq(contributionId), eq(statusAuditId));
+
+        EhrStatus updatedStatus = statusCaptor.getValue();
+        assertThat(updatedStatus.isQueryable()).isFalse();
+        assertThat(updatedStatus.isModifiable()).isFalse();
     }
 }
