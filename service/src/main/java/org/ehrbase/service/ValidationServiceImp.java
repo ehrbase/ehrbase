@@ -66,7 +66,7 @@ public class ValidationServiceImp implements ValidationService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
+    private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9_.:\/&?=+-]*");
 
     private final KnowledgeCacheServiceImp knowledgeCacheService;
 
