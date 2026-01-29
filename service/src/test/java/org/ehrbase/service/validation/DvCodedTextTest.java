@@ -17,6 +17,7 @@
  */
 package org.ehrbase.service.validation;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -269,7 +270,7 @@ class DvCodedTextTest {
 
     @Test
     void testFailOnError_Disabled() throws Exception {
-        var validationSupport = new FhirTerminologyValidation("https://wrong.terminology.server/fhir");
+        var validationSupport = new FhirTerminologyValidation("https://wrong.terminology.server/fhir", false);
 
         var codePhrase = new CodePhrase(new TerminologyId("http://hl7.org/fhir/observation-status"), "B");
         var dvCodedText = new DvCodedText("Buccal", codePhrase);
@@ -277,6 +278,8 @@ class DvCodedTextTest {
         var validator = new DvCodedTextValidator(validationSupport);
         var node = parseNode("/webtemplate_nodes/dv_codedtext_fhir_valueset.json");
 
-        assertThrows(ExternalTerminologyValidationException.class, () -> validator.validate(dvCodedText, node));
+        // With failOnError disabled, validation should not throw an exception
+        // Instead it should return an empty list or handle the error gracefully
+        assertDoesNotThrow(() -> validator.validate(dvCodedText, node));
     }
 }
