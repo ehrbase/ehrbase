@@ -27,10 +27,11 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>2.28.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>service</artifactId>
+  <name>EHRbase Service</name>
 
   <dependencies>
     <dependency>
@@ -154,12 +155,12 @@
       <artifactId>spring-context-support</artifactId>
     </dependency>
 
-    <!-- test dependencies -->
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-test</artifactId>
-      <scope>test</scope>
+      <groupId>com.ethlo.cache</groupId>
+      <artifactId>spring-tx-cache-decorator</artifactId>
     </dependency>
+
+    <!-- test dependencies -->
     <dependency>
       <groupId>org.ehrbase.openehr.sdk</groupId>
       <artifactId>test-data</artifactId>
@@ -170,7 +171,16 @@
       <artifactId>junit-vintage-engine</artifactId>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>jdbc</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>ca.uhn.hapi.fhir</groupId>
       <artifactId>hapi-fhir-structures-r4</artifactId>

@@ -17,181 +17,154 @@
  */
 package org.ehrbase.rest.openehr;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertThrowsExactly;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+import org.ehrbase.api.dto.AqlQueryContext;
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.service.AqlQueryRequest;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.api.service.StatusService;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.openehr.sdk.response.dto.MetaData;
 import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
+import org.ehrbase.rest.util.OpenEhrQueryRequestUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.context.request.RequestContextHolder;
 
 public class OpenehrQueryControllerTest {
+
+    public static final String SAMPLE_QUERY = "SELECT s FROM EHR_STATUS s";
+    public static final Map<String, Object> SAMPLE_PARAMETER_MAP = Map.of("key", "value");
+    public static final MetaData SAMPLE_META_DATA = new MetaData();
 
     private final AqlQueryService mockAqlQueryService = mock();
 
     private final StoredQueryService mockStoredQueryService = mock();
 
-    private final StatusService mockStatusService = mock();
+    private final AqlQueryContext mockQueryContext = mock();
 
     private final OpenehrQueryController spyController =
-            spy(new OpenehrQueryController(mockAqlQueryService, mockStoredQueryService, mockStatusService));
+            spy(new OpenehrQueryController(mockAqlQueryService, mockStoredQueryService, mockQueryContext));
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(mockAqlQueryService, mockStoredQueryService, mockStatusService, spyController);
-        doReturn("https://openehr.test.com/rest").when(spyController).getContextPath();
-        spyController.generatorDetailsEnabled = false;
+        Mockito.reset(mockAqlQueryService, mockStoredQueryService, mockQueryContext, spyController);
+        doReturn("https://openehr.test.query.controller.com/rest")
+                .when(spyController)
+                .getContextPath();
     }
 
-    private OpenehrQueryController controller(Supplier<QueryResultDto> resultSupplier) {
-        doReturn(resultSupplier.get()).when(mockAqlQueryService).query(any());
+    @AfterEach
+    void tearDown() {
+        // ensure the context is clean after each test
+        RequestContextHolder.resetRequestAttributes();
+    }
+
+    private OpenehrQueryController controller() {
+        doReturn(SAMPLE_META_DATA).when(mockQueryContext).createMetaData(any());
+        doReturn(new QueryResultDto()).when(mockAqlQueryService).query(any());
         return spyController;
     }
 
-    private OpenehrQueryController controller(String storedQuery, Supplier<QueryResultDto> resultSupplier) {
-        QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
-        queryDefinitionResultDto.setQueryText(storedQuery);
-        queryDefinitionResultDto.setQualifiedName("test_query");
-        doReturn(queryDefinitionResultDto).when(mockStoredQueryService).retrieveStoredQuery(any(), any());
-        return controller(resultSupplier);
+    private OpenehrQueryController controllerStoredQuery() {
+        doAnswer(inv -> {
+                    String qName = inv.getArgument(0, String.class);
+                    QueryDefinitionResultDto queryDefinitionResultDto = new QueryDefinitionResultDto();
+                    queryDefinitionResultDto.setQueryText(SAMPLE_QUERY);
+                    queryDefinitionResultDto.setVersion(inv.getArgument(1));
+                    queryDefinitionResultDto.setQualifiedName(qName);
+                    return queryDefinitionResultDto;
+                })
+                .when(mockStoredQueryService)
+                .retrieveStoredQuery(any(), any());
+
+        return controller();
     }
 
-    private MetaData expectedMetaData(Consumer<MetaData> customize) {
-
-        MetaData expected = new MetaData();
-        expected.setHref("https://openehr.test.com/rest/query/aql");
-        expected.setType("RESULTSET");
-        expected.setSchemaVersion("1.0.4");
-        expected.setCreated(OffsetDateTime.now());
-        expected.setAdditionalProperty(MetaData.AdditionalProperty.resultSize, 0);
-        customize.accept(expected);
-        return expected;
+    @ParameterizedTest
+    @CsvSource({",", "10,0", "0,25"})
+    void executeAddHocQueryUsingGET(Integer fetch, Integer offset) {
+        ResponseEntity<QueryResponseData> response = controller()
+                .executeAdHocQuery(SAMPLE_QUERY, offset, fetch, SAMPLE_PARAMETER_MAP, MediaType.APPLICATION_JSON_VALUE);
+        assertMetaData(response);
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
-    @Test
-    void GETexecuteAddHocQuery() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery("SELECT s FROM EHR_STATUS s", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+    private Long toLong(Object obj) {
+        return switch (obj) {
+            case null -> null;
+            case Integer i -> i.longValue();
+            case String s -> Long.parseLong(s);
+            default ->
+                throw new IllegalArgumentException(
+                        "unexpected type " + obj.getClass().getName());
+        };
     }
 
-    @Test
-    void GETexecuteAddHocQueryWithFetch() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery("SELECT s FROM EHR_STATUS s", null, 10, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null));
-    }
-
-    @Test
-    void GETexecuteAddHocQueryWithOffset() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery("SELECT s FROM EHR_STATUS s", 25, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 25L));
-    }
-
-    @Test
-    void GETexecuteAddHocQueryWithParameter() {
-
-        controller(QueryResultDto::new)
+    @ParameterizedTest
+    @CsvSource({",", "10,0", "0,25", "'1','2'"})
+    void executeAddHocQueryUsingPOST(Object fetch, Object offset) {
+        ResponseEntity<QueryResponseData> response = controller()
                 .executeAdHocQuery(
-                        "SELECT s FROM EHR_STATUS s",
-                        null,
-                        null,
-                        Map.of("key", "value"),
-                        MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
-    }
-
-    @Test
-    void GETexecuteAddHocReturnMeta() {
-
-        OpenehrQueryController controller = controller(QueryResultDto::new);
-        controller.generatorDetailsEnabled = false;
-
-        ResponseEntity<QueryResponseData> response = controller(QueryResultDto::new)
-                .executeAdHocQuery("SELECT s FROM EHR_STATUS s", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {}));
-    }
-
-    @Test
-    void GETexecuteAddHocReturnMetaWithGenerator() {
-
-        OpenehrQueryController controller = controller(QueryResultDto::new);
-        controller.generatorDetailsEnabled = true;
-
-        ResponseEntity<QueryResponseData> response = controller.executeAdHocQuery(
-                "SELECT s FROM EHR_STATUS s", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setGenerator("EHRBase/"); // version is ignored for test
-        }));
-    }
-
-    @Test
-    void POSTexecuteAddHocQuery() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery(
-                        Map.of("q", "SELECT s FROM EHR_STATUS s"),
+                        sampleAqlQuery(fetch, offset),
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+        assertMetaData(response);
+        assertAqlQueryRequest(
+                AqlQueryRequest.prepare(SAMPLE_QUERY, SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
+    }
+
+    private static Map<String, Object> sampleAqlQuery(Object fetch, Object offset) {
+        Map<String, Object> map = sampleAqlJson(fetch, offset);
+        map.put("q", SAMPLE_QUERY);
+        return map;
+    }
+
+    private static Map<String, Object> sampleAqlJson(Object fetch, Object offset) {
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("query_parameters", SAMPLE_PARAMETER_MAP);
+        if (fetch != null) {
+            map.put("fetch", fetch);
+        }
+        if (offset != null) {
+            map.put("offset", offset);
+        }
+        return map;
     }
 
     @Test
-    void POSTexecuteAddHocQueryWithFetch() {
+    void executeAddHocQueryUsingPOSTWithFetchInvalid() {
 
-        controller(QueryResultDto::new)
-                .executeAdHocQuery(
-                        Map.of("q", "SELECT s FROM EHR_STATUS s", "fetch", 10),
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null));
-    }
-
-    @Test
-    void POSTexecuteAddHocQueryWithFetchAsString() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery(
-                        Map.of("q", "SELECT s FROM EHR_STATUS s", "fetch", "10"),
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 10L, null));
-    }
-
-    @Test
-    void POSTexecuteAddHocQueryWithFetchInvalid() {
-
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller(QueryResultDto::new)
+        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
                         .executeAdHocQuery(
-                                Map.of("q", "SELECT s FROM EHR_STATUS s", "fetch", "invalid"),
+                                sampleAqlQuery("invalid", null),
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .getMessage();
@@ -199,293 +172,147 @@ public class OpenehrQueryControllerTest {
     }
 
     @Test
-    void POSTexecuteAddHocQueryWithOffset() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery(
-                        Map.of("q", "SELECT s FROM EHR_STATUS s", "offset", 30),
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 30L));
-    }
-
-    @Test
-    void POSTexecuteAddHocQueryWithOffsetAsString() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery(
-                        Map.of("q", "SELECT s FROM EHR_STATUS s", "offset", "30"),
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 30L));
-    }
-
-    @Test
-    void POSTexecuteAddHocQueryWithOffsetInvalid() {
-
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller(QueryResultDto::new)
+    void executeAddHocQueryUsingPOSTWithOffsetInvalid() {
+        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
                         .executeAdHocQuery(
-                                Map.of("q", "SELECT s FROM EHR_STATUS s", "offset", "invalid"),
+                                sampleAqlQuery(null, "invalid"),
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
     }
 
-    @Test
-    void POSTexecuteAddHocQueryWithParameters() {
-
-        controller(QueryResultDto::new)
-                .executeAdHocQuery(
-                        Map.of("q", "SELECT s FROM EHR_STATUS s", "query_parameters", Map.of("key", "value")),
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
-    }
-
-    @Test
-    void POSTexecuteAddHocReturnMeta() {
-
-        OpenehrQueryController controller = controller(QueryResultDto::new);
-        controller.generatorDetailsEnabled = false;
-
-        ResponseEntity<QueryResponseData> response = controller.executeAdHocQuery(
-                Map.of("q", "SELECT s FROM EHR_STATUS s"),
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setHref(null); // no _href for POST results
-        }));
-    }
-
-    @Test
-    void POSTexecuteAddHocReturnMetaWithGenerator() {
-
-        OpenehrQueryController controller = controller(QueryResultDto::new);
-        controller.generatorDetailsEnabled = true;
-
-        ResponseEntity<QueryResponseData> response = controller.executeAdHocQuery(
-                Map.of("q", "SELECT s FROM EHR_STATUS s"),
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setHref(null); // no _href for POST results
-            expected.setGenerator("EHRBase/"); // version is ignored for test
-        }));
-    }
-
-    @Test
-    void GETexecuteStoredQuery() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery("my_qualified_query", "v1.0.0", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
-    }
-
-    @Test
-    void GETexecuteStoredQueryWithFetch() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery("my_qualified_query", "v1.0.0", null, 15, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 15L, null));
-    }
-
-    @Test
-    void GETexecuteStoredQueryWithOffset() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery("my_qualified_query", "v1.0.0", 25, null, null, MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 25L));
-    }
-
-    @Test
-    void GETexecuteStoredQueryWithParameter() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
+    @ParameterizedTest
+    @CsvSource({",", "10,0", "0,25"})
+    void executeStoredQueryUsingGET(Integer fetch, Integer offset) {
+        ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
-                        null,
-                        null,
-                        Map.of("key", "value"),
+                        "1.0.0",
+                        offset,
+                        fetch,
+                        SAMPLE_PARAMETER_MAP,
                         MediaType.APPLICATION_JSON_VALUE);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
+        assertMetaData(response);
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
-    void GETexecuteStoredQueryReturnMeta() {
+    void executeStoredQueryUsingGETNoExist() {
 
-        OpenehrQueryController controller = controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new);
-        controller.generatorDetailsEnabled = false;
-
-        ResponseEntity<QueryResponseData> response = controller.executeStoredQuery(
-                "my_qualified_query", "v1.0.0", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setHref("https://openehr.test.com/rest/query/my_qualified_query/v1.0.0");
-        }));
+        OpenehrQueryController openehrQueryController = controllerStoredQuery();
+        doThrow(new ObjectNotFoundException(
+                        "QUERY", "Stored query 'does_not_exist' with version '1.0.0' does not exist"))
+                .when(mockStoredQueryService)
+                .retrieveStoredQuery(any(), any());
+        String message = assertThrows(
+                        ObjectNotFoundException.class,
+                        () -> openehrQueryController.executeStoredQuery(
+                                "does_not_exist",
+                                "1.0.0",
+                                null,
+                                null,
+                                SAMPLE_PARAMETER_MAP,
+                                MediaType.APPLICATION_JSON_VALUE))
+                .getMessage();
+        assertEquals(message, "Stored query 'does_not_exist' with version '1.0.0' does not exist");
     }
 
-    @Test
-    void GETexecuteStoredQueryReturnMetaWithGenerator() {
-
-        OpenehrQueryController controller = controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new);
-        controller.generatorDetailsEnabled = true;
-
-        ResponseEntity<QueryResponseData> response = controller.executeStoredQuery(
-                "my_qualified_query", "v1.0.0", null, null, null, MediaType.APPLICATION_JSON_VALUE);
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setHref("https://openehr.test.com/rest/query/my_qualified_query/v1.0.0");
-            expected.setGenerator("EHRBase/"); // version is ignored for test
-        }));
-    }
-
-    @Test
-    void POSTexecuteStoredQuery() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
+    @ParameterizedTest
+    @CsvSource({",", "10,0", "0,25", "'1','2'"})
+    void executeStoredQueryUsingPOST(Object fetch, Object offset) {
+        ResponseEntity<QueryResponseData> response = controllerStoredQuery()
                 .executeStoredQuery(
                         "my_qualified_query",
-                        "v1.0.0",
+                        "1.0.0",
                         MediaType.APPLICATION_JSON_VALUE,
                         MediaType.APPLICATION_JSON_VALUE,
-                        null);
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, null));
+                        sampleAqlJson(fetch, offset));
+        assertMetaData(response);
+        assertAqlQueryRequest(AqlQueryRequest.prepareNamed(
+                SAMPLE_QUERY, "my_qualified_query/1.0.0", SAMPLE_PARAMETER_MAP, toLong(fetch), toLong(offset)));
     }
 
     @Test
-    void POSTexecuteStoredQueryWithFetch() {
+    void executeStoredQueryUsingPOSTWithFetchInvalid() {
 
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery(
-                        "my_qualified_query",
-                        "v1.0.0",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        Map.of("fetch", 30));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 30L, null));
-    }
-
-    @Test
-    void POSTexecuteStoredQueryWithFetchAsString() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery(
-                        "my_qualified_query",
-                        "v1.0.0",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        Map.of("fetch", "30"));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), 30L, null));
-    }
-
-    @Test
-    void POSTexecuteStoredQueryWithFetchInvalid() {
-
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller(
-                                "SELECT s FROM EHR_STATUS s", QueryResultDto::new)
+        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
-                                Map.of("fetch", "invalid")))
+                                sampleAqlJson("invalid", null)))
                 .getMessage();
         assertEquals("invalid 'fetch' value 'invalid'", message);
     }
 
     @Test
-    void POSTexecuteStoredQueryWithOffset() {
+    void executeStoredQueryUsingPOSTWithOffsetInvalid() {
 
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery(
-                        "my_qualified_query",
-                        "v1.0.0",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        Map.of("offset", 15));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 15L));
-    }
-
-    @Test
-    void POSTexecuteStoredQueryWithOffsetAsString() {
-
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery(
-                        "my_qualified_query",
-                        "v1.0.0",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        Map.of("offset", "15"));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of(), null, 15L));
-    }
-
-    @Test
-    void POSTexecuteStoredQueryWithOffsetInvalid() {
-
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller(
-                                "SELECT s FROM EHR_STATUS s", QueryResultDto::new)
+        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
                         .executeStoredQuery(
                                 "my_qualified_query",
-                                "v1.0.0",
+                                "1.0.0",
                                 MediaType.APPLICATION_JSON_VALUE,
                                 MediaType.APPLICATION_JSON_VALUE,
-                                Map.of("offset", "invalid")))
+                                sampleAqlJson(null, "invalid")))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
     }
 
     @Test
-    void POSTexecuteStoredQueryWithParameter() {
+    void createRequestWithXmlParamsAdjusted() {
 
-        controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new)
-                .executeStoredQuery(
-                        "my_qualified_query",
-                        "v1.0.0",
-                        MediaType.APPLICATION_JSON_VALUE,
-                        MediaType.APPLICATION_JSON_VALUE,
-                        Map.of("query_parameters", Map.of("key", "value")));
-        assertAqlQueryRequest(new AqlQueryRequest("SELECT s FROM EHR_STATUS s", Map.of("key", "value"), null, null));
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT e FROM EHR e",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_string", "some-string",
+                        "p_xml_num", Map.of("type", "num", "", 42.12),
+                        "p_xml_int", Map.of("type", "int", "", 11)
+                        // "p_list": L
+                        ))),
+                null,
+                null);
+        assertThat(request.parameters())
+                .containsAllEntriesOf(Map.of("p_string", "some-string", "p_xml_num", 42.12, "p_xml_int", 11));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
     }
 
     @Test
-    void POSTexecuteStoredQueryReturnMeta() {
-
-        OpenehrQueryController controller = controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new);
-        controller.generatorDetailsEnabled = false;
-
-        ResponseEntity<QueryResponseData> response = controller.executeStoredQuery(
-                "my_qualified_query",
-                "v1.0.0",
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.APPLICATION_JSON_VALUE,
-                Map.of());
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setHref(null); // no _href for POST results
-        }));
+    void createRequestWithXmlParamsWithoutTypeAdjusted() {
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT c FROM COMPOSITION c",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_xml_num", Map.of("num", 42.12),
+                        "p_xml_int", Map.of("int", 11)
+                        // "p_list": L
+                        ))),
+                null,
+                null);
+        assertThat(request.parameters()).containsAllEntriesOf(Map.of("p_xml_num", 42.12, "p_xml_int", 11));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
     }
 
     @Test
-    void POSTexecuteStoredQueryReturnMetaWithGenerator() {
+    void createRequestWithXmlParamListsAdjusted() {
 
-        OpenehrQueryController controller = controller("SELECT s FROM EHR_STATUS s", QueryResultDto::new);
-        controller.generatorDetailsEnabled = true;
-
-        ResponseEntity<QueryResponseData> response = controller.executeStoredQuery(
-                "my_qualified_query",
-                "v1.0.0",
-                MediaType.APPLICATION_JSON_VALUE,
-                MediaType.APPLICATION_JSON_VALUE,
-                Map.of());
-
-        assertResponseMeta(response.getBody().getMeta(), expectedMetaData(expected -> {
-            expected.setHref(null); // no _href for POST results
-            expected.setGenerator("EHRBase/"); // version is ignored for test
-        }));
+        AqlQueryRequest request = AqlQueryRequest.prepare(
+                "SELECT e, c FROM EHR e CONTAINS COMPOSITION c",
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(new HashMap<>(Map.of(
+                        "p_xml_list", Map.of("", List.of("value_1", "value_2")),
+                        "p_xml_list_alternative", List.of("some", "other", "value")))),
+                null,
+                null);
+        assertThat(request.parameters())
+                .containsAllEntriesOf(Map.of(
+                        "p_xml_list", List.of("value_1", "value_2"),
+                        "p_xml_list_alternative", List.of("some", "other", "value")));
+        assertThat(request.fetch()).isNull();
+        assertThat(request.offset()).isNull();
     }
 
     private void assertAqlQueryRequest(AqlQueryRequest aqlQueryRequest) {
@@ -494,32 +321,10 @@ public class OpenehrQueryControllerTest {
         assertEquals(aqlQueryRequest, argument.getValue());
     }
 
-    private void assertResponseMeta(MetaData metaData, MetaData expected) {
-
-        assertEquals(expected.getHref(), metaData.getHref(), "_href does not match");
-        assertEquals(expected.getType(), metaData.getType(), "_type does not match");
-        assertEquals(expected.getSchemaVersion(), metaData.getSchemaVersion(), "_schema_version does not match");
-        assertEquals(expected.getExecutedAql(), metaData.getExecutedAql(), "_executed_aql does not match");
-        assertTrue(expected.getCreated().equals(metaData.getCreated())
-                || expected.getCreated().isAfter(metaData.getCreated()));
-
-        String generator = expected.getGenerator();
-        if (generator != null) {
-            assertTrue(
-                    metaData.getGenerator().startsWith(generator),
-                    "_generator does not start with %s".formatted(generator));
-        } else {
-            assertNull(metaData.getGenerator(), "_generator is not null");
-        }
-
-        assertEquals(
-                expected.getAdditionalProperty(MetaData.AdditionalProperty.resultSize),
-                metaData.getAdditionalProperty(MetaData.AdditionalProperty.resultSize));
-        assertEquals(
-                expected.getAdditionalProperty(MetaData.AdditionalProperty.fetch),
-                metaData.getAdditionalProperty(MetaData.AdditionalProperty.fetch));
-        assertEquals(
-                expected.getAdditionalProperty(MetaData.AdditionalProperty.offset),
-                metaData.getAdditionalProperty(MetaData.AdditionalProperty.offset));
+    private void assertMetaData(ResponseEntity<QueryResponseData> response) {
+        QueryResponseData body = response.getBody();
+        assertNotNull(body);
+        assertSame(SAMPLE_META_DATA, body.getMeta());
+        verify(mockQueryContext).createMetaData(any());
     }
 }

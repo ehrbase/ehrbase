@@ -37,7 +37,6 @@ import org.ehrbase.api.service.DirectoryService;
 import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
-import org.joda.time.DateTime;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -225,7 +224,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         DirectoryResponseData body;
 
         if (prefer != null && prefer.equals(RETURN_REPRESENTATION)) {
-            headers.setContentType(resolveContentType(accept, MediaType.APPLICATION_XML));
+            headers.setContentType(resolveContentType(accept));
             body = buildResponse(folderDto);
             successStatus = getSuccessStatus(method);
         } else {
@@ -240,7 +239,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             headers.setLocation(createLocationUri(EHR, ehrId.toString(), DIRECTORY, versionUid));
 
             // TODO: Extract last modified from SysPeriod timestamp of fetched folder record
-            headers.setLastModified(DateTime.now().getMillis());
+            headers.setLastModified(System.currentTimeMillis());
             createRestContext(ehrId, versionUid);
         }
 

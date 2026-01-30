@@ -1,0 +1,73 @@
+name: "Docker Build & Push"
+
+on:
+  workflow_call:
+    inputs:
+      ehrbase-version:
+        type: string
+        description: 'EHRbase version used for tagging'
+      ehrbase-jar-artifact:
+        type: string
+        description: 'Archived ehrbase-jar artifact name'
+        required: false
+
+jobs:
+
+  #
+  # Build and pushes the EHRbase docker image for the given input jar
+  #
+  build-and-push:
+    name: Build-And-Push
+    runs-on: ubuntu-latest
+    # Sanity check to ensure docker push only happen on dev/main/tag[v] refs
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }} # || startsWith(github.ref, 'refs/heads/release/') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            Dockerfile
+
+      - name: Download - Jar
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.ehrbase-jar-artifact }}
+          path: ./application/target/
+
+      # Docker registry login
+      - name: Login into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # setup qemu for multi arch
+      - name: Docker - Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Docker - Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Docker metadata extraction - obtain version and labels from here
+      - name: Docker - Metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ehrbase/ehrbase
+          tags: |
+            # refs/heads/develop -> tags: ehrbase/ehrbase:next
+            type=raw,value=next,enable=${{ github.ref == 'refs/heads/develop' }}
+            # refs/heads/master -> tags: ehrbase/ehrbase:${version}, ehrbase/ehrbase:latest
+            type=raw,priority=200,value=${{ inputs.ehrbase-version }},enable=${{ github.ref == 'refs/heads/master' }}
+            type=raw,priority=100,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+
+      # build the release multi arch image
+      - name: Docker - Build & Push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64       # possible we could add linux/arm/v6,linux/arm/v7 as well?
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=registry

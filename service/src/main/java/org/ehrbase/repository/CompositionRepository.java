@@ -34,7 +34,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.annotation.Nullable;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
@@ -46,9 +45,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
-import org.jooq.JSONB;
 import org.jooq.Record1;
-import org.jooq.Record3;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.springframework.stereotype.Repository;
@@ -91,7 +88,7 @@ public class CompositionRepository
     }
 
     @Transactional
-    public void commit(UUID ehrId, Composition composition, @Nullable UUID contributionId, @Nullable UUID auditId) {
+    public void commit(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
         UUID templateId = Optional.of(composition)
                 .map(Composition::getArchetypeDetails)
                 .map(Archetyped::getTemplateId)
@@ -112,11 +109,11 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                r -> {});
+                (n, r) -> {});
     }
 
     @Transactional
-    public void delete(UUID ehrId, UUID compId, int version, @Nullable UUID contributionId, @Nullable UUID auditId) {
+    public void delete(UUID ehrId, UUID compId, int version, UUID contributionId, UUID auditId) {
 
         delete(
                 ehrId,
@@ -149,7 +146,7 @@ public class CompositionRepository
     }
 
     @Transactional
-    public void update(UUID ehrId, Composition composition, @Nullable UUID contributionId, @Nullable UUID auditId) {
+    public void update(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
 
         UUID rootId = extractUid(composition.getUid());
         UUID templateId = Optional.of(composition)
@@ -173,7 +170,7 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                r -> {},
+                (n, r) -> {},
                 "No COMPOSITION with given id: %s".formatted(rootId));
     }
 
@@ -196,6 +193,18 @@ public class CompositionRepository
                 .unionAll(context.select(COMP_VERSION_HISTORY.SYS_VERSION)
                         .from(COMP_VERSION_HISTORY)
                         .where(COMP_VERSION_HISTORY.VO_ID.eq(compId)))
+                .orderBy(COMP_VERSION.SYS_VERSION.desc())
+                .limit(1)
+                .fetchOptional(Record1::value1);
+    }
+
+    public Optional<Integer> getLatestVersionNumber(UUID ehrId, UUID compId) {
+        return context.select(COMP_VERSION.SYS_VERSION)
+                .from(COMP_VERSION)
+                .where(COMP_VERSION.EHR_ID.eq(ehrId).and(COMP_VERSION.VO_ID.eq(compId)))
+                .unionAll(context.select(COMP_VERSION_HISTORY.SYS_VERSION)
+                        .from(COMP_VERSION_HISTORY)
+                        .where(COMP_VERSION_HISTORY.EHR_ID.eq(ehrId).and(COMP_VERSION_HISTORY.VO_ID.eq(compId))))
                 .orderBy(COMP_VERSION.SYS_VERSION.desc())
                 .limit(1)
                 .fetchOptional(Record1::value1);
@@ -226,10 +235,6 @@ public class CompositionRepository
 
     public Optional<Composition> findHead(UUID ehrId, UUID compId) {
         return findHead(singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()));
-    }
-
-    private Optional<Composition> toComposition(UUID compId, Record3<UUID, Integer, JSONB> jsonbRecord) {
-        return toLocatable(jsonbRecord, Composition.class);
     }
 
     private Optional<CompVersionHistoryRecord> findRootRecordByVersion(UUID ehrId, UUID compId, int version) {

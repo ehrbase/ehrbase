@@ -17,23 +17,9 @@
  */
 package org.ehrbase.service;
 
-import jakarta.annotation.PostConstruct;
 import java.time.OffsetDateTime;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.annotation.RequestScope;
 
-@Component
-@RequestScope
-public class TimeProvider {
+public interface TimeProvider {
 
-    private OffsetDateTime now;
-
-    @PostConstruct
-    private void init() {
-        now = OffsetDateTime.now();
-    }
-
-    public OffsetDateTime getNow() {
-        return now;
-    }
+    OffsetDateTime getNow();
 }

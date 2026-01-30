@@ -19,31 +19,39 @@ package org.ehrbase.service;
 
 import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.PartyProxy;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rmobjectvalidator.APathQueryCache;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessage;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidationMessageType;
 import com.nedap.archie.rmobjectvalidator.RMObjectValidator;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.api.definitions.ServerConfig;
+import org.ehrbase.api.dto.EhrStatusDto;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
 import org.ehrbase.openehr.sdk.validation.CompositionValidator;
+import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
+import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.service.validation.ValidationProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -71,13 +79,13 @@ public class ValidationServiceImp implements ValidationService {
     public ValidationServiceImp(
             KnowledgeCacheServiceImp knowledgeCacheService,
             TerminologyService terminologyService,
-            ServerConfig serverConfig,
+            ValidationProperties validationProperties,
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
 
-        boolean disableStrictValidation = serverConfig.isDisableStrictValidation();
+        boolean disableStrictValidation = !validationProperties.validateRmConstraints();
         if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
         }
@@ -94,17 +102,19 @@ public class ValidationServiceImp implements ValidationService {
             logger.warn("shared RMPathQueryCache is disabled");
             delegator = null;
         }
-        compositionValidator = ThreadLocal.withInitial(
-                () -> createCompositionValidator(objectProvider, disableStrictValidation, delegator));
+        compositionValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
+                objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
     }
 
     private static CompositionValidator createCompositionValidator(
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
-            APathQueryCache delegator) {
-        CompositionValidator validator = new CompositionValidator();
+            APathQueryCache delegator,
+            boolean checkForChildrenNotInTemplate) {
+        CompositionValidator validator =
+                new CompositionValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
-        validator.setRunInvariantChecks(!disableStrictValidation);
+
         setSharedAPathQueryCache(validator, delegator);
         return validator;
     }
@@ -113,113 +123,101 @@ public class ValidationServiceImp implements ValidationService {
         if (delegator == null) {
             return;
         }
-        try {
-            // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
-            Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
-            queryCacheField.setAccessible(true);
-            queryCacheField.set(validator.getRmObjectValidator(), delegator);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            throw new RuntimeException("Failed to inject shared RMPathQuery cache", e);
+        RMObjectValidator rmObjectValidator = validator.getRmObjectValidator();
+        if (rmObjectValidator instanceof FastRMObjectValidator val) {
+            val.setQueryCache(delegator);
+        } else {
+            try {
+                // as RMObjectValidator.queryCache is hard-coded, it is replaced via reflection
+                Field queryCacheField = RMObjectValidator.class.getDeclaredField("queryCache");
+                queryCacheField.setAccessible(true);
+                queryCacheField.set(rmObjectValidator, delegator);
+            } catch (IllegalAccessException | NoSuchFieldException e) {
+                throw new InternalServerException("Failed to inject shared RMPathQuery cache", e);
+            }
         }
     }
 
-    public void check(String templateID, Composition composition) throws NoSuchMethodException, IllegalAccessException {
+    @Override
+    public void check(Composition composition) {
+
+        // check if this composition is valid for processing
+        compositionMandatoryProperty(composition.getName(), "name");
+        compositionMandatoryProperty(composition.getArchetypeNodeId(), "archetype_node_id");
+        compositionMandatoryProperty(composition.getLanguage(), "language");
+        compositionMandatoryProperty(composition.getCategory(), "category");
+        compositionMandatoryProperty(composition.getComposer(), "composer");
+        compositionMandatoryProperty(composition.getArchetypeDetails(), "archetype details");
+        compositionMandatoryProperty(
+                composition.getArchetypeDetails().getTemplateId(), "archetype details/template_id");
+
+        String templateID = composition.getArchetypeDetails().getTemplateId().getValue();
+        check(templateID, composition);
+
+        logger.debug("Validated Composition against WebTemplate[{}]", templateID);
+    }
+
+    private void check(String templateID, Composition composition) {
         WebTemplate webTemplate;
         try {
-            webTemplate = knowledgeCacheService.getQueryOptMetaData(templateID);
+            webTemplate = knowledgeCacheService.getInternalTemplate(templateID);
         } catch (IllegalArgumentException e) {
             throw new UnprocessableEntityException(e.getMessage());
         }
 
         // Validate the composition based on WebTemplate
-        var constraintViolations = compositionValidator.get().validate(composition, webTemplate);
-        if (!constraintViolations.isEmpty()) {
-            throw new ConstraintViolationException(constraintViolations);
+        List<ConstraintViolation> violations = compositionValidator.get().validate(composition, webTemplate);
+        if (!violations.isEmpty()) {
+            throw new ConstraintViolationException(violations);
         }
 
-        // check codephrases against terminologies
-        ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
-        itemStructureVisitor.validate(composition);
+        // check code phrases against terminologies
+        try {
+            ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
+            itemStructureVisitor.validate(composition);
+        } catch (ReflectiveOperationException e) {
+            throw new InternalServerException(e);
+        }
+    }
+
+    private static void compositionMandatoryProperty(Object value, String attribute) {
+        if (value == null) {
+            throw new ValidationException("Composition missing mandatory attribute: %s".formatted(attribute));
+        }
     }
 
     @Override
-    public void check(Composition composition) throws NoSuchMethodException, IllegalAccessException {
-        // check if this composition is valid for processing
-        if (composition.getName() == null) {
-            throw new IllegalArgumentException("Composition missing mandatory attribute: name");
-        }
-        if (composition.getArchetypeNodeId() == null) {
-            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype_node_id");
-        }
-        if (composition.getLanguage() == null) {
-            throw new IllegalArgumentException("Composition missing mandatory attribute: language");
-        }
-        if (composition.getCategory() == null) {
-            throw new IllegalArgumentException("Composition missing mandatory attribute: category");
-        }
-        if (composition.getComposer() == null) {
-            throw new IllegalArgumentException("Composition missing mandatory attribute: composer");
-        }
-        if (composition.getArchetypeDetails() == null) {
-            throw new IllegalArgumentException("Composition missing mandatory attribute: archetype details");
-        }
-        if (composition.getArchetypeDetails().getTemplateId() == null) {
-            throw new IllegalArgumentException(
-                    "Composition missing mandatory attribute: archetype details/template_id");
-        }
-
-        check(composition.getArchetypeDetails().getTemplateId().getValue(), composition);
-
-        logger.debug("Composition validated successfully");
-    }
-
-    @Override
-    public void check(EhrStatus ehrStatus) {
-        // case of a system generated ehr
-        if (ehrStatus == null) {
-            return;
-        }
-
-        // first, check the built EhrStatus using the general Archie RM-Validator
-        List<RMObjectValidationMessage> rmObjectValidationMessages =
-                compositionValidator.get().getRmObjectValidator().validate(ehrStatus);
-
-        if (!rmObjectValidationMessages.isEmpty()) {
-            StringBuilder stringBuilder = new StringBuilder();
-            for (RMObjectValidationMessage rmObjectValidationMessage : rmObjectValidationMessages) {
-                stringBuilder.append(rmObjectValidationMessage.toString());
-                stringBuilder.append("\n");
-            }
-            throw new ValidationException(stringBuilder.toString());
-        }
+    public void check(EhrStatusDto ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
+        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
+        List<RMObjectValidationMessage> validationIssues = Stream.of(
+                        // RM-DTO required
+                        require(ehrStatus.type(), "/subject", "subject", ehrStatus.subject()),
+                        require(ehrStatus.type(), "/is_queryable", "is_queryable", ehrStatus.isQueryable()),
+                        require(ehrStatus.type(), "/is_modifiable", "is_modifiable", ehrStatus.isModifiable()),
+                        // rm validation
+                        validate(rmObjectValidator, "/uid", ehrStatus.uid()),
+                        validate(rmObjectValidator, "/name", ehrStatus.name()),
+                        validate(rmObjectValidator, "/subject", ehrStatus.subject()),
+                        validate(rmObjectValidator, "/archetype_details", ehrStatus.archetypeDetails()),
+                        validate(rmObjectValidator, "/feeder_audit", ehrStatus.feederAudit()),
+                        validate(rmObjectValidator, "/other_details", ehrStatus.otherDetails()),
+                        // additional checks
+                        matches(
+                                ehrStatus.type(),
+                                "/subject/external_ref/namespace",
+                                "namespace",
+                                NAMESPACE_PATTERN,
+                                Optional.ofNullable(ehrStatus.subject())
+                                        .map(PartyProxy::getExternalRef)
+                                        .map(PartyRef::getNamespace)))
+                .flatMap(Collection::stream)
+                .toList();
 
-        if (ehrStatus.getSubject() == null) {
-            throw new ValidationException("subject is required");
-        }
-
-        if (ehrStatus.getSubject().getExternalRef()
-                != null) { // external_ref has 0..1 multiplicity, so null itself is okay
-            // but if it is there it has to have an ID
-            if (ehrStatus.getSubject().getExternalRef().getId() == null
-                    || ehrStatus
-                            .getSubject()
-                            .getExternalRef()
-                            .getId()
-                            .getValue()
-                            .isEmpty()) {
-                throw new ValidationException("ExternalRef ID is required");
-            }
-            // and a namespace
-            if (ehrStatus.getSubject().getExternalRef().getNamespace() == null) {
-                throw new ValidationException("ExternalRef namespace is required");
-                // which needs to be valid
-            } else if (!NAMESPACE_PATTERN
-                    .matcher(ehrStatus.getSubject().getExternalRef().getNamespace())
-                    .matches()) {
-                throw new ValidationException("Subject's namespace format invalid");
-            }
+        if (!validationIssues.isEmpty()) {
+            throw new ValidationException(
+                    validationIssues.stream().map(Objects::toString).collect(Collectors.joining("\n")));
         }
     }
 
@@ -234,9 +232,9 @@ public class ValidationServiceImp implements ValidationService {
         List<RMObjectValidationMessage> messages = new ArrayList<>();
 
         // validate audit details
-        Optional.of(contribution).map(ContributionCreateDto::getAudit).ifPresent(ad -> {
+        Optional.ofNullable(contribution.getAudit()).ifPresent(ad -> {
             // audit/time_committed must be null
-            nullCheck(messages, ad.getTimeCommitted(), "/audit/time_committed");
+            reject(messages, "/audit/time_committed", "time_committed", ad.getTimeCommitted());
             rmObjectValidator.validate(ad).stream()
                     .filter(m -> !m.getPath().equals("/time_committed"))
                     .forEach(messages::add);
@@ -251,13 +249,12 @@ public class ValidationServiceImp implements ValidationService {
                     null,
                     "Versions must not be empty",
                     RMObjectValidationMessageType.CARDINALITY_MISMATCH));
-
         } else {
             // validate versions (without data)
             contribution.getVersions().stream()
                     .map(v -> {
                         // version/contribution must be null
-                        nullCheck(messages, v.getContribution(), "/version/contribution");
+                        reject(messages, "/version/contribution", "contribution", v.getContribution());
                         return v;
                     })
                     .map(rmObjectValidator::validate)
@@ -287,14 +284,56 @@ public class ValidationServiceImp implements ValidationService {
         }
     }
 
-    private static void nullCheck(List<RMObjectValidationMessage> messages, Object mustBeNull, String path) {
+    private static List<RMObjectValidationMessage> validate(
+            RMObjectValidator rmObjectValidator, String path, Object value) {
+        return Optional.ofNullable(value).map(rmObjectValidator::validate).stream()
+                .flatMap(Collection::stream)
+                .map(msg -> new RMObjectValidationMessage(
+                        "%s%s".formatted(path, msg.getPath()),
+                        msg.getArchetypeId(),
+                        msg.getArchetypePath(),
+                        msg.getHumanReadableArchetypePath(),
+                        msg.getMessage(),
+                        msg.getType()))
+                .toList();
+    }
+
+    private static List<RMObjectValidationMessage> require(String type, String path, String attr, Object value) {
+        if (value == null) {
+            return List.of(new RMObjectValidationMessage(
+                    path,
+                    null,
+                    null,
+                    path,
+                    "Attribute %s of class %s does not match existence 1..1".formatted(attr, type),
+                    RMObjectValidationMessageType.REQUIRED));
+        }
+        return List.of();
+    }
+
+    private static List<RMObjectValidationMessage> matches(
+            String type, String path, String attr, Pattern pattern, Optional<String> value) {
+        boolean matches = value.map(v -> pattern.matcher(v).matches()).orElse(true);
+        if (!matches) {
+            return List.of(new RMObjectValidationMessage(
+                    path,
+                    null,
+                    null,
+                    path,
+                    "Invariant %s of class %s does not match pattern [%s]".formatted(attr, type, pattern.pattern()),
+                    RMObjectValidationMessageType.INVARIANT_ERROR));
+        }
+        return List.of();
+    }
+
+    private static void reject(List<RMObjectValidationMessage> messages, String path, String attr, Object mustBeNull) {
         if (mustBeNull != null) {
             messages.add(new RMObjectValidationMessage(
                     path,
                     null,
                     null,
-                    null,
-                    "Attribute must not be set",
+                    path,
+                    "Attribute %s must not be set".formatted(attr),
                     RMObjectValidationMessageType.CARDINALITY_MISMATCH));
         }
     }

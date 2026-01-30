@@ -17,6 +17,8 @@
  */
 package org.ehrbase.cache;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -26,10 +28,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "cache")
 public class CacheProperties {
 
+    private List<String> txProxyExcludedBeanNames = new ArrayList<>();
     /**
      * Whether to initialize the caches during application startup.
      */
     private boolean templateInitOnStartup = true;
+
+    private boolean storedQueryInitOnStartup = true;
 
     public boolean isTemplateInitOnStartup() {
         return templateInitOnStartup;
@@ -37,6 +42,14 @@ public class CacheProperties {
 
     public void setTemplateInitOnStartup(boolean templateInitOnStartup) {
         this.templateInitOnStartup = templateInitOnStartup;
+    }
+
+    public boolean isStoredQueryInitOnStartup() {
+        return storedQueryInitOnStartup;
+    }
+
+    public void setStoredQueryInitOnStartup(boolean storedQueryInitOnStartup) {
+        this.storedQueryInitOnStartup = storedQueryInitOnStartup;
     }
 
     private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
@@ -56,6 +69,14 @@ public class CacheProperties {
 
     public void setUserIdCacheConfig(CacheConfig userIdCacheConfig) {
         this.userIdCacheConfig = userIdCacheConfig;
+    }
+
+    public List<String> getTxProxyExcludedBeanNames() {
+        return txProxyExcludedBeanNames;
+    }
+
+    public void setTxProxyExcludedBeanNames(List<String> txProxyExcludedBeanNames) {
+        this.txProxyExcludedBeanNames = txProxyExcludedBeanNames;
     }
 
     public static class CacheConfig {

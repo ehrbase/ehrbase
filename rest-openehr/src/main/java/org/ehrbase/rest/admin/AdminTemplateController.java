@@ -19,7 +19,6 @@ package org.ehrbase.rest.admin;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -73,12 +72,7 @@ public class AdminTemplateController extends BaseController {
                 @ApiResponse(
                         responseCode = "200",
                         description = "Template has been updated successfully.",
-                        headers = {
-                            @Header(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    schema = @Schema(implementation = MediaType.class))
-                        }),
+                        headers = {@Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC)}),
                 @ApiResponse(responseCode = "401", description = "Client credentials are invalid or have expired."),
                 @ApiResponse(
                         responseCode = "403",
@@ -125,9 +119,9 @@ public class AdminTemplateController extends BaseController {
                     @PathVariable(value = "template_id")
                     String templateId) {
 
-        int deleted = this.templateService.adminDeleteTemplate(templateId) ? 1 : 0;
+        this.templateService.adminDeleteTemplate(templateId);
 
-        return ResponseEntity.ok().body(new AdminDeleteResponseData(deleted));
+        return ResponseEntity.ok().body(new AdminDeleteResponseData(1));
     }
 
     @DeleteMapping(path = "/all")
@@ -136,12 +130,7 @@ public class AdminTemplateController extends BaseController {
                 @ApiResponse(
                         responseCode = "200",
                         description = "All templates have been removed successfully",
-                        headers = {
-                            @Header(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    schema = @Schema(implementation = MediaType.class))
-                        }),
+                        headers = {@Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC)}),
                 @ApiResponse(responseCode = "401", description = "Client credentials are invalid or have expired."),
                 @ApiResponse(
                         responseCode = "403",

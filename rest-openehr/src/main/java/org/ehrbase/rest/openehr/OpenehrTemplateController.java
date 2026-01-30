@@ -18,25 +18,19 @@
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Supplier;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.TemplateResponseData;
-import org.ehrbase.openehr.sdk.response.dto.TemplatesResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
@@ -44,7 +38,6 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
-import org.ehrbase.rest.util.InternalResponse;
 import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -61,15 +54,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.util.UriUtils;
 
 /**
  * Controller for /template resource as part of the Definitions sub-API of the openEHR REST API
  */
 @ConditionalOnMissingBean(name = "primaryopenehrtemplatecontroller")
 @RestController
-@RequestMapping(
-        path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/template",
-        produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+@RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION + "/definition/template")
 public class OpenehrTemplateController extends BaseController implements TemplateApiSpecification {
 
     protected static final String ADL_1_4 = "adl1.4";
@@ -88,116 +80,93 @@ public class OpenehrTemplateController extends BaseController implements Templat
     */
     @PostMapping(
             path = "/adl1.4",
+            consumes = {MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
-    public ResponseEntity createTemplateClassic(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
-                    String openehrAuditDetails, // TODO, see EHR-267
-            @RequestHeader(value = CONTENT_TYPE) String contentType,
-            @RequestHeader(value = ACCEPT, required = false) String accept,
+    public ResponseEntity<String> createTemplateClassic(
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @RequestBody String template) {
 
-        // TODO: only XML at the moment
-        if (!MediaType.parseMediaType(contentType).isCompatibleWith(MediaType.APPLICATION_XML)) {
-            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body("Only XML is supported at the moment");
-        }
-
-        TemplateDocument document;
-        try {
-            document =
-                    TemplateDocument.Factory.parse(new ByteArrayInputStream(template.getBytes(StandardCharsets.UTF_8)));
+        // create template
+        String templateId;
+        try (var in = IOUtils.toInputStream(template, StandardCharsets.UTF_8)) {
+            TemplateDocument document = TemplateDocument.Factory.parse(in);
+            templateId = templateService.create(document.getTemplate());
         } catch (XmlException | IOException e) {
             throw new InvalidApiParameterException(e.getMessage());
         }
 
-        String templateId = templateService.create(document.getTemplate());
+        // initialize HTTP 201 Created body builder
+        ResponseEntity.BodyBuilder bodyBuilder =
+                templateResponseBuilder(HttpStatus.CREATED, templateId, MediaType.APPLICATION_XML);
 
-        URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId);
-
-        List<String> headerList = Arrays.asList(
-                LOCATION,
-                ETAG,
-                LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled
-        // separately
-
-        Optional<InternalResponse<TemplateResponseData>>
-                respData; // variable to overload with more specific object if requested
-
-        if (Optional.ofNullable(prefer)
-                .map(i -> i.equals(RETURN_REPRESENTATION))
-                .orElse(false)) { // null safe way to test prefer header
-            respData = buildTemplateResponseData(templateId, accept, uri, headerList, TemplateResponseData::new);
-        } else { // "minimal" is default fallback
-            respData = buildTemplateResponseData(templateId, accept, uri, headerList, () -> null);
+        // return either representation body or only the created response
+        if (RETURN_REPRESENTATION.equals(prefer)) {
+            String responseTemplate =
+                    templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+            return bodyBuilder.body(responseTemplate);
+        } else {
+            return bodyBuilder.build();
         }
-
-        // TODO remove 204?
-        // returns 201 with body + headers, 204 only with headers or 500 error depending on what processing above yields
-        return respData.map(i -> Optional.ofNullable(i.getResponseData())
-                        .map(j -> ResponseEntity.created(uri)
-                                .headers(i.getHeaders())
-                                .body(j.get()))
-                        // when the body is empty
-                        .orElse(ResponseEntity.noContent()
-                                .headers(i.getHeaders())
-                                .build()))
-                // when no response could be created at all
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
     }
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
-    @GetMapping("/adl1.4")
-    public ResponseEntity getTemplatesClassic(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
-                    String openehrAuditDetails, // TODO, see EHR-267
+    @GetMapping(
+            value = "/adl1.4",
+            produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<List<TemplateMetaDataDto>> getTemplatesClassic(
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = ACCEPT, required = false) String accept) {
 
         URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
+        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML);
 
-        List<String> headerList =
-                Collections.emptyList(); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so
-        // handled
-        // separately
+        List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
 
-        Optional<InternalResponse<TemplatesResponseData>> respData =
-                buildTemplateResponseData("", accept, uri, headerList, TemplatesResponseData::new);
-
-        // returns 200 with all templates OR error
-        return respData.map(i -> ResponseEntity.ok()
-                        .headers(i.getHeaders())
-                        .body(i.getResponseData().get()))
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        // returns 200 with all templates
+        return ResponseEntity.ok().location(uri).contentType(mediaType).body(templates);
     }
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
-    @GetMapping("/adl1.4/{template_id}")
-    public ResponseEntity getTemplateClassic(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
-                    String openehrAuditDetails, // TODO, see EHR-267
-            @RequestHeader(value = ACCEPT, required = false) String accept,
+    @GetMapping(
+            value = "/adl1.4/{template_id}",
+            // TODO ITS-REST/Release-1.0.3 produces also "text/plain" but what format should this be
+            produces = {
+                MediaType.APPLICATION_XML_VALUE,
+                MediaType.APPLICATION_JSON_VALUE,
+                OpenEHRMediaType.APPLICATION_WT_JSON_VALUE
+            })
+    public ResponseEntity<Object> getTemplateClassic(
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
 
-        URI uri = createLocationUri(DEFINITION, ADL_1_4, templateId);
+        // parse and set accepted format. with XML as fallback for empty header and error for unsupported header
+        MediaType mediaType = resolveContentType(
+                accept, MediaType.APPLICATION_XML, OpenEHRMediaType.APPLICATION_WT_JSON, MediaType.APPLICATION_JSON);
 
-        List<String> headerList = Arrays.asList(
-                LOCATION,
-                ETAG,
-                LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE only needed for 201, so handled
-        // separately
+        // resolve template
+        OperationalTemplateFormat format = operationalTemplateFormatForMediaType(mediaType);
 
-        Optional<InternalResponse<TemplateResponseData>> respData =
-                buildTemplateResponseData(templateId, accept, uri, headerList, TemplateResponseData::new);
+        ResponseEntity.BodyBuilder bodyBuilder = templateResponseBuilder(HttpStatus.OK, templateId, mediaType);
 
-        return respData.map(i -> ResponseEntity.ok()
-                        .headers(i.getHeaders())
-                        .body(i.getResponseData().get()))
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        // return the original XML based OPT format (if called with the Accept: application/xml request header),
+        if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
+            String operationalTemplate = templateService.findOperationalTemplate(templateId, format);
+            return bodyBuilder.body(operationalTemplate);
+        }
+        // return simplified JSON-based “web template” format (if called with the Accept: application/json or
+        // application/openehr.wt+json request header)
+        else {
+            final WebTemplate webTemplate = templateService.findWebTemplate(templateId);
+            return bodyBuilder.body(webTemplate);
+        }
     }
 
     @GetMapping(
@@ -209,177 +178,122 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 OpenEHRMediaType.APPLICATION_WT_FLAT_SCHEMA_JSON_VALUE
             })
     public ResponseEntity<String> getTemplateExample(
-            @RequestHeader(value = ACCEPT, required = false) String accept,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId,
             @RequestParam(value = "format", required = false) String format) {
 
         CompositionRepresentation representation = extractCompositionRepresentation(accept, format);
         Composition composition = templateService.buildExample(templateId);
+        CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
 
         return ResponseEntity.ok()
+                .location(createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId, "example"))
                 .contentType(representation.mediaType)
                 .body(compositionService
-                        .serialize(new CompositionDto(composition, templateId, null, null), representation.format)
+                        .serialize(compositionDto, representation.format)
                         .getValue());
     }
 
     @GetMapping(
             path = "/adl1.4/{template_id}/webtemplate",
             produces = {MediaType.APPLICATION_JSON_VALUE, OpenEHRMediaType.APPLICATION_WT_JSON_VALUE})
+    @SuppressWarnings({"removal", "UastIncorrectHttpHeaderInspection"})
     public ResponseEntity<WebTemplate> getWebTemplate(
-            @RequestHeader(value = ACCEPT, required = false) String accept,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
 
-        final MediaType mediaType = resolveContentType(
-                accept,
-                OpenEHRMediaType.APPLICATION_WT_JSON,
-                m -> m.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_JSON)
-                        || m.isCompatibleWith(MediaType.APPLICATION_JSON));
-        final WebTemplate webTemplate = templateService.findTemplate(templateId);
+        final MediaType mediaType =
+                resolveContentType(accept, OpenEHRMediaType.APPLICATION_WT_JSON, MediaType.APPLICATION_JSON);
+        final WebTemplate webTemplate = templateService.findWebTemplate(templateId);
 
-        return ResponseEntity.ok().contentType(mediaType).body(webTemplate);
+        // @format:off
+        final String linkPrefix = "%s/%s".formatted(getContextPath(), "swagger-ui/index.html?urls.primaryName=1.%20openEHR%20API#");
+
+        return ResponseEntity.ok()
+                .location(createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId, "webtemplate"))
+                .contentType(mediaType)
+                .header("Deprecated", "Mon, 03 Jun 2024 00:00:00 GMT")
+                // .headers("Sunset", "Tue, 31 Dec 2024 00:00:00 GMT"); <- could be used until we know it ;)
+                .header("Link", String.join(", ", List.of(
+                    "<%s/%s>; rel=\"deprecation\"; type=\"text/html\"".formatted(linkPrefix, UriUtils.encode("TEMPLATE/getWebTemplate", StandardCharsets.US_ASCII)),
+                    "<%s/%s>; rel=\"successor-version\"".formatted(linkPrefix, UriUtils.encode("ADL 1.4 TEMPLATE/getTemplateClassic", StandardCharsets.US_ASCII))
+                )))
+                .body(webTemplate);
+        // @format:on
     }
 
     /*
        ADL 2
-       TODO WIP state only implements endpoints from outer server side, everything else is a stub. Also with a lot of duplication at the moment, which should be reduced when implementing functionality.
+       TODO WIP state only implements endpoints from outer server side, everything else is not implemented.
     */
-    @PostMapping("/adl2")
+    @PostMapping(
+            value = "/adl2",
+            consumes = {MediaType.TEXT_PLAIN_VALUE},
+            produces = {MediaType.TEXT_PLAIN_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<TemplateResponseData> createTemplateNew(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
-                    String openehrAuditDetails, // TODO, see EHR-267
-            @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
-            @RequestHeader(value = ACCEPT, required = false) String accept,
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
+            @RequestHeader(value = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @RequestParam(value = "version", required = false) String version,
             @RequestBody String template) {
 
-        // TODO implement handler - whole code below is only a stub yet
-
-        TemplateResponseData data = new TemplateResponseData(); // empty for now
-
-        URI url = URI.create("todo");
-        // TODO - continuing stub but list of headers most likely the correct list of necessary ones
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setLocation(url);
-        headers.setETag("\"something...\"");
-        headers.setLastModified(1234565778);
-
-        return Optional.ofNullable(data)
-                .map(i -> new ResponseEntity<>(i, headers, HttpStatus.CREATED))
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
-    // TODO possible changes pending, keep an eye on: https://github.com/openEHR/specifications-ITS-REST/issues/85
+    @GetMapping(
+            value = "/adl2",
+            produces = {MediaType.APPLICATION_JSON_VALUE})
+    public ResponseEntity<TemplateResponseData> getTemplatesNew(
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
+
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+    }
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
     // also, this endpoint combines what is listed as two endpoints:
     // https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-adl-2-template-get
-    @GetMapping("/adl2/{template_id}/{version_pattern}")
+    @GetMapping(
+            value = "/adl2/{template_id}/{version_pattern}",
+            produces = {MediaType.TEXT_PLAIN_VALUE})
     public ResponseEntity<TemplateResponseData> getTemplateNew(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion, // TODO, see EHR-267
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false)
-                    String openehrAuditDetails, // TODO, see EHR-267
-            @RequestHeader(value = ACCEPT, required = false) String accept,
+            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
+            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
+            @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id", required = false) String templateId,
             @PathVariable(value = "version_pattern", required = false) String versionPattern) {
 
-        // TODO implement handler - whole code below is only a stub yet
-
-        // TODO how to do that with multiple templates?
-        TemplateResponseData data = new TemplateResponseData(); // empty for now
-
-        URI url = URI.create("todo");
-        // TODO - continuing stub but list of headers most likely the correct list of necessary ones
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setLocation(url);
-        headers.setETag("\"something...\"");
-        headers.setLastModified(1234565778);
-
-        return Optional.ofNullable(data)
-                .map(i -> new ResponseEntity<>(i, headers, HttpStatus.CREATED))
-                .orElse(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build());
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
 
-    /**
-     * Builds response data for template endpoints. As specified there are two kinds of returns, with one or all templates.
-     * Hence factory can work with TemplateResponseData or TemplatesResponseData.
-     *
-     * @param templateId ID of the template, can be empty ("") when all templates are requested
-     * @param accept     Format the response should be delivered in, as given by request
-     * @param uri        Location of resource
-     * @param headerList List of headers to be set for response
-     * @param factory    Works with TemplateResponseData or TemplatesResponseData
-     * @param <T>        Type of response body
-     * @return
-     */
-    private <T> Optional<InternalResponse<T>> buildTemplateResponseData(
-            String templateId, String accept, URI uri, List<String> headerList, Supplier<T> factory) {
-        // create either TemplateResponseData or null (means no body, only headers incl. link to resource), via lambda
-        // request
-        T oneOrAllTemplates = factory.get();
+    private ResponseEntity.BodyBuilder templateResponseBuilder(
+            HttpStatus status, String templateId, MediaType mediaType) {
 
-        // do minimal scope steps
-        // create and supplement headers with data depending on which headers are requested
-        HttpHeaders respHeaders = new HttpHeaders();
-        for (String header : headerList) {
-            switch (header) {
-                case LOCATION:
-                    respHeaders.setLocation(uri);
-                    break;
-                case ETAG:
-                    respHeaders.setETag("\"" + templateId + "\"");
-                    break;
-                case LAST_MODIFIED:
-                    // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for
-                    // now
-                    respHeaders.setLastModified(123124442);
-                    break;
-                default:
-                    // Ignore header
-            }
-        }
+        URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId);
 
-        // parse and set accepted format. with XML as fallback for empty header and error for non supported header
-        MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_XML);
-        OperationalTemplateFormat format;
+        // initialize HTTP 201 Created body builder
+        return ResponseEntity.status(status)
+                .location(uri)
+                .contentType(mediaType)
+                .eTag("\"%s\"".formatted(templateId))
+                // TODO should be VERSION.commit_audit.time_committed.value which is not implemented yet - mock for now
+                .lastModified(123124442);
+    }
+
+    private static OperationalTemplateFormat operationalTemplateFormatForMediaType(MediaType mediaType) {
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            format = OperationalTemplateFormat.XML;
-        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            format = OperationalTemplateFormat.JSON;
+            return OperationalTemplateFormat.XML;
+        } else if (mediaType.isCompatibleWith(MediaType.APPLICATION_JSON)
+                || mediaType.isCompatibleWith(OpenEHRMediaType.APPLICATION_WT_JSON)) {
+            return OperationalTemplateFormat.JSON;
         } else {
-            throw new NotAcceptableException("Currently only xml (or empty for fallback) is allowed");
+            throw new NotAcceptableException(
+                    "Operation templates are only available in XML based OPT or simplified JSON-based web template format");
         }
-
-        // is null when request wants only metadata returned, so skips provisioning of body if null
-        if (oneOrAllTemplates != null) {
-            if (oneOrAllTemplates.getClass().equals(TemplateResponseData.class)) { // get only one template
-                // when this "if" is true the following casting can be executed and data manipulated by reference
-                // (handled by temporary variable)
-                TemplateResponseData objByReference = (TemplateResponseData) oneOrAllTemplates;
-
-                // TODO very simple now, needs more sophisticated templateService
-                String template = templateService.findOperationalTemplate(templateId, format);
-                objByReference.set(template);
-
-                // finally set last header // TODO only XML for now
-                respHeaders.setContentType(MediaType.APPLICATION_XML);
-
-            } else if (oneOrAllTemplates.getClass().equals(TemplatesResponseData.class)) { // get all templates
-                TemplatesResponseData objByReference = (TemplatesResponseData) oneOrAllTemplates;
-
-                List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
-                objByReference.set(templates);
-            } else
-                throw new InternalServerException(
-                        "Building template response data failed"); // i.e. wrong usage of buildTemplateResponseData()
-        }
-
-        return Optional.of(new InternalResponse<>(oneOrAllTemplates, respHeaders));
     }
 }

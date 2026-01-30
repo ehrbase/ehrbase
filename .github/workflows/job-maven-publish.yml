@@ -1,0 +1,59 @@
+name: "Maven Publish"
+
+on:
+  workflow_call:
+  # workflow_dispatch: <- is this needed?
+
+jobs:
+
+  #
+  # Build and publish jars to maven central
+  #
+  maven-publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    # Sanity check to ensure docker push only happen on dev/main/tag[v] refs
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }} # || startsWith(github.ref, 'refs/heads/release/') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup - Java 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: 21
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Setup - Maven Central
+        uses: actions/setup-java@v5
+        with:
+          java-version: 21
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: central
+          server-username: CENTRAL_SONATYPE_USERNAME
+          server-password: CENTRAL_SONATYPE_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Restore - Dependency Cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ~/.m2/repository
+          key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            deps-${{ runner.os }}-m2-${{ github.head_ref }}-
+            deps-${{ runner.os }}-m2-
+            deps-${{ runner.os }}-
+            deps-
+          fail-on-cache-miss: true # we run only with cached dependencies
+
+      - name: Publish - Maven Central
+        run: mvn -B deploy -P release -DskipTests
+        env:
+          CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
+          CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

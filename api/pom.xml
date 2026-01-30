@@ -26,10 +26,11 @@
     <parent>
         <groupId>org.ehrbase.openehr</groupId>
         <artifactId>server</artifactId>
-        <version>2.1.0-SNAPSHOT</version>
+        <version>2.28.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>api</artifactId>
+    <name>EHRbase Internal API</name>
 
     <dependencies>
         <dependency>
@@ -65,9 +66,11 @@
             <groupId>com.nedap.healthcare.archie</groupId>
             <artifactId>openehr-rm</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

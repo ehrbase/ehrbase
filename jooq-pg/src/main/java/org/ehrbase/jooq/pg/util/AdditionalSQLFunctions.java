@@ -17,10 +17,13 @@
  */
 package org.ehrbase.jooq.pg.util;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.stream.Stream;
 import org.jooq.AggregateFunction;
 import org.jooq.Field;
+import org.jooq.JSON;
 import org.jooq.JSONB;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -34,6 +37,33 @@ public final class AdditionalSQLFunctions {
         return DSL.function("jsonb_array_elements", JSONB.class, jsonbArray);
     }
 
+    /**
+     * Jooq does not support this for postgres.
+     * Also, Jooq would not inline the path
+     * <p>Note: the signature deviates from
+     * <code>jsonb_set ( target jsonb, path text[], new_value jsonb [, create_if_missing boolean ] ) → jsonb</code>
+     * so path can be specified as varargs.</p>
+     *
+     *
+     * @param target
+     * @param new_value
+     * @param path
+     * @return
+     */
+    public static Field<JSONB> jsonb_set(Field<JSONB> target, Field<JSONB> new_value, String... path) {
+        return DSL.function("jsonb_set", JSONB.class, target, DSL.inline(path), new_value);
+    }
+
+    /**
+     * Postgres only knows array_to_json
+     * @param src
+     * @return
+     * @param <T>
+     */
+    public static <T> Field<JSONB> array_to_jsonb(Field<T[]> src) {
+        return DSL.function("array_to_json", JSON.class, src).cast(JSONB.class);
+    }
+
     public static <T> Field<T> jsonb_extract_path_text(Class<T> aClass, Field<JSONB> jsonb, String... path) {
         Field<?>[] arguments = Stream.concat(
                         Stream.of(jsonb), Arrays.stream(path).map(DSL::inline))
@@ -41,18 +71,34 @@ public final class AdditionalSQLFunctions {
         return DSL.function("jsonb_extract_path_text", aClass, arguments);
     }
 
-    public static Field<JSONB> jsonb_dv_ordered_magnitude(Field<JSONB> dvOrderedField) {
-        return DSL.function("jsonb_dv_ordered_magnitude", JSONB.class, dvOrderedField);
+    public static Field<BigDecimal> jsonb_dv_ordered_magnitude(Field<JSONB> dvOrderedField) {
+        return DSL.function("jsonb_dv_ordered_magnitude", JSONB.class, dvOrderedField)
+                .cast(SQLDataType.NUMERIC);
     }
-    /*
-       data -> path[0] -> … -> path[n] ->> 0
-    */
+
+    /**
+     * @see #jsonbAttributePathText
+     */
     public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, String... path) {
+        return jsonbAttributePathText(jsonb, Arrays.stream(path));
+    }
+
+    /**
+     * Extract the text value from the given <code>JSONB</code> at the requested <code>path</code>
+     * </p>
+     * <code>data -> path[0] -> … -> path[n] ->> 0</code>
+     *
+     * @param jsonb to extract text as path from
+     * @param path json path of the text
+     * @return textValue as field
+     */
+    public static Field<String> jsonbAttributePathText(Field<JSONB> jsonb, Stream<String> path) {
         Field<JSONB> jsonbField = jsonb;
-        for (String att : path) {
-            jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(att));
+        Iterator<String> it = path.iterator();
+        while (it.hasNext()) {
+            jsonbField = DSL.jsonbGetAttribute(jsonbField, DSL.inline(it.next()));
         }
-        return DSL.jsonbGetElementAsText(jsonbField, 0);
+        return DSL.jsonbGetElementAsText(jsonbField, DSL.inline(0));
     }
 
     public static Field<JSONB> to_jsonb(Object value) {

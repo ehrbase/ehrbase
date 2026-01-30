@@ -30,9 +30,9 @@ import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslAndQueryCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslEntityIdxOffsetCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslCoalesceJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFalseQueryCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldValueQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotQueryCondition;
@@ -44,9 +44,13 @@ import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslComplexExtractedColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslConstantField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslOrderByField;
-import org.ehrbase.openehr.aqlengine.asl.model.join.AslAuditDetailsJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslStringAggregationField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslSubqueryField;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslDelegatingJoinCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslPathFilterJoinCondition;
@@ -56,6 +60,7 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslPathDataQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
+import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 
 public class AslGraph {
 
@@ -129,9 +134,10 @@ public class AslGraph {
 
         String queryComment =
                 switch (subquery) {
-                    case AslPathDataQuery pq -> pq.getPathNodes(pq.getDataField()).stream()
-                            .map(p -> p.getAttribute() + p.getPredicateOrOperands())
-                            .collect(Collectors.joining(".", " -- ", ""));
+                    case AslPathDataQuery pq ->
+                        pq.getPathNodes(pq.getDataField()).stream()
+                                .map(p -> p.getAttribute() + p.getPredicateOrOperands())
+                                .collect(Collectors.joining(".", " -- ", ""));
                     default -> "";
                 };
 
@@ -172,51 +178,62 @@ public class AslGraph {
         return switch (condition) {
             case null -> "";
             case AslNotQueryCondition c -> indented(level, "NOT") + conditionToGraph(level + 1, c.getCondition());
-            case AslFieldValueQueryCondition<?> c -> indented(
-                    level, fieldToGraph(level + 1, c.getField()) + " " + c.getOperator() + " " + c.getValues());
+            case AslFieldValueQueryCondition<?> c ->
+                indented(level, fieldToGraph(level + 1, c.getField()) + " " + c.getOperator() + " " + c.getValues());
             case AslFalseQueryCondition aslFalseQueryCondition -> indented(level, "false");
             case AslTrueQueryCondition aslTrueQueryCondition -> indented(level, "true");
-            case AslOrQueryCondition c -> indented(level, "OR")
-                    + c.getOperands().stream()
-                            .map(op -> conditionToGraph(level + 1, op))
-                            .collect(Collectors.joining());
-            case AslAndQueryCondition c -> indented(level, "AND")
-                    + c.getOperands().stream()
-                            .map(op -> conditionToGraph(level + 1, op))
-                            .collect(Collectors.joining());
+            case AslOrQueryCondition c ->
+                indented(level, "OR")
+                        + c.getOperands().stream()
+                                .map(op -> conditionToGraph(level + 1, op))
+                                .collect(Collectors.joining());
+            case AslAndQueryCondition c ->
+                indented(level, "AND")
+                        + c.getOperands().stream()
+                                .map(op -> conditionToGraph(level + 1, op))
+                                .collect(Collectors.joining());
             case AslNotNullQueryCondition c -> indented(level, "NOT_NULL " + fieldToGraph(level + 1, c.getField()));
-            case AslEntityIdxOffsetCondition c -> indented(
-                    level,
-                    "EntityIdxOffset %s -%d-> %s"
-                            .formatted(
-                                    c.getLeftOwner().getAlias(),
-                                    c.getOffset(),
-                                    c.getRightOwner().getAlias()));
-            case AslDescendantCondition c -> indented(
-                    level,
-                    "DescendantCondition %s %s -> %s %s"
-                            .formatted(
-                                    c.getParentRelation(),
-                                    c.getLeftOwner().getAlias(),
-                                    c.getDescendantRelation(),
-                                    c.getRightOwner().getAlias()));
+            case AslFieldFieldQueryCondition c ->
+                indented(
+                        level,
+                        "%s %s %s"
+                                .formatted(
+                                        fieldToGraph(level, c.getLeftField()),
+                                        c.getOperator(),
+                                        fieldToGraph(level, c.getRightField())));
+            case AslCoalesceJoinCondition cjc ->
+                indented(
+                        level,
+                        "COALESCE(%s, %s)"
+                                .formatted(conditionToGraph(-1, cjc.getTernaryCondition()), cjc.getDefaultValue()));
         };
     }
 
     private static String conditionsToGraph(int level, List<AslJoinCondition> joinConditions) {
         return joinConditions.stream()
                 .map(jc -> switch (jc) {
-                    case AslPathFilterJoinCondition c -> "PathFilterJoinCondition %s ->\n%s"
-                            .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getCondition()));
-                    case AslDelegatingJoinCondition c -> "DelegatingJoinCondition %s ->\n%s"
-                            .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getDelegate()));
-                    case AslAuditDetailsJoinCondition c -> "AuditDetailsJoinCondition %s -> %s"
-                            .formatted(
-                                    c.getLeftOwner().getAlias(),
-                                    c.getRightOwner().getAlias());
+                    case AslPathFilterJoinCondition c ->
+                        "PathFilterJoinCondition %s ->\n%s"
+                                .formatted(c.getLeftOwner().getAlias(), conditionToGraph(level + 2, c.getCondition()));
+                    case AslDelegatingJoinCondition c ->
+                        "DelegatingJoinCondition ->\n%s".formatted(conditionToGraph(level + 2, c.getDelegate()));
+                    case AslFolderItemJoinCondition c ->
+                        "FolderItemJoinCondition FOLDER -> %s [%s.vo_id in %s.data.items[].id.value]"
+                                .formatted(
+                                        c.descendantRelation(),
+                                        c.getRightOwner().getAlias(),
+                                        c.getLeftOwner().getAlias());
                 })
                 .map(s -> indented(level, s))
                 .collect(Collectors.joining());
+    }
+
+    private static String getAlias(AslQuery query) {
+        if (query == null) {
+            return "";
+        } else {
+            return query.getAlias();
+        }
     }
 
     private static String orderByToGraph(int level, AslOrderByField sortOrderPair) {
@@ -228,27 +245,47 @@ public class AslGraph {
                 ? (field.getInternalProvider().getAlias() + ".")
                 : "";
         return switch (field) {
-            case AslColumnField f -> providerAlias
-                    + f.getAliasedName()
-                    + Optional.of(f)
-                            .map(AslColumnField::getExtractedColumn)
-                            .map(e -> " -- " + e.getPath().render())
-                            .orElse("");
-            case AslComplexExtractedColumnField f -> providerAlias + "??"
-                    + Optional.of(f)
-                            .map(AslComplexExtractedColumnField::getExtractedColumn)
-                            .map(e -> " -- COMPLEX " + e.name() + " "
-                                    + e.getPath().render())
-                            .orElse("");
-            case AslAggregatingField f -> "%s(%s%s)"
-                    .formatted(
-                            f.getFunction(),
-                            f.isDistinct() ? "DISTINCT " : "",
-                            Optional.of(f)
-                                    .map(AslAggregatingField::getBaseField)
-                                    .map(bf -> fieldToGraph(level, bf))
-                                    .orElse("*"));
+            case AslColumnField f ->
+                providerAlias
+                        + f.getAliasedName()
+                        + Optional.of(f)
+                                .map(AslColumnField::getExtractedColumn)
+                                .map(e -> " /* " + e.getPath().render() + " */")
+                                .orElse("");
+            case AslComplexExtractedColumnField f ->
+                providerAlias + "??"
+                        + Optional.of(f)
+                                .map(AslComplexExtractedColumnField::getExtractedColumn)
+                                .map(e -> " -- COMPLEX " + e.name() + " "
+                                        + e.getPath().render())
+                                .orElse("");
+            case AslAggregatingField f ->
+                "%s(%s%s)"
+                        .formatted(
+                                f.getFunction(),
+                                f.isDistinct() ? "DISTINCT " : "",
+                                Optional.of(f)
+                                        .map(AslAggregatingField::getBaseField)
+                                        .map(bf -> fieldToGraph(level, bf))
+                                        .orElse("*"));
+            case AslSubqueryField f ->
+                sqToGraph(level + 1, f.getBaseQuery(), null)
+                        + (f.getFilterConditions().isEmpty()
+                                ? ""
+                                : indented(level + 1, "Filter:")
+                                        + f.getFilterConditions().stream()
+                                                .map(c -> conditionToGraph(level + 2, c))
+                                                .collect(Collectors.joining("\n", "", "")));
             case AslConstantField f -> "CONSTANT (%s): %s".formatted(f.getType().getSimpleName(), f.getValue());
+            case AslFolderItemIdVirtualField f -> providerAlias + f.aliasedName() + " -- FOLDER.items";
+            case AslRmPathField f ->
+                providerAlias
+                        + f.getSrcField().getAliasedName()
+                        + f.getPathInJson().stream()
+                                .map(PathNode::getAttribute)
+                                .collect(Collectors.joining(" -> ", " -> ", ""));
+            case AslStringAggregationField f ->
+                "string_agg(%s, %s) - %s".formatted(fieldToGraph(0, f.getBaseField()), f.getSeparator(), f.alias());
         };
     }
 
@@ -258,6 +295,9 @@ public class AslGraph {
     }
 
     private static <T> String indented(int level, String str) {
+        if (level == -1) {
+            return str;
+        }
         String prefix = StringUtils.repeat("  ", level);
         return prefix + str + "\n";
     }

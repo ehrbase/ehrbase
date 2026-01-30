@@ -15,7 +15,10 @@
 # limitations under the License.
 
 spring:
-  profiles: test
+  profiles:
+    active: test
+  cache:
+    type: CAFFEINE
 
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'

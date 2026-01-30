@@ -1,0 +1,33 @@
+name: "Codestyle"
+
+# we have multiple workflows - this helps to distinguish for them
+run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.ref_name }} - Codestyle"
+
+on:
+  push:
+    branches: [ develop, release/* ]
+  workflow_dispatch:
+  pull_request:
+    branches: [ develop ]
+
+#
+# Style-check it a dedicated workflow. This allows us to open a PR, run all tests and fix styling issue later ;).
+#
+jobs:
+  spotless:
+    name: Spotless-Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: 21
+          cache: 'maven'
+
+      - name: Spotless
+        run: mvn spotless:check

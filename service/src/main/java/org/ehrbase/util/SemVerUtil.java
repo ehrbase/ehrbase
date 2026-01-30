@@ -18,7 +18,7 @@
 package org.ehrbase.util;
 
 import java.util.function.ToIntFunction;
-import org.springframework.lang.NonNull;
+import java.util.stream.Stream;
 
 public class SemVerUtil {
 
@@ -32,8 +32,7 @@ public class SemVerUtil {
      * @return
      * @throws VersionConflictException if a release version already exists
      */
-    public static @NonNull SemVer determineVersion(@NonNull SemVer requestSemVer, @NonNull SemVer dbSemVer)
-            throws VersionConflictException {
+    public static SemVer determineVersion(SemVer requestSemVer, SemVer dbSemVer) throws VersionConflictException {
         int major;
         int minor;
         int patch;
@@ -67,6 +66,24 @@ public class SemVerUtil {
             return fallback;
         } else {
             return func.applyAsInt(semVer) + 1;
+        }
+    }
+
+    public static Stream<SemVer> streamAllResolutions(SemVer semVer) {
+        if (semVer.suffix() != null) {
+            return Stream.of(semVer);
+        } else if (semVer.major() == null) {
+            return Stream.of(SemVer.NO_VERSION);
+        } else if (semVer.minor() == null) {
+            return Stream.of(semVer, SemVer.NO_VERSION);
+        } else if (semVer.patch() == null) {
+            return Stream.of(semVer, new SemVer(semVer.major(), null, null, null), SemVer.NO_VERSION);
+        } else {
+            return Stream.of(
+                    semVer,
+                    new SemVer(semVer.major(), semVer.minor(), null, null),
+                    new SemVer(semVer.major(), null, null, null),
+                    SemVer.NO_VERSION);
         }
     }
 }

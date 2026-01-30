@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.GeneralRequestProcessingException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -37,19 +38,35 @@ import org.ehrbase.util.SemVerUtil;
 import org.ehrbase.util.StoredQueryQualifiedName;
 import org.ehrbase.util.VersionConflictException;
 import org.jooq.exception.DataAccessException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
 
 @Service
 public class StoredQueryServiceImp implements StoredQueryService {
-
     private final StoredQueryRepository storedQueryRepository;
     private final CacheProvider cacheProvider;
 
-    public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider) {
+    @Value("${ehrbase.cache.stored-query-init-on-startup:false}")
+    private boolean initStoredQueryCache = false;
 
+    public StoredQueryServiceImp(StoredQueryRepository storedQueryRepository, CacheProvider cacheProvider) {
         this.storedQueryRepository = storedQueryRepository;
         this.cacheProvider = cacheProvider;
+    }
+
+    @PostConstruct
+    public void init() {
+        if (initStoredQueryCache) {
+            storedQueryRepository.retrieveAllLatest().forEach(l -> {
+                SemVerUtil.streamAllResolutions(SemVer.parse(l.getVersion())).forEach(v -> {
+                    StoredQueryQualifiedName storedQueryQualifiedName =
+                            StoredQueryQualifiedName.create(l.getQualifiedName(), v);
+                    CacheProvider.STORED_QUERY_CACHE.get(
+                            cacheProvider, storedQueryQualifiedName.toQualifiedNameString(), () -> l);
+                });
+            });
+        }
     }
 
     // === DEFINITION: manage stored queries
@@ -73,16 +90,17 @@ public class StoredQueryServiceImp implements StoredQueryService {
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName storedQueryQualifiedName =
                 StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
+
+        QueryDefinitionResultDto result;
         try {
-            return cacheProvider.get(
-                    CacheProvider.STORED_QUERY_CACHE,
+            result = CacheProvider.STORED_QUERY_CACHE.get(
+                    cacheProvider,
                     storedQueryQualifiedName.toQualifiedNameString(),
                     () -> retrieveStoredQueryInternal(storedQueryQualifiedName));
         } catch (Cache.ValueRetrievalException e) {
-            // No template with that templateId exist
-            throw new GeneralRequestProcessingException(
-                    "Cache Access Error: " + e.getCause().getMessage(), e);
+            throw e.getCause() instanceof RuntimeException cause ? cause : e;
         }
+        return result;
     }
 
     private QueryDefinitionResultDto retrieveStoredQueryInternal(StoredQueryQualifiedName storedQueryQualifiedName) {
@@ -97,22 +115,18 @@ public class StoredQueryServiceImp implements StoredQueryService {
             throw new InternalServerException(e.getMessage());
         }
 
-        return storedQueryAccess.orElseThrow(() -> new IllegalArgumentException(
-                "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
+        return storedQueryAccess.orElseThrow(() -> new ObjectNotFoundException(
+                "QUERY", "Could not retrieve stored query for qualified name: " + storedQueryQualifiedName.toName()));
     }
 
     @Override
-    public QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString) {
+    public QueryDefinitionResultDto createStoredQuery(
+            String qualifiedName, String version, String queryString, String type) {
 
         SemVer requestedVersion = parseRequestSemVer(version);
         StoredQueryQualifiedName queryQualifiedName = StoredQueryQualifiedName.create(qualifiedName, requestedVersion);
 
-        // validate the query syntax
-        try {
-            AqlQueryParser.parse(queryString);
-        } catch (AqlParseException e) {
-            throw new IllegalArgumentException("Invalid query, reason:" + e, e);
-        }
+        validateQuerySyntax(queryString, type);
 
         // lookup version in db
         SemVer dbSemVer = storedQueryRepository
@@ -130,9 +144,9 @@ public class StoredQueryServiceImp implements StoredQueryService {
 
         try {
             if (isUpdate) {
-                storedQueryRepository.update(newQueryQualifiedName, queryString);
+                storedQueryRepository.update(newQueryQualifiedName, queryString, type);
             } else {
-                storedQueryRepository.store(newQueryQualifiedName, queryString);
+                storedQueryRepository.store(newQueryQualifiedName, queryString, type);
             }
         } catch (DataAccessException e) {
             throw new GeneralRequestProcessingException(
@@ -142,14 +156,26 @@ public class StoredQueryServiceImp implements StoredQueryService {
         }
 
         // clear partially cached versions
-        evictPartiallyCachedVersions(qualifiedName, newVersion);
+        evictAllResolutions(newQueryQualifiedName);
 
         return retrieveStoredQueryInternal(newQueryQualifiedName);
     }
 
+    protected void validateQuerySyntax(String query, String type) {
+        if (!AQL_QUERY_TYPE.equals(type)) {
+            throw new IllegalArgumentException("Unsupported query type: %s".formatted(type));
+        }
+
+        try {
+            AqlQueryParser.parse(query);
+        } catch (AqlParseException e) {
+            throw new IllegalArgumentException("Invalid AQL query, reason: %s".formatted(e.getMessage()), e);
+        }
+    }
+
     private static void checkVersionCombination(SemVer requestSemVer, SemVer dbSemVer) {
         if (dbSemVer.isNoVersion()) {
-            // Noop: no issue
+            // NOOP: no issue
         } else if (dbSemVer.isPartial()) {
             throw new IllegalStateException("The database contains stored queries with partial versions");
 
@@ -192,22 +218,16 @@ public class StoredQueryServiceImp implements StoredQueryService {
         } catch (RuntimeException e) {
             throw new InternalServerException(e.getMessage());
         } finally {
-            cacheProvider.evict(CacheProvider.STORED_QUERY_CACHE, storedQueryQualifiedName.toQualifiedNameString());
+            evictAllResolutions(storedQueryQualifiedName);
         }
     }
 
-    private void evictPartiallyCachedVersions(String qualifiedName, SemVer semVer) {
-
-        SemVer versionMajor = new SemVer(semVer.major(), null, null, null);
-        SemVer versionMajorMinor = new SemVer(semVer.major(), semVer.minor(), null, null);
-
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, versionMajor).toQualifiedNameString());
-        cacheProvider.evict(
-                CacheProvider.STORED_QUERY_CACHE,
-                StoredQueryQualifiedName.create(qualifiedName, versionMajorMinor)
-                        .toQualifiedNameString());
+    private void evictAllResolutions(StoredQueryQualifiedName qualifiedName) {
+        SemVerUtil.streamAllResolutions(qualifiedName.semVer())
+                .forEach(v -> CacheProvider.STORED_QUERY_CACHE.evict(
+                        cacheProvider,
+                        new StoredQueryQualifiedName(qualifiedName.reverseDomainName(), qualifiedName.semanticId(), v)
+                                .toQualifiedNameString()));
     }
 
     private static SemVer parseRequestSemVer(String version) {

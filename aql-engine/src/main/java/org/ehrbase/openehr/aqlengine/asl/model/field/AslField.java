@@ -17,10 +17,12 @@
  */
 package org.ehrbase.openehr.aqlengine.asl.model.field;
 
+import java.util.stream.Stream;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 
-public abstract sealed class AslField permits AslColumnField, AslConstantField, AslVirtualField {
+public abstract sealed class AslField permits AslColumnField, AslConstantField, AslSubqueryField, AslVirtualField {
     public record FieldSource(
             /**
              * The table that the fields originates from
@@ -34,6 +36,8 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
              * The table that provides the field
              */
             AslQuery provider) {
+
+        public static final FieldSource NONE = new FieldSource(null, null, null);
 
         public static FieldSource withOwner(AslQuery owner) {
             return new FieldSource(owner, owner, owner);
@@ -88,4 +92,12 @@ public abstract sealed class AslField permits AslColumnField, AslConstantField, 
     }
 
     public abstract AslField copyWithOwner(AslQuery aslFilteringQuery);
+
+    public Stream<AslField> fieldsForAggregation(AslRootQuery rootQuery) {
+        if (this.getProvider() == rootQuery) {
+            return Stream.of(this);
+        } else {
+            return Stream.of(this.withProvider(rootQuery));
+        }
+    }
 }

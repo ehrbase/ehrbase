@@ -19,6 +19,8 @@ package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
@@ -27,9 +29,11 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 public interface TemplateService {
     List<TemplateMetaDataDto> getAllTemplates();
 
+    Map<UUID, String> findAllTemplateIds();
+
     Composition buildExample(String templateId);
 
-    WebTemplate findTemplate(String templateId);
+    WebTemplate findWebTemplate(String templateId);
 
     /**
      * Finds and returns the given operational template as string represented in requested format.
@@ -50,9 +54,8 @@ public interface TemplateService {
      * the deletion will be rejected.
      *
      * @param templateId - Template id to delete, e.g. "IDCR Allergies List.v0"
-     * @return - Whether the template could be removed or not
      */
-    boolean adminDeleteTemplate(String templateId);
+    void adminDeleteTemplate(String templateId);
 
     /**
      * Replaces a given template in the storage and updates the cache with the new template content.

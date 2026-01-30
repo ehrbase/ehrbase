@@ -1,4 +1,4 @@
-name: Create Docker ehrbase-postgres
+name: "Create Docker ehrbase-postgres"
 
 on:
   #
@@ -32,7 +32,7 @@ jobs:
           echo "POSTGRES_VERSION=${{ inputs.postgres-version }}" >> $GITHUB_ENV
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Docker registry login
       - name: Login into registry ${{ env.REGISTRY }}
@@ -61,7 +61,7 @@ jobs:
       # Build & Publish image
       - name: Build and push Versioned Docker Image
         id: build-and-push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile_postgres

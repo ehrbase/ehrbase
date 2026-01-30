@@ -18,17 +18,20 @@
 package org.ehrbase.api.service;
 
 import java.util.List;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 
 public interface StoredQueryService {
 
+    String AQL_QUERY_TYPE = "AQL";
+
     // === DEFINITION: manage stored queries
     List<QueryDefinitionResultDto> retrieveStoredQueries(String fullyQualifiedName);
 
-    QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version);
+    QueryDefinitionResultDto retrieveStoredQuery(String qualifiedName, String version) throws ObjectNotFoundException;
 
     // === DEFINITION: manage stored queries
-    QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString);
+    QueryDefinitionResultDto createStoredQuery(String qualifiedName, String version, String queryString, String type);
 
     void deleteStoredQuery(String qualifiedName, String version);
 }

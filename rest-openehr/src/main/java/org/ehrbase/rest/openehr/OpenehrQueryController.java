@@ -22,34 +22,29 @@ import static org.ehrbase.api.rest.HttpRestContext.QUERY_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import java.net.URI;
-import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.dto.AqlQueryContext;
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.service.AqlQueryRequest;
 import org.ehrbase.api.service.AqlQueryService;
-import org.ehrbase.api.service.StatusService;
 import org.ehrbase.api.service.StoredQueryService;
-import org.ehrbase.openehr.sdk.response.dto.MetaData;
 import org.ehrbase.openehr.sdk.response.dto.QueryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
-import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.QueryApiSpecification;
+import org.ehrbase.rest.util.OpenEhrQueryRequestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,24 +64,23 @@ import org.springframework.web.bind.annotation.RestController;
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class OpenehrQueryController extends BaseController implements QueryApiSpecification {
 
+    // request parameter
     private static final String QUERY_PARAMETERS = "query_parameters";
-    private static final String FETCH = "fetch";
-    private static final String OFFSET = "offset";
+    private static final String FETCH_PARAM = "fetch";
+    private static final String OFFSET_PARAM = "offset";
+    private static final String Q_PARAM = "q";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final AqlQueryService aqlQueryService;
     private final StoredQueryService storedQueryService;
-    private final StatusService statusService;
-
-    @Value("${ehrbase.rest.aql.response.generator-details-enabled:false}")
-    boolean generatorDetailsEnabled = false;
+    private final AqlQueryContext aqlQueryContext;
 
     public OpenehrQueryController(
-            AqlQueryService aqlQueryService, StoredQueryService storedQueryService, StatusService statusService) {
+            AqlQueryService aqlQueryService, StoredQueryService storedQueryService, AqlQueryContext aqlQueryContext) {
         this.aqlQueryService = aqlQueryService;
         this.storedQueryService = storedQueryService;
-        this.statusService = statusService;
+        this.aqlQueryContext = aqlQueryContext;
     }
 
     /**
@@ -95,28 +89,34 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     @Override
     @GetMapping(path = "/aql")
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestParam(name = "q") String queryString,
-            // FIXME possible validation for [offset|row] >= 0
-            @RequestParam(name = OFFSET, required = false) Integer offset,
-            @RequestParam(name = FETCH, required = false) Integer fetch,
+            @RequestParam(name = Q_PARAM) String queryText,
+            @RequestParam(name = OFFSET_PARAM, required = false) Integer offset,
+            @RequestParam(name = FETCH_PARAM, required = false) Integer fetch,
             @RequestParam(name = QUERY_PARAMETERS, required = false) Map<String, Object> queryParameters,
             @RequestHeader(name = ACCEPT, required = false) String accept) {
 
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
-        // get the query and pass it to the service
-        QueryResultDto queryResult = invoke(
-                queryString,
-                queryParameters,
-                Optional.ofNullable(fetch).map(Integer::longValue),
-                Optional.ofNullable(offset).map(Integer::longValue));
+        // validate received query
+        if (StringUtils.isBlank(queryText)) {
+            throw new InvalidApiParameterException("No query provided.");
+        }
+
+        // prepare query
+        AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
+                queryText,
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(queryParameters),
+                Optional.ofNullable(fetch).map(Integer::longValue).orElse(null),
+                Optional.ofNullable(offset).map(Integer::longValue).orElse(null));
+
+        // execute query
+        QueryResultDto aqlQueryResult = aqlQueryService.query(queryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData =
-                createQueryResponse(queryString, queryResult, createLocationUri("query", "aql"));
+        QueryResponseData response = createQueryResponse(aqlQueryResult, queryText, createLocationUri("query", "aql"));
 
-        return ResponseEntity.ok(queryResponseData);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -127,30 +127,45 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             path = "/aql",
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<QueryResponseData> executeAdHocQuery(
-            @RequestBody Map<String, Object> queryRequest,
+            @RequestBody Map<String, Object> requestBody,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType) {
 
-        logger.debug("Got following input: {}", queryRequest);
+        logger.debug("Got following input: {}", requestBody);
 
-        // sanity check
-        Object rawQuery = queryRequest.get("q");
-        if (rawQuery == null) {
-            throw new InvalidApiParameterException("No aql query provided");
-        }
-        if (rawQuery instanceof ArrayList<?>) {
-            throw new InvalidApiParameterException("Multiple aql queries provided");
-        }
-        String queryString = (String) rawQuery;
+        // validate received query
+        Object rawQuery = requestBody.get(Q_PARAM);
+        String queryText =
+                switch (rawQuery) {
+                    case null -> throw new InvalidApiParameterException("No query provided.");
+                    case Collection<?> __ -> throw new InvalidApiParameterException("Multiple queries provided.");
+                    case String s -> {
+                        if (StringUtils.isBlank(s)) {
+                            throw new InvalidApiParameterException("No query provided.");
+                        } else yield s;
+                    }
+                    default -> throw new InvalidApiParameterException("Data type of query not supported.");
+                };
 
         // Enriches request attributes with aql for later audit processing
         HttpRestContext.register(QUERY_EXECUTE_ENDPOINT, Boolean.TRUE);
 
-        // get the query and pass it to the service
-        QueryResultDto queryResult = invoke(queryString, queryRequest);
+        Map<String, Object> params = OpenEhrQueryRequestUtils.getSubMap(requestBody, QUERY_PARAMETERS);
+
+        // prepare query
+        AqlQueryRequest queryRequest = AqlQueryRequest.prepare(
+                queryText,
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(params),
+                OpenEhrQueryRequestUtils.getOptionalLong(requestBody, FETCH_PARAM)
+                        .orElse(null),
+                OpenEhrQueryRequestUtils.getOptionalLong(requestBody, OFFSET_PARAM)
+                        .orElse(null));
+
+        // execute query
+        QueryResultDto aqlQueryResult = aqlQueryService.query(queryRequest);
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(queryString, queryResult);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, queryText, null);
 
         return ResponseEntity.ok(queryResponseData);
     }
@@ -163,8 +178,8 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
     public ResponseEntity<QueryResponseData> executeStoredQuery(
             @PathVariable(name = "qualified_query_name") String qualifiedQueryName,
             @PathVariable(name = "version", required = false) String version,
-            @RequestParam(name = OFFSET, required = false) Integer offset,
-            @RequestParam(name = FETCH, required = false) Integer fetch,
+            @RequestParam(name = OFFSET_PARAM, required = false) Integer offset,
+            @RequestParam(name = FETCH_PARAM, required = false) Integer fetch,
             @RequestParam(name = QUERY_PARAMETERS, required = false) Map<String, Object> queryParameters,
             @RequestHeader(name = ACCEPT, required = false) String accept) {
 
@@ -181,14 +196,9 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         // retrieve the stored query for execution
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
 
-        String queryString = queryDefinition.getQueryText();
-
-        // get the query and pass it to the service
-        QueryResultDto queryResult = invoke(
-                queryString,
-                queryParameters,
-                Optional.ofNullable(fetch).map(Integer::longValue),
-                Optional.ofNullable(offset).map(Integer::longValue));
+        // execute
+        QueryResultDto aqlQueryResult =
+                executeStoredQuery(queryDefinition, QueryExecutionMetadata.of(queryParameters, offset, fetch));
 
         // use the fully qualified metadata location
         Stream<String> pathSegments =
@@ -196,7 +206,7 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         URI locationUri = createLocationUri(pathSegments.toArray(String[]::new));
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(queryString, queryResult, locationUri);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, null, locationUri);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
@@ -216,27 +226,19 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
             @PathVariable(name = "version", required = false) String version,
             @RequestHeader(name = ACCEPT, required = false) String accept,
             @RequestHeader(name = CONTENT_TYPE) String contentType,
-            @RequestBody(required = false) Map<String, Object> queryRequest) {
+            @RequestBody(required = false) Map<String, Object> requestBody) {
 
-        logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, queryRequest);
+        logger.trace("postStoredQuery with the following input: {}, {}, {}", qualifiedQueryName, version, requestBody);
 
         // Enriches request attributes with aql for later audit processing
         createRestContext(qualifiedQueryName, version);
 
         QueryDefinitionResultDto queryDefinition = storedQueryService.retrieveStoredQuery(qualifiedQueryName, version);
-
-        String queryString = queryDefinition.getQueryText();
-
-        if (queryString == null) {
-            var message = MessageFormat.format("Could not retrieve AQL {0}/{1}", qualifiedQueryName, version);
-            throw new ObjectNotFoundException("AQL", message);
-        }
-
-        // get the query and pass it to the service
-        QueryResultDto queryResult = invoke(queryString, queryRequest);
+        QueryResultDto aqlQueryResult =
+                executeStoredQuery(queryDefinition, QueryExecutionMetadata.fromRequestBody(requestBody));
 
         // create and return response
-        QueryResponseData queryResponseData = createQueryResponse(queryString, queryResult);
+        QueryResponseData queryResponseData = createQueryResponse(aqlQueryResult, null, null);
         setQueryName(queryDefinition, queryResponseData);
 
         HttpRestContext.register(QUERY_ID, queryDefinition.getQualifiedName());
@@ -244,80 +246,60 @@ public class OpenehrQueryController extends BaseController implements QueryApiSp
         return ResponseEntity.ok(queryResponseData);
     }
 
-    private void createRestContext(String qualifiedName, @Nullable String version) {
+    protected QueryResultDto executeStoredQuery(
+            QueryDefinitionResultDto queryDefinition, QueryExecutionMetadata executionMetadata) {
+
+        AqlQueryRequest queryRequest = AqlQueryRequest.prepareNamed(
+                queryDefinition.getQueryText(),
+                queryDefinition.getQualifiedName() + "/" + queryDefinition.getVersion(),
+                OpenEhrQueryRequestUtils.rewriteExplicitParameterTypes(executionMetadata.queryParameters()),
+                executionMetadata.fetch(),
+                executionMetadata.offset());
+
+        return aqlQueryService.query(queryRequest);
+    }
+
+    protected QueryResponseData createQueryResponse(QueryResultDto aqlQueryResult, String queryString, URI location) {
+        final QueryResponseData queryResponseData = new QueryResponseData(aqlQueryResult);
+        queryResponseData.setQuery(queryString);
+        queryResponseData.setMeta(aqlQueryContext.createMetaData(location));
+        return queryResponseData;
+    }
+
+    protected record QueryExecutionMetadata(Map<String, Object> queryParameters, Long offset, Long fetch) {
+        static QueryExecutionMetadata of(Map<String, Object> queryParameters, Integer offset, Integer fetch) {
+            return new QueryExecutionMetadata(
+                    queryParameters,
+                    Optional.ofNullable(offset).map(Integer::longValue).orElse(null),
+                    Optional.ofNullable(fetch).map(Integer::longValue).orElse(null));
+        }
+
+        static QueryExecutionMetadata fromRequestBody(Map<String, Object> requestBody) {
+            Map<String, Object> queryParameters = OpenEhrQueryRequestUtils.getSubMap(requestBody, QUERY_PARAMETERS);
+
+            return new QueryExecutionMetadata(
+                    queryParameters,
+                    OpenEhrQueryRequestUtils.getOptionalLong(requestBody, OFFSET_PARAM)
+                            .orElse(null),
+                    OpenEhrQueryRequestUtils.getOptionalLong(requestBody, FETCH_PARAM)
+                            .orElse(null));
+        }
+    }
+
+    private void createRestContext(String qualifiedName, String version) {
         HttpRestContext.register(
                 QUERY_EXECUTE_ENDPOINT,
                 Boolean.TRUE,
                 HttpRestContext.LOCATION,
-                fromPath("").pathSegment(QUERY, qualifiedName, version).build().toString());
-    }
-
-    @SuppressWarnings("unchecked")
-    private QueryResultDto invoke(@NonNull String queryString, Map<String, Object> requestBody) {
-
-        requestBody = Optional.ofNullable(requestBody).orElseGet(Map::of);
-        Map<String, Object> queryParameters = Optional.ofNullable(requestBody.get(QUERY_PARAMETERS))
-                .map(p -> (Map<String, Object>) p)
-                .orElseGet(Map::of);
-        Optional<Long> fetch = optionalLong(FETCH, requestBody);
-        Optional<Long> offset = optionalLong(OFFSET, requestBody);
-
-        return invoke(queryString, queryParameters, fetch, offset);
-    }
-
-    private QueryResultDto invoke(
-            @NonNull String queryString, Map<String, Object> parameters, Optional<Long> fetch, Optional<Long> offset) {
-
-        AqlQueryRequest aqlQueryRequest =
-                new AqlQueryRequest(queryString, parameters, fetch.orElse(null), offset.orElse(null));
-        return aqlQueryService.query(aqlQueryRequest);
-    }
-
-    private static Optional<Long> optionalLong(String name, Map<String, Object> params) {
-        return Optional.of(name).map(params::get).map(o -> switch (o) {
-            case Integer i -> i.longValue();
-            case Long l -> l;
-            case String s -> {
-                try {
-                    yield Long.valueOf(s);
-                } catch (NumberFormatException e) {
-                    throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, s));
-                }
-            }
-            default -> throw new InvalidApiParameterException("invalid '%s' value '%s'".formatted(name, o));
-        });
+                fromPath("")
+                        .pathSegment(Q_PARAM, qualifiedName, version)
+                        .build()
+                        .toString());
     }
 
     private static void setQueryName(
             QueryDefinitionResultDto queryDefinitionResultDto, QueryResponseData queryResponseData) {
         queryResponseData.setName(
                 queryDefinitionResultDto.getQualifiedName() + "/" + queryDefinitionResultDto.getVersion());
-    }
-
-    private QueryResponseData createQueryResponse(String requestedAQL, QueryResultDto resultDto) {
-        return createQueryResponse(requestedAQL, resultDto, null);
-    }
-
-    protected QueryResponseData createQueryResponse(
-            @SuppressWarnings("unused") String requestedAQL, QueryResultDto resultDto, @Nullable URI location) {
-
-        // FIXME adjust org.ehrbase.openehr.sdk:response.dto to not use the query = QueryResultDTO.executedAQL
-        //      because that's wrong - the QueryResponseData.query shall be the original input aql not the performed
-        // one.
-        final QueryResponseData queryResponseData = new QueryResponseData(resultDto);
-        // FIXME this stores the requested AQL query in the response `p` properties - this will be done in an upcoming
-        //       ticket
-        // queryResponseData.setQuery(requestedAQL);
-        MetaData metaData = new MetaData(resultDto);
-        metaData.setHref(Optional.ofNullable(location).map(URI::toASCIIString).orElse(null));
-        // should be extracted from an application property. The current value is 1.0.4
-        metaData.setSchemaVersion(RmConstants.RM_VERSION_1_0_4);
-        queryResponseData.setMeta(metaData);
-
-        if (generatorDetailsEnabled) {
-            metaData.setGenerator("EHRBase/%s".formatted(statusService.getEhrbaseVersion()));
-        }
-
-        return queryResponseData;
     }
 }

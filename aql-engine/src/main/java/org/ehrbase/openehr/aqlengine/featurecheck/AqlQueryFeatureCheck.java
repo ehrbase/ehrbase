@@ -17,27 +17,44 @@
  */
 package org.ehrbase.openehr.aqlengine.featurecheck;
 
+import org.ehrbase.api.dto.AqlQueryContext;
+import org.ehrbase.api.dto.AqlQueryRequest;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.openehr.aqlengine.AqlConfigurationProperties;
+import org.ehrbase.openehr.aqlengine.aql.AqlQueryParsingPostProcessor;
 import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.springframework.stereotype.Component;
 
 @Component
-public final class AqlQueryFeatureCheck {
+public final class AqlQueryFeatureCheck implements AqlQueryParsingPostProcessor {
 
     private final FeatureCheck[] featureChecks;
 
-    public AqlQueryFeatureCheck(SystemService systemService) {
+    public AqlQueryFeatureCheck(
+            SystemService systemService,
+            AqlConfigurationProperties aqlConfigurationProperties,
+            AqlQueryContext aqlQueryContext) {
         this.featureChecks = new FeatureCheck[] {
-            new FromCheck(systemService),
+            new FromCheck(systemService, aqlConfigurationProperties, aqlQueryContext),
             new SelectCheck(systemService),
             new WhereCheck(systemService),
             new OrderByCheck(systemService)
         };
     }
 
-    public void ensureQuerySupported(AqlQuery aqlQuery) {
+    void ensureQuerySupported(AqlQuery aqlQuery) {
         for (FeatureCheck featureCheck : featureChecks) {
             featureCheck.ensureSupported(aqlQuery);
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return FEATURE_CHECK_PRECEDENCE;
+    }
+
+    @Override
+    public void afterParseAql(final AqlQuery aqlQuery, final AqlQueryRequest request, final AqlQueryContext ctx) {
+        ensureQuerySupported(aqlQuery);
     }
 }

@@ -34,7 +34,9 @@ spring:
     name: ehrbase
 
   cache:
-    type: CAFFEINE # change to type redis if usage of redis distributed cache is intended
+    # change to type redis if usage of redis distributed cache is intended. Also turn on management.health.redis.enabled
+    # if needed.
+    type: CAFFEINE
 
   # the following redis properties are only used if the cache.type=redis
   data:
@@ -59,6 +61,8 @@ spring:
     ext-schema: ext
     ehr-location: classpath:db/migration/ehr
     ext-location: classpath:db/migration/ext
+    ehr-strategy: MIGRATE
+    ext-strategy: MIGRATE
     user: ehrbase
     password: ehrbase
 
@@ -79,11 +83,44 @@ security:
 
 
 ehrbase:
+  validation:
+    check-for-extra-nodes: true
+    validate-rm-constraints: true
+  aql:
+    # Improves AQL performance for paths containing consecutive at-/id-codes
+    # May produce unexpected results if the paths do not follow the archetype definitions
+    path-node-skipping: false
+    # CONTAINS with a node predicate excludes results from nested archetypes
+    archetype-local-node-predicates: true
+    pg-llj-workaround: true
+    experimental:
+      aql-on-folder:
+        enabled: false
+  template:
+    # Allows to override templates using POST
+    allow-overwrite: false
   rest:
     aql:
+      # allows to control query execution using debug params
+      debugging-enabled: false
       response:
         # add an information about the running ehrbase instance to the AQL meta.generator property
         generator-details-enabled: false
+        # include executed_aql in the AQL meta information
+        executed-aql-enabled: true
+    experimental:
+      tags:
+        enabled: false
+        context-path: /rest/experimental/tags
+    ehrscape:
+      enabled: false
+  security:
+    # Configuration of actuator for reporting and health endpoints
+    management:
+      endpoints:
+        web:
+          # disables CSRF protection on management endpoints on base-path to use a client like curl or similar
+          csrf-validation-enabled: true
 
 
 httpclient:
@@ -91,7 +128,8 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  template-init-on-startup: true
+  template-init-on-startup: false
+  stored-query-init-on-startup: false
   user-id-cache-config:
     expire-after-access:
       duration: 300
@@ -100,10 +138,6 @@ cache:
     expire-after-write:
       duration: 300
       unit: SECONDS
-
-
-system:
-  allow-template-overwrite: false
 
 openehr-api:
   context-path: /rest/openehr
@@ -115,10 +149,10 @@ admin-api:
 # Logging Properties
 logging:
   level:
-    org.ehcache: info
     org.jooq: info
     org.jooq.Constants: warn
     org.springframework: info
+    org.springframework.security.web.DefaultSecurityFilterChain: warn
   pattern:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 
@@ -147,10 +181,10 @@ management:
       base-path: '/management'
       exposure:
         include: 'env, health, info, metrics, prometheus'
-        # The access to management endpoints can be controlled
-        # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
-        # PRIVATE - endpoints are locked behind an authorization, but are available to any role
-        # PUBLIC - endpoints can be accessed without an authorization
+      # The access to management endpoints can be controlled
+      # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
+      # PRIVATE - endpoints are locked behind an authorization, but are available to any role
+      # PUBLIC - endpoints can be accessed without an authorization
       access: ADMIN_ONLY
   # Per endpoint settings
   endpoint:
@@ -178,11 +212,18 @@ management:
     metrics:
       # Enable / disable metrics endpoint
       enabled: false
-    # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
+  # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
   prometheus:
     metrics:
       export:
         enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+  # turn of redis per default, shall be enabled in case spring.cache.type: REDIS is used
+  health:
+    redis:
+      enabled: false
 
 # External Terminology Validation Properties
 validation:

@@ -27,7 +27,7 @@ import org.springframework.http.ResponseEntity;
 /**
  * OpenAPI specification for openEHR REST API QUERY resource.
  */
-@Tag(name = "Query")
+@Tag(name = "QUERY")
 @SuppressWarnings({"unused", "java:S107"})
 public interface QueryApiSpecification {
 
@@ -58,9 +58,7 @@ public interface QueryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/query.html#query-execute-query-post"))
     ResponseEntity<QueryResponseData> executeAdHocQuery(
-            Map<String, Object> queryRequest, // FIXME: Create DTO
-            String accept,
-            String contentType);
+            Map<String, Object> queryRequest, String accept, String contentType);
 
     /**
      * Execute stored query.

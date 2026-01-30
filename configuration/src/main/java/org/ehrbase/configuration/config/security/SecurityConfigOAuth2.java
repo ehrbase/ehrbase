@@ -19,6 +19,7 @@ package org.ehrbase.configuration.config.security;
 
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
+import jakarta.servlet.DispatcherType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -55,8 +56,8 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
     public SecurityConfigOAuth2(
             SecurityProperties securityProperties,
             OAuth2ResourceServerProperties oAuth2Properties,
-            WebEndpointProperties managementWebEndpointProperties) {
-        super(managementWebEndpointProperties);
+            WebEndpointProperties webEndpointProperties) {
+        super(webEndpointProperties);
         this.securityProperties = securityProperties;
         this.oAuth2Properties = oAuth2Properties;
     }
@@ -78,11 +79,12 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
         return http.addFilterBefore(new SecurityFilter(), BearerTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> {
 
-                    // respond with proper 404 instead of 401 when reaching a route that does not exist. To understand
-                    // this case, since Spring 6 all paths are secured, when you use any path doesn't exist that will
-                    // match to "/error" but "/error" have been secured, so you need to add "/error" to your permitAll()
-                    // config to respond with a proper 404.
-                    auth = auth.requestMatchers(antMatcher("/error/**")).permitAll();
+                    // Permit dispatcher types forward and error
+                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
+                            .permitAll();
+
+                    // Permit welcome page and img
+                    auth.requestMatchers("/", "/img/**").permitAll();
 
                     // secure /rest/admin/** so that only admins can access it
                     auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(adminRole);

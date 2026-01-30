@@ -29,6 +29,7 @@ import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
@@ -124,7 +125,7 @@ public class CompositionController extends BaseController {
             version = getCompositionVersion(compositionUid); // version number is inorder: 1, 2, 3 etc.
         }
 
-        UUID ehrId = compositionService.getEhrId(identifier);
+        UUID ehrId = getEhrIdForComposition(identifier);
         Optional<CompositionDto> compositionDto =
                 compositionService.retrieve(ehrId, identifier, version).map(c -> CompositionService.from(ehrId, c));
         if (compositionDto.isPresent()) {
@@ -140,7 +141,7 @@ public class CompositionController extends BaseController {
             String fullUid = compositionDto.get().getUuid() + "::"
                     + systemService.getSystemId() + "::"
                     + compositionService.getLastVersionNumber(
-                            compositionDto.get().getUuid());
+                            ehrId, compositionDto.get().getUuid());
             responseDto.setCompositionUid(fullUid);
             responseDto.setEhrId(compositionDto.get().getEhrId());
             Meta meta = buildMeta(responseDto.getCompositionUid());
@@ -178,7 +179,7 @@ public class CompositionController extends BaseController {
 
         ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
         UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
-        UUID ehrId = compositionService.getEhrId(compositionIdentifier);
+        UUID ehrId = getEhrIdForComposition(compositionIdentifier);
 
         var compoObj = compositionService.buildComposition(content, format, templateId);
 
@@ -207,7 +208,7 @@ public class CompositionController extends BaseController {
 
         ObjectVersionId objectVersionId = getObjectVersionId(compositionUid);
         UUID compositionIdentifier = getCompositionIdentifier(compositionUid);
-        UUID ehrId = compositionService.getEhrId(compositionIdentifier);
+        UUID ehrId = getEhrIdForComposition(compositionIdentifier);
 
         compositionService.delete(ehrId, objectVersionId);
         ActionRestResponseData responseData = new ActionRestResponseData();
@@ -224,7 +225,7 @@ public class CompositionController extends BaseController {
         return new ObjectVersionId(
                 compositionId.toString(),
                 systemService.getSystemId(),
-                Integer.toString(compositionService.getLastVersionNumber(compositionId)));
+                Integer.toString(compositionService.getLastVersionNumber(null, compositionId)));
     }
 
     private Meta buildMeta(String compositionUid) {
@@ -260,5 +261,12 @@ public class CompositionController extends BaseController {
         } else {
             return getLatestVersionId(UUID.fromString(compositionUid));
         }
+    }
+
+    private UUID getEhrIdForComposition(UUID compositionUid) {
+        return compositionService
+                .getEhrIdForComposition(compositionUid)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "Composition", "Composition with id %s does not exist".formatted(compositionUid)));
     }
 }

@@ -27,17 +27,20 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.AslStructureColumn;
-import org.ehrbase.openehr.aqlengine.asl.model.condition.AslDescendantCondition;
+import org.ehrbase.openehr.aqlengine.asl.model.condition.AslFieldFieldQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslNotNullQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.condition.AslQueryCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslFolderItemIdVirtualField;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslFolderItemJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
+import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoinCondition;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslEncapsulatingQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
@@ -52,21 +55,29 @@ import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.Logical
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.RmTypeAlias;
 import org.ehrbase.openehr.dbformat.StructureRmType;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentSetOperatorSymbol;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentVersionExpression;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.jooq.JoinType;
 
-final class AslFromCreator {
+public final class AslFromCreator {
+
     private final AliasProvider aliasProvider;
     private final KnowledgeCacheService knowledgeCacheService;
+    private final boolean archetypeLocalNodePredicates;
 
-    AslFromCreator(AliasProvider aliasProvider, KnowledgeCacheService knowledgeCacheService) {
+    public AslFromCreator(
+            AliasProvider aliasProvider,
+            KnowledgeCacheService knowledgeCacheService,
+            final boolean archetypeLocalNodePredicates1) {
         this.aliasProvider = aliasProvider;
         this.knowledgeCacheService = knowledgeCacheService;
+        this.archetypeLocalNodePredicates = archetypeLocalNodePredicates1;
     }
 
     @FunctionalInterface
-    interface ContainsToOwnerProvider {
+    public interface ContainsToOwnerProvider {
         OwnerProviderTuple get(ContainsWrapper contains);
     }
 
@@ -74,7 +85,7 @@ final class AslFromCreator {
 
         final Map<ContainsWrapper, OwnerProviderTuple> containsToStructureSubQuery = new HashMap<>();
         ContainsChain fromChain = queryWrapper.containsChain();
-        addContainsChain(rootQuery, null, fromChain, false, containsToStructureSubQuery);
+        addContainsChain(rootQuery, null, null, fromChain, false, containsToStructureSubQuery);
 
         // add contains condition to rootQuery
         buildContainsCondition(fromChain, false, containsToStructureSubQuery).ifPresent(rootQuery::addConditionAnd);
@@ -108,19 +119,31 @@ final class AslFromCreator {
     private void addContainsChain(
             AslEncapsulatingQuery encapsulatingQuery,
             AslStructureQuery lastParent,
+            ContainsWrapper lastParentWrapper,
             ContainsChain containsChain,
             boolean useLeftJoin,
             Map<ContainsWrapper, OwnerProviderTuple> containsToStructureSubQuery) {
 
         AslStructureQuery currentParent = lastParent;
+        ContainsWrapper currentParentWrapper = lastParentWrapper;
         for (ContainsWrapper descriptor : containsChain.chain()) {
             currentParent = addContainsSubquery(
                     encapsulatingQuery, useLeftJoin, containsToStructureSubQuery, descriptor, currentParent);
+            currentParentWrapper = descriptor;
         }
 
         if (containsChain.hasTrailingSetOperation()) {
+            RmContainsWrapper parentWrapper = (currentParentWrapper instanceof VersionContainsWrapper vcw)
+                    ? vcw.child()
+                    : (RmContainsWrapper) currentParentWrapper;
+
             addContainsChainSetOperator(
-                    encapsulatingQuery, containsChain, useLeftJoin, containsToStructureSubQuery, currentParent);
+                    encapsulatingQuery,
+                    containsChain,
+                    useLeftJoin,
+                    containsToStructureSubQuery,
+                    currentParent,
+                    parentWrapper);
         }
     }
 
@@ -144,13 +167,21 @@ final class AslFromCreator {
             }
         }
 
-        boolean hasEhrParent = currentParent != null && currentParent.getType() == AslSourceRelation.EHR;
-
+        AslSourceRelation parentType = Optional.ofNullable(currentParent)
+                .map(AslStructureQuery::getType)
+                .orElse(null);
         AslSourceRelation sourceRelation = getSourceRelation(usedWrapper, currentParent);
+
         boolean requiresVersionJoin;
-        if (hasEhrParent || isOriginalVersion) {
+        if (isOriginalVersion || parentType == AslSourceRelation.EHR) {
             requiresVersionJoin = true;
-        } else if (sourceRelation == AslSourceRelation.EHR || currentParent != null) {
+        }
+        // In case we have FOLDER CONTAINS COMPOSITION c it could be that the c/uid/value is selected. In such cases
+        // EncapsulatingQueryUtils.sqlSelectFieldForExtractedColumn uses the VO_ID and adds the COMP_VERSION.SYS_VERSION
+        // field what is only available in the comp_version table.
+        else if (parentType == AslSourceRelation.FOLDER && sourceRelation == AslSourceRelation.COMPOSITION) {
+            requiresVersionJoin = true;
+        } else if (currentParent != null || sourceRelation == AslSourceRelation.EHR) {
             requiresVersionJoin = false;
         } else {
             // Some paths for structure roots require access to the version table
@@ -161,10 +192,9 @@ final class AslFromCreator {
                     .isPresent();
         }
 
-        final AslStructureQuery structureQuery = containsSubquery(usedWrapper, requiresVersionJoin, sourceRelation);
-        structureQuery.setRepresentsOriginalVersionExpression(isOriginalVersion);
-
-        addContainsSubqueryToContainer(encapsulatingQuery, structureQuery, currentParent, useLeftJoin);
+        final AslStructureQuery structureQuery =
+                containsSubquery(usedWrapper, requiresVersionJoin, sourceRelation, isOriginalVersion);
+        addContainsSubqueryToContainer(usedWrapper, encapsulatingQuery, structureQuery, currentParent, useLeftJoin);
 
         OwnerProviderTuple ownerProviderTuple = new OwnerProviderTuple(structureQuery, structureQuery);
         containsToStructureSubQuery.put(usedWrapper, ownerProviderTuple);
@@ -174,24 +204,38 @@ final class AslFromCreator {
         return structureQuery;
     }
 
-    private static void addContainsSubqueryToContainer(
+    private void addContainsSubqueryToContainer(
+            RmContainsWrapper wrapper,
             AslEncapsulatingQuery container,
             AslStructureQuery toAdd,
             AslStructureQuery joinParent,
             boolean asLeftJoin) {
-        AslJoin join;
+
+        final AslJoin join;
         if (joinParent == null || container.getChildren().isEmpty()) {
             join = null;
         } else {
-            join = new AslJoin(
-                    joinParent,
-                    asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN,
-                    toAdd,
-                    new AslDescendantCondition(
-                                    joinParent.getType(), joinParent, joinParent, toAdd.getType(), toAdd, toAdd)
-                            .provideJoinCondition());
+            JoinType joinType = asLeftJoin ? JoinType.LEFT_OUTER_JOIN : JoinType.JOIN;
+            join = new AslJoin(joinParent, joinType, toAdd, aslJoinCondition(wrapper, toAdd, joinParent));
         }
         container.addChild(toAdd, join);
+    }
+
+    private AslJoinCondition[] aslJoinCondition(
+            RmContainsWrapper childWrapper, AslStructureQuery toAdd, AslStructureQuery joinParent) {
+        AslSourceRelation parentType = joinParent.getType();
+        AslSourceRelation targetType = toAdd.getType();
+        if (parentType == AslSourceRelation.FOLDER && targetType == AslSourceRelation.COMPOSITION) {
+            return new AslJoinCondition[] {
+                new AslFolderItemJoinCondition(joinParent, joinParent, targetType, toAdd, toAdd)
+            };
+        }
+
+        RmContainsWrapper parentWrapper = (childWrapper.getParent() instanceof RmContainsWrapper rcw) ? rcw : null;
+        return AslUtils.descendantJoinConditionProviders(
+                        joinParent, joinParent, parentWrapper, toAdd, toAdd, childWrapper, archetypeLocalNodePredicates)
+                .map(AslFieldFieldQueryCondition::provideJoinCondition)
+                .toArray(AslJoinCondition[]::new);
     }
 
     private void addContainsChainSetOperator(
@@ -199,23 +243,48 @@ final class AslFromCreator {
             ContainsChain containsChain,
             boolean asLeftJoin,
             Map<ContainsWrapper, OwnerProviderTuple> containsToStructureSubQuery,
-            AslStructureQuery currentParent) {
+            AslStructureQuery currentParent,
+            RmContainsWrapper parentWrapper) {
         ContainsSetOperationWrapper setOperator = containsChain.trailingSetOperation();
         for (ContainsChain operand : setOperator.operands()) {
             boolean requiresOrOperandSubQuery =
                     setOperator.operator() == ContainmentSetOperatorSymbol.OR && operand.size() > 1;
 
             if (requiresOrOperandSubQuery) {
+                ContainsWrapper childDescriptor = operand.chain().getFirst(); // can not be empty here
+                RmContainsWrapper childWrapper = (childDescriptor instanceof VersionContainsWrapper vcw)
+                        ? vcw.child()
+                        : (RmContainsWrapper) childDescriptor;
+
                 // OR operands with chaining inside need to be mapped to their own subquery.
                 // Else the nested contains chain would not be isolated from the parent
                 // and the outer left join would bleed into it.
-                var orSq = buildOrOperandAsEncapsulatingQuery(containsToStructureSubQuery, currentParent, operand);
-                currentQuery.addChild(orSq, new AslJoin(currentParent, JoinType.LEFT_OUTER_JOIN, orSq));
+                AslEncapsulatingQuery orSq = buildOrOperandAsEncapsulatingQuery(
+                        containsToStructureSubQuery, currentParent, parentWrapper, operand);
+                AslStructureQuery child =
+                        (AslStructureQuery) orSq.getChildren().getFirst().getLeft();
+                currentQuery.addChild(
+                        orSq,
+                        new AslJoin(
+                                currentParent,
+                                JoinType.LEFT_OUTER_JOIN,
+                                orSq,
+                                AslUtils.descendantJoinConditionProviders(
+                                                currentParent,
+                                                currentParent,
+                                                parentWrapper,
+                                                orSq,
+                                                child,
+                                                childWrapper,
+                                                archetypeLocalNodePredicates)
+                                        .map(AslFieldFieldQueryCondition::provideJoinCondition)
+                                        .toArray(AslJoinCondition[]::new)));
             } else {
                 // AND operands and simple (no chaining inside) OR operands can be joined directly
                 addContainsChain(
                         currentQuery,
                         currentParent,
+                        parentWrapper,
                         operand,
                         asLeftJoin || setOperator.operator() == ContainmentSetOperatorSymbol.OR,
                         containsToStructureSubQuery);
@@ -226,19 +295,15 @@ final class AslFromCreator {
     private AslEncapsulatingQuery buildOrOperandAsEncapsulatingQuery(
             Map<ContainsWrapper, OwnerProviderTuple> containsToStructureSubQuery,
             AslStructureQuery currentParent,
+            final RmContainsWrapper parentWrapper,
             ContainsChain operand) {
         AslEncapsulatingQuery orSq = new AslEncapsulatingQuery(aliasProvider.uniqueAlias("or_sq"));
         HashMap<ContainsWrapper, OwnerProviderTuple> subQueryMap = new HashMap<>();
 
-        addContainsChain(orSq, currentParent, operand, false, subQueryMap);
+        addContainsChain(orSq, currentParent, parentWrapper, operand, false, subQueryMap);
 
         // add contains condition to orSq
         buildContainsCondition(operand, false, subQueryMap).ifPresent(orSq::addStructureCondition);
-        // constrain first structure query as descendant
-        AslStructureQuery child =
-                ((AslStructureQuery) orSq.getChildren().getFirst().getLeft());
-        child.addConditionAnd(new AslDescendantCondition(
-                currentParent.getType(), currentParent, currentParent, child.getType(), child, child));
 
         // provider must be orSq
         subQueryMap.forEach((k, v) -> containsToStructureSubQuery.put(k, new OwnerProviderTuple(v.owner(), orSq)));
@@ -247,42 +312,62 @@ final class AslFromCreator {
     }
 
     private AslStructureQuery containsSubquery(
-            RmContainsWrapper containsWrapper, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
+            RmContainsWrapper containsWrapper,
+            boolean requiresVersionJoin,
+            AslSourceRelation sourceRelation,
+            final boolean isOriginalVersion) {
         // e.g. "sCO_c_1"
+        String rmType = containsWrapper.getRmType();
         final String sAlias = aliasProvider.uniqueAlias("s"
-                + RmTypeAlias.optionalAlias(containsWrapper.getRmType()).orElse(containsWrapper.getRmType())
+                + RmTypeAlias.optionalAlias(rmType).orElse(rmType)
                 + Optional.of(containsWrapper)
                         .map(ContainsWrapper::alias)
                         .map(a -> "_" + a)
                         .orElse(""));
 
         final List<String> rmTypes;
-        if (RmConstants.EHR.equals(containsWrapper.getRmType())) {
+        boolean isRoot;
+        if (RmConstants.EHR.equals(rmType)) {
             rmTypes = List.of(RmConstants.EHR);
+            isRoot = false;
         } else {
             // We only support structure types therefore we can ignore all non-structure descendants
-            rmTypes = AncestorStructureRmType.byTypeName(containsWrapper.getRmType())
+            rmTypes = AncestorStructureRmType.byTypeName(rmType)
                     .map(AncestorStructureRmType::getDescendants)
                     .map(s -> s.stream().distinct().map(StructureRmType::name).toList())
                     .orElseGet(
                             () -> List.of(containsWrapper.getStructureRmType().name()));
+
+            // Folder may be root, but is recursive
+            isRoot = RmConstants.EHR_STATUS.equals(rmType) || RmConstants.COMPOSITION.equals(rmType);
         }
         final List<AslField> fields = fieldsForContainsSubquery(containsWrapper, requiresVersionJoin, sourceRelation);
-        AslStructureQuery aslStructureQuery =
-                new AslStructureQuery(sAlias, sourceRelation, fields, rmTypes, null, requiresVersionJoin);
+
+        AslStructureQuery aslStructureQuery = new AslStructureQuery(
+                sAlias,
+                sourceRelation,
+                fields,
+                rmTypes,
+                isRoot ? List.of() : rmTypes,
+                null,
+                requiresVersionJoin,
+                isOriginalVersion,
+                isRoot);
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
                                 c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
+
+        // num = 0 condition for roots gets added by the AqlSqlQueryBuilder
+
         return aslStructureQuery;
     }
 
-    @Nonnull
     private static List<AslField> fieldsForContainsSubquery(
-            RmContainsWrapper nextDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
+            RmContainsWrapper currentDesc, boolean requiresVersionJoin, AslSourceRelation sourceRelation) {
         final List<AslField> fields = new ArrayList<>();
-        if (RmConstants.EHR.equals(nextDesc.getRmType())) {
+        if (RmConstants.EHR.equals(currentDesc.getRmType())) {
             fields.add(new AslColumnField(UUID.class, "id", null, false, AslExtractedColumn.EHR_ID));
             fields.add(new AslColumnField(OffsetDateTime.class, "creation_date", null, false, null));
         } else {
@@ -301,6 +386,33 @@ final class AslFromCreator {
                             .isPresent())
                     .map(AslStructureColumn::field)
                     .forEach(fields::add);
+
+            // (Only) for Compositions version.root_concept mirrors the data.entity_concept of the COMPOSITION row
+            if (requiresVersionJoin && RmConstants.COMPOSITION.equals(currentDesc.getRmType())) {
+                fields.add(new AslColumnField(
+                        String.class,
+                        Tables.COMP_VERSION.ROOT_CONCEPT.getName(),
+                        null,
+                        true,
+                        AslExtractedColumn.ROOT_CONCEPT));
+            }
+
+            // (Only) for FOLDER containing COMPOSITIONs we include the data items/id/value
+            if (RmConstants.FOLDER.equals(currentDesc.getRmType())) {
+                boolean mustAddItemsField =
+                        switch (currentDesc.containment().getContains()) {
+                            case ContainmentClassExpression cce ->
+                                Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case ContainmentVersionExpression cve ->
+                                cve.getContains() instanceof ContainmentClassExpression cce
+                                        && Objects.equals(cce.getType(), RmConstants.COMPOSITION);
+                            case null -> false;
+                            default -> false;
+                        };
+                if (mustAddItemsField) {
+                    fields.add(new AslFolderItemIdVirtualField());
+                }
+            }
         }
         return fields;
     }

@@ -1,11 +1,11 @@
 name: "Build & Test"
 
 # we have multiple workflows - this helps to distinguish for them
-run-name: "${{ github.event.pull_request.title || github.head_ref }} - Build & Test"
+run-name: "${{ github.event.pull_request.title && github.event.pull_request.title || github.ref_name }} - Build & Test"
 
 on:
   push:
-    branches: [ develop, release/* ]
+    branches: [ master, develop, release/* ]
   pull_request:
     branches: [ develop ]
   workflow_dispatch:
@@ -13,9 +13,7 @@ on:
 env:
   JAVA_VERSION: 21
   JAVA_DISTRIBUTION: 'temurin'
-  IMAGE_NAME: ehrbase/ehrbase
-  IMAGE_TAG_BUILD: build
-  IMAGE_TAG_TEST: test
+  UPLOAD_PERF_HTML_REPORTS: true
 
 jobs:
 
@@ -26,19 +24,22 @@ jobs:
   build-maven:
     name: Build-Maven
     runs-on: ubuntu-latest
+    outputs:
+      # Map the step outputs to job outputs
+      ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup - Java 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: 'maven'
 
       - name: Setup - Dependency Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
@@ -49,10 +50,18 @@ jobs:
             deps-
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode --update-snapshots -Dmaven.test.failure.ignore=true verify package
+        run: mvn --batch-mode --update-snapshots --activate-profiles full verify
+
+      - name: Maven - Get Version
+        id: "get_version"
+        run: |
+          # evaluate project version
+          version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "EHRbase version [$version]"
+          echo "ehrbase-version=${version}" >> $GITHUB_OUTPUT  
 
       - name: Upload - Jar
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ehrbase-jar
           path: ./application/target/ehrbase.jar
@@ -62,7 +71,7 @@ jobs:
       # Upload created class files that are needed for the merged jacoco coverage in a later step
       - name: Upload - Class Files
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: java-class-files
           path: "**/target/classes/**/*.class"
@@ -70,170 +79,131 @@ jobs:
 
       - name: Upload - Jacoco Coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
-          name: jacoco-coverage-partial-assemble
+          name: jacoco-coverage-partial-build-maven
           path: "**/target/jacoco*.exec"
           if-no-files-found: error
 
-      - name: Collect - JUnit Reports
-        uses: dorny/test-reporter@v1
-        # Dependabot has not enough rights to add the report to the run.
-        if: ${{ github.actor != 'dependabot[bot]' }}
+      - name: Upload - Junit reports
+        uses: actions/upload-artifact@v6  # upload test results
+        if: success() || failure()        # run this step even if previous step failed
         with:
-          name: Unit Tests
+          name: junit-test-results
           path: '**/target/surefire-reports/*.xml'
-          reporter: java-junit
-          fail-on-error: 'true'
-          fail-on-empty: 'true'
 
   #
-  # Performs docker OCI image builds.
+  # Performs docker build and test images build.
   #
-  docker-oci-build:
-    name: Docker-OCI-Image
+  docker-build-test-image:
+    name: Docker Build And Test-Images
     runs-on: ubuntu-latest
     needs: [
       build-maven
     ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            Dockerfile
+        uses: actions/checkout@v6
 
       - name: Download - Jar
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ehrbase-jar
           path: ./application/target/
 
-      - name: Docker - Set up Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # build the release multi arch image
-      - name: Docker - Build OCI Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
-          outputs: type=oci,dest=${{ runner.temp }}/ehrbase-oci.tar
-
-      - name: Upload - OCI Image
-        uses: actions/upload-artifact@v4
-        with:
-          name: ehrbase-image-oci
-          path: ${{ runner.temp }}/ehrbase-oci.tar
-          if-no-files-found: error
-          retention-days: 1
-
-  #
-  # Performs docker test image builds.
-  #
-  docker-test-build:
-    name: Docker-Test-Image
-    runs-on: ubuntu-latest
-    needs: [
-      build-maven
-    ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download - Jar
-        uses: actions/download-artifact@v4
-        with:
-          name: ehrbase-jar
-          path: ./application/target/
-
-      # build the release image and load it. This is needed for the robot tests because Docker uses a legacy import
-      # format and is unable to use multi arch oci images (for now). As an alternative we could use podman in the future.
-      # podman load --quiet -i fedora.tar.gz
       - name: Docker - Build Base Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: Dockerfile
           load: true
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }}
+          tags: ehrbase/ehrbase:build
 
-      # Build the test image for the actual architecture. This is needed for the robot tests because Docker uses a
-      # legacy import format and is unable to use multi arch oci images (for now). As an alternative we could use
-      # podman in the future. We also use plain docker build here because buildx does no use the local image in the
-      # FROM clause.
       - name: Docker - Build Test Image
         run: | 
           docker build \
-            --tag ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }} \
-            --build-arg EHRBASE_IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_BUILD }} \
+            --tag ehrbase/ehrbase:test \
+            --build-arg EHRBASE_IMAGE=ehrbase/ehrbase:build \
             --file tests/DockerfileTest .
 
-      - name: Docker - Save Test Image
-        run: docker save --output ${{ runner.temp }}/ehrbase-test.tar ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }}
+      - name: Docker - Save Images
+        run: |
+          docker save --output ${{ runner.temp }}/ehrbase-test.tar ehrbase/ehrbase:test
+          docker save --output ${{ runner.temp }}/ehrbase-build.tar ehrbase/ehrbase:build
 
       - name: Upload - Test Image
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ehrbase-image-test
           path: ${{ runner.temp }}/ehrbase-test.tar
           if-no-files-found: error
           retention-days: 1
 
+      - name: Upload - Build Image
+        uses: actions/upload-artifact@v6
+        with:
+          name: ehrbase-image-build
+          path: ${{ runner.temp }}/ehrbase-build.tar
+          if-no-files-found: error
+          retention-days: 1
+
   #
   # Uses the ehrbase docker image from [build] to run the robot integrations against it.
   #
-  integration-test-run:
+  integration-test-server:
     runs-on: ubuntu-latest
     needs: [
-      docker-oci-build,
-      docker-test-build
+      docker-build-test-image
     ]
     strategy:
       fail-fast: false # ensure all tests run
       matrix:
         test-suite: [
-          # sanity checks
-          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity' },
-          # rest/openehr/v1/definition
-          { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template' },
-          { path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST' },
-          # rest/openehr/v1/ehr
-          { path: 'EHR_SERVICE_TESTS', name: 'EHR_SERVICE', tags: 'EHR_SERVICE' },
-          { path: 'EHR_STATUS_TESTS', name: 'EHR_STATUS', tags: 'EHR_STATUS' },
-          { path: 'DIRECTORY_TESTS', name: 'DIRECTORY', tags: 'directory' },
-          # rest/openehr/v1/ehr/{ehr_id}/contribution
-          { path: 'CONTRIBUTION_TESTS', name: 'CONTRIBUTION', tags: 'CONTRIBUTION' },
-          # rest/openehr/v1/ehr/{ehr_id}/composition
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_1', tags: 'compositionANDcomposition_create_1' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_2', tags: 'compositionANDcomposition_create_2' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_3', tags: 'compositionANDcomposition_create_3' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_4', tags: 'compositionANDcomposition_create_4' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_5', tags: 'compositionANDcomposition_create_5' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET', tags: 'compositionANDcomposition_get' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_UPDATE', tags: 'compositionANDcomposition_update' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_DELETE', tags: 'compositionANDcomposition_delete' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET_VERSIONED', tags: 'compositionANDcomposition_get_versioned' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_VALIDATION', tags: 'COMPOSITION_validation' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_HEADERS_CHECKS', tags: 'HeadersChecks' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_ISM_TRANSITIONS', tags: 'compositionANDcomposition_ism_transitions' },
-          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_WITH_DIFFERENT_TIME_ZONES', tags: 'COMPOSITION_dtz' },
-          # rest/openehr/v1/query/aql - could be split into individual sub-suite
-          { path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE' },
-          # rest/rest/ecis
-          { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag' },
-          { path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN' },
-          # TODO Still missing
-          # FHIR_TERMINOLOGY
-          # SECURITY_TESTS
+          ## Swagger EHRBase API endpoints checks
+          { path: 'SWAGGER_TESTS', name: 'SWAGGER_TESTS', tags: 'SWAGGER_EHRBASE', env: { 'AUTH_TYPE': 'NONE' } },
+          ## Basic and OUATH authorization type checks
+          { path: 'AUTH_TYPE_TESTS', name: 'BASIC_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
+          { path: 'AUTH_TYPE_TESTS', name: 'OAUTH_AUTH_TYPE_TESTS', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
+          ## sanity checks
+          { path: 'SANITY_TESTS', name: 'SANITY', tags: 'Sanity', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/openehr/v1/definition
+          { path: 'TEMPLATE_TESTS', name: 'TEMPLATE', tags: 'Template', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'STORED_QUERY_TESTS', name: 'STORED_QUERY', tags: 'stored_query', suite: 'TEST', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/openehr/v1/ehr
+          { path: 'EHR_SERVICE_TESTS', name: 'EHR_SERVICE', tags: 'EHR_SERVICE', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'EHR_STATUS_TESTS', name: 'EHR_STATUS', tags: 'EHR_STATUS', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'DIRECTORY_TESTS', name: 'DIRECTORY', tags: 'directory', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/openehr/v1/ehr/{ehr_id}/contribution
+          { path: 'CONTRIBUTION_TESTS', name: 'CONTRIBUTION', tags: 'CONTRIBUTION', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/openehr/v1/ehr/{ehr_id}/composition
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_1', tags: 'compositionANDcomposition_create_1', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_2', tags: 'compositionANDcomposition_create_2', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_3', tags: 'compositionANDcomposition_create_3', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_4', tags: 'compositionANDcomposition_create_4', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_CREATE_5', tags: 'compositionANDcomposition_create_5', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET', tags: 'compositionANDcomposition_get', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_UPDATE', tags: 'compositionANDcomposition_update', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_DELETE', tags: 'compositionANDcomposition_delete', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_GET_VERSIONED', tags: 'compositionANDcomposition_get_versioned', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_VALIDATION', tags: 'COMPOSITION_validation', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_HEADERS_CHECKS', tags: 'HeadersChecks', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_ISM_TRANSITIONS', tags: 'compositionANDcomposition_ism_transitions', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'COMPOSITION_TESTS', name: 'COMPOSITION_WITH_DIFFERENT_TIME_ZONES', tags: 'COMPOSITION_dtz', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/openehr/v1/query/aql - could be split into individual sub-suite
+          { path: 'AQL_TESTS', name: 'AQL', tags: 'AQL_TESTS_PACKAGE', env: { 'AUTH_TYPE': 'NONE' } },
+          ## rest/rest/ecis
+          { path: 'EHRSCAPE_TESTS', name: 'EHRSCAPE', tags: 'EhrScapeTag', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'ADMIN_TESTS', name: 'ADMIN', tags: 'ADMIN', env: { 'AUTH_TYPE': 'NONE' } },
+          { path: 'TAGS_TESTS', name: 'TAGS_TESTS', tags: 'TAGS_SUITES', env: { 'AUTH_TYPE': 'NONE' } },
+          ## TODO Still missing
+          ## FHIR_TERMINOLOGY
+          ## SECURITY_TESTS
         ]
     name: Robot (${{ matrix.test-suite.name }})
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: |
             tests
@@ -241,7 +211,7 @@ jobs:
             docker-compose.yml
 
       - name: Download - Test Image
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: ehrbase-image-test
           path: ${{ runner.temp }}
@@ -252,22 +222,49 @@ jobs:
       # image used by the docker-compose-int-test.yml
       - name: Docker Compose - Setup env
         run: |
-          echo "EHRBASE_IMAGE=${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG_TEST }}" >> $GITHUB_ENV
+          echo "EHRBASE_IMAGE=ehrbase/ehrbase:test" >> $GITHUB_ENV
           echo "JACOCO_RESULT_PATH=/app/coverage/jacoco-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}.exec" >> $GITHUB_ENV
 
+      - name: Modify .env.ehrbase file
+        run: |
+          echo "SECURITY_AUTHTYPE=${{ matrix.test-suite.env['AUTH_TYPE'] }}" >> .env.ehrbase
+          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
+          fi
+          echo "EHRBASE_REST_EHRSCAPE_ENABLED=true" >> .env.ehrbase
+          echo "EHRBASE_REST_EXPERIMENTAL_TAGS_ENABLED=true" >> .env.ehrbase
+          cat .env.ehrbase
+
       - name: Docker Compose - Starting
-        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+        run: |
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml up -d
+
+      - name: Wait for Keycloak to be ready
+        run: |
+          if [ "${{ matrix.test-suite.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            until curl -s http://localhost:8081/auth/realms/ehrbase; do
+              echo "Waiting for Keycloak..."
+              sleep 30
+            done
+            #curl -s http://localhost:8081/auth/realms/ehrbase/.well-known/openid-configuration
+          fi
+          docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml ps
 
       - name: Run - Robot Test-Suite
         run: |
           docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml run --remove-orphans --rm ehrbase-integration-tests runRobotTest \
             --name ${{ matrix.test-suite.name }} \
             --path ${{ matrix.test-suite.path }} \
-            --tags ${{ matrix.test-suite.tags }}
+            --tags ${{ matrix.test-suite.tags }} \
+            --env ${{ matrix.test-suite.env['AUTH_TYPE'] }}
 
       - name: Docker Compose - Logs ehrbase
         if: always()
         run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs ehrbase
+
+      - name: Docker Compose - Logs keycloak
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-int-test.yml logs keycloak
 
       - name: Docker Compose - Stopping
         if: always()
@@ -277,7 +274,7 @@ jobs:
 
       - name: Upload - Jacoco Coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: jacoco-coverage-partial-robot-${{ matrix.test-suite.path }}-${{ matrix.test-suite.name }}
           path: ./tests/coverage/jacoco*.exec
@@ -285,29 +282,208 @@ jobs:
 
       - name: Upload - Robot results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: robot-result-${{ matrix.test-suite.name }}
           path: ./tests/results/${{ matrix.test-suite.name }}/output.xml
           if-no-files-found: error
 
   #
-  # Collect all Robot result from [integration-test-run] and generated the final report.
+  # Uses the ehrbase docker image from [build] to run the performance tests against it.
   #
-  integration-test-collect:
+  performance-test-run:
+    runs-on: ubuntu-latest
+    needs: [
+      docker-build-test-image
+    ]
+    name: Perf (${{ matrix.test-plan.name }})
+    strategy:
+      fail-fast: false # ensure all tests run
+      matrix:
+        test-plan: [
+          { name: 'ehrbase_no_auth_scenario', env: { 'AUTH_TYPE': 'NONE' } },
+          { name: 'ehrbase_basic_auth_scenario', env: { 'AUTH_TYPE': 'BASIC' } },
+          { name: 'ehrbase_oauth_auth_scenario', env: { 'AUTH_TYPE': 'OAUTH' } },
+        ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          sparse-checkout: |
+            tests
+            .env.ehrbase
+            docker-compose.yml
+
+      - name: Download - Build Image
+        uses: actions/download-artifact@v7
+        with:
+          name: ehrbase-image-build
+          path: ${{ runner.temp }}
+
+      - name: Docker - Load Image
+        run: docker load --input ${{ runner.temp }}/ehrbase-build.tar
+
+      - name: Docker Compose - Setup env
+        run: |
+          echo "EHRBASE_IMAGE=ehrbase/ehrbase:build" >> $GITHUB_ENV
+
+      - name: Modify .env.ehrbase file
+        run: |
+          echo "SECURITY_AUTHTYPE=${{ matrix.test-plan.env['AUTH_TYPE'] }}" >> .env.ehrbase
+          if [ "${{ matrix.test-plan.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            echo "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://keycloak:8080/auth/realms/ehrbase" >> .env.ehrbase
+          fi
+          cat .env.ehrbase
+
+      - name: Docker Compose - Starting
+        run: |
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml up -d
+
+      - name: Wait for Keycloak to be ready
+        run: |
+          if [ "${{ matrix.test-plan.env['AUTH_TYPE'] }}" == "OAUTH" ]; then
+            until curl -s http://localhost:8081/auth/realms/ehrbase; do
+              echo "Waiting for Keycloak..."
+              sleep 10
+            done
+          fi
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml ps
+
+      - name: Restart jmeter if not started
+        run: |
+          docker compose exec jmeter ls -al /tests || docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml restart jmeter
+
+      - name: Run JMeter Tests
+        env:
+          TEST_PLAN_PATH: /tests/${{ matrix.test-plan.name }}.jmx
+          REPORTS_DIR: /reports/${{ matrix.test-plan.name }}
+          HOST: ehrbase
+          PORT: 8080
+          KEYCLOAK_HOST: keycloak
+          KEYCLOAK_PORT: 8080
+          THREADS: 10
+          RAMP_UP: 1
+          LOOP_COUNT: 50
+          DURATION: 180
+        run: |
+          docker compose exec jmeter mkdir -p /reports/${{ matrix.test-plan.name }}
+          
+          # Run the JMeter test
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml run --rm \
+          -v ${{ github.workspace }}/tests/perf:/tests \
+          -v ${{ github.workspace }}/reports:/reports \
+          jmeter -n -t $TEST_PLAN_PATH \
+          -Jhost=$HOST -Jport=$PORT \
+          -Jkeycloak_host=$KEYCLOAK_HOST -Jkeycloak_port=$KEYCLOAK_PORT \
+          -Jthreads=$THREADS -JrampUp=$RAMP_UP -JloopCount=$LOOP_COUNT -Jduration=$DURATION \
+          -l /reports/${{ matrix.test-plan.name }}/result.jtl \
+          -e -o /reports/${{ matrix.test-plan.name }}/html/ \
+          -Djava.awt.headless=true
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v6
+        with:
+          name: jmeter-result-${{ matrix.test-plan.name }}
+          path: ./reports/${{ matrix.test-plan.name }}/result.jtl
+          if-no-files-found: error
+
+      - name: Upload HTML Reports
+        if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: jmeter-report-${{ matrix.test-plan.name }}
+          path: reports/${{ matrix.test-plan.name }}/html
+          if-no-files-found: error
+
+      - name: Docker Compose - Logs ehrbase
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs ehrbase
+
+      - name: Docker Compose - Logs keycloak
+        if: always()
+        run: docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs keycloak
+
+      - name: Docker Compose - Logs jmeter
+        if: always()
+        run: | 
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml logs jmeter
+          #docker compose ps -a
+
+      - name: Docker Compose - Stopping
+        if: always()
+        run: |
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml down --remove-orphans
+          docker compose -f docker-compose.yml -f tests/docker-compose-perf-test.yml rm --force --volumes
+
+  #
+  # Collect all JMeter results from [performance-test-run], store them in single folder and upload it as artifact.
+  #
+  performance-tests-collect:
+    name: JMeter-Collect
+    if: ${{ always() }}
+    needs: [
+      performance-test-run
+    ]
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Download - JMeter results
+        uses: actions/download-artifact@v7
+        with:
+          pattern: jmeter-result-*
+          path: ./tests/jmeter-results/
+
+      - name: Download - JMeter reports
+        if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          pattern: jmeter-report-*
+          path: ./tests/jmeter-reports/
+
+      - name: Archive and Upload - JMeter results
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: jmeter-results-final
+          path: ./tests/jmeter-results
+
+      - name: Archive and Upload - JMeter reports
+        if: env.UPLOAD_PERF_HTML_REPORTS == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: jmeter-reports-final
+          path: ./tests/jmeter-reports
+
+      - name: Cleanup - Test Folder
+        if: always()
+        run: |
+          rm -rf ./tests/jmeter-results | true
+          rm -rf ./tests/jmeter-reports | true
+
+  #
+  # Collect all Robot result from [integration-test-server] and generated the final report.
+  #
+  robot-collect:
     name: Robot-Collect
     if: ${{ always() }}
     needs: [
-      integration-test-run
+      integration-test-server
     ]
     runs-on: ubuntu-latest
+    # allow to write comments to the issue
+    permissions:
+      issues: write
+      pull-requests: write
     steps:
       - name: Download - Robot results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: robot-result-*
           path: ./tests/results/
-      
+
       - name: Generate - Robot Tests-Report
         run: |
           docker run \
@@ -315,18 +491,9 @@ jobs:
             -v ./tests/report:/integration-tests/report \
             ehrbase/integration-tests:latest collectRebotResults
 
-      - name: Github - Send Robot Report to PR
-        # Dependabot has not enough rights to add the report to the PR.
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: joonvena/robotframework-reporter-action@v2.4
-        with:
-          gh_access_token: ${{ secrets.GITHUB_TOKEN }}
-          report_path: ./tests/report
-          show_passed_tests: false
-
       - name: Archive - Robot Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: robot-report-final
           path: ./tests/report
@@ -338,33 +505,35 @@ jobs:
           rm -rf ./tests/report | true
 
   #
-  # Collect all Robot result from [integration-test-run] and generated the final report.
+  # Collect all Robot result from [integration-test-server] and generated the final report.
   #
   coverage-collect:
-    name: Jacoco-Collect
+    name: Coverage-Collect
     if: ${{ always() }}
     needs: [
-      integration-test-run
+      integration-test-server
     ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Download - Class files
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: java-class-files
           path: ./
 
       - name: Download - Robot results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: jacoco-coverage-partial-*
           path: ./tests/coverage
 
       - name: Docker - Build Jacoco-CLI
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
+        env:
+          DOCKER_BUILD_SUMMARY: false
         with:
           context: .
           file: tests/DockerfileJacocoCLI
@@ -395,71 +564,56 @@ jobs:
 
       - name: Archive - Jacoco Report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: jacoco-report-final
           path: ./tests/coverage/jacoco-report-final
 
   #
-  # Trigger sonar cloud upload as Quality-Gate
+  # Uses the ehrbase docker image from [build] to run the robot integrations against it.
   #
-  sonar-quality-gate:
-    name: Sonar-Quality-Gate
-    # dependabot has not enough rights to access the secrets for a pull_request.
+  integration-test-cli:
+    name: IT
+    uses: ./.github/workflows/job-integration-test-cli.yml
+    secrets: inherit
+    needs: [
+      docker-build-test-image
+    ]
+    with:
+      ehrbase-image-tag: ehrbase/ehrbase:test
+      ehrbase-image-artifact: ehrbase-image-test
+
+  #
+  # Build and push docker image
+  #
+  docker-build-push:
+    name: Docker
+    uses: ./.github/workflows/job-docker-build-push.yml
+    secrets: inherit
+    # ignore dependabot here.
     if: ${{ github.actor != 'dependabot[bot]' }}
     needs: [
-      coverage-collect,
-      integration-test-collect
+      build-maven, # needed to obtain ehrbase-version from
+      integration-test-server,
+      integration-test-cli
     ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
-          fetch-depth: 0
+    with:
+      ehrbase-version: ${{ needs.build-maven.outputs.ehrbase-version }}
+      ehrbase-jar-artifact: ehrbase-jar
 
-      - name: Setup - Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: ${{ env.JAVA_DISTRIBUTION }}
-          cache: 'maven'
-
-      - name: Setup - Dependency Cache
-        uses: actions/cache/restore@v4
-        with:
-          path: ~/.m2/repository
-          key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            deps-${{ runner.os }}-m2-${{ github.head_ref }}-
-            deps-${{ runner.os }}-m2-
-            deps-${{ runner.os }}-
-            deps-
-          fail-on-cache-miss: true # we run only with cached dependencies
-
-      - name: Download - Jacoco Report
-        uses: actions/download-artifact@v4
-        with:
-          name: jacoco-report-final
-          path: ${{ github.workspace }}/tests/coverage/jacoco-report-final/
-
-      - name: Sonar - Analyze
-        # Dependabot has no access to the SONAR_TOKEN secret, so we need to skip sonar.
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        # note we re-compile the project here because we need the compile class files
-        run: |
-          mvn --batch-mode compile sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=ehrbase \
-            -Dsonar.projectKey=ehrbase_ehrbase \
-            -Dsonar.exclusions=test/** \
-            -Dsonar.coverage.exclusions=test/** \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml \
-
-  # TODO docker deploy should be done here for develop, release/* and main instead of using docker-ehrbase-dev.yml or
-  #      docker-ehrbase-main.yml. This allows us to deploy exactly the same docker artifact that was tested here.
+  #
+  # Maven publish
+  #
+  maven-publish:
+    name: Maven
+    uses: ./.github/workflows/job-maven-publish.yml
+    secrets: inherit
+    # ignore dependabot here.
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    needs: [
+      build-maven, # only to have them in the same UI group as docker-build-push
+      integration-test-server
+    ]
 
   #
   # Cleanup serialized oci image as well as intermediate robot results
@@ -468,7 +622,11 @@ jobs:
     name: Cleanup
     if: ${{ always() }}
     needs: [
-      sonar-quality-gate
+      coverage-collect,
+      performance-tests-collect,
+      robot-collect,
+      docker-build-push,
+      maven-publish
     ]
     runs-on: ubuntu-latest
     steps:
@@ -478,7 +636,9 @@ jobs:
           name: |
             java-class-files
             ehrbase-jar
-            ehrbase-image-test
+            ehrbase-image-*
             robot-result-*
+            jmeter-result-*
+            jmeter-report-*
             jacoco-coverage-*
           failOnError: false

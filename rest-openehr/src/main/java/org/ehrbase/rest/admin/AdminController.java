@@ -18,7 +18,6 @@
 package org.ehrbase.rest.admin;
 
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -47,12 +46,7 @@ public class AdminController extends BaseController {
                 @ApiResponse(
                         responseCode = "200",
                         description = "Admin API resources available and user has permission to access.",
-                        headers = {
-                            @Header(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    schema = @Schema(implementation = MediaType.class))
-                        }),
+                        headers = {@Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC)}),
                 @ApiResponse(responseCode = "401", description = "Client credentials are invalid or have expired."),
                 @ApiResponse(
                         responseCode = "403",

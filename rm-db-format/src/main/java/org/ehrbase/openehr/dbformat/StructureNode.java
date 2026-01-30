@@ -25,17 +25,19 @@ import java.util.List;
 public class StructureNode {
 
     private int num = -1;
+    private int numCap = -1;
     private String rmEntity;
     private String archetypeNodeId;
     private String entityName;
     private StructureIndex entityIdx;
 
-    private List<StructureNode> children = new ArrayList<>();
+    private final List<StructureNode> children = new ArrayList<>();
     private ObjectNode jsonNode;
 
     private StructureRmType structureRmType;
 
     private StructureNode contentItem;
+    private int parentNum = -1;
 
     public StructureNode() {
         this.entityIdx = StructureIndex.of();
@@ -125,5 +127,25 @@ public class StructureNode {
 
     public void setContentItem(StructureNode contentItem) {
         this.contentItem = contentItem;
+    }
+
+    public int getParentNum() {
+        return parentNum;
+    }
+
+    public void setParentNum(final int parentNum) {
+        this.parentNum = parentNum;
+    }
+
+    /**
+     * numCap is calculated at first access
+     * @return max num of node and its descendents
+     */
+    public int getNumCap() {
+        if (numCap == -1) {
+            numCap = Math.max(
+                    children.stream().mapToInt(StructureNode::getNumCap).max().orElse(-1), num);
+        }
+        return numCap;
     }
 }

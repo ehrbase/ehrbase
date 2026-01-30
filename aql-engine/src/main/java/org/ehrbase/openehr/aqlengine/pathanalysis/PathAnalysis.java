@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.ehrbase.openehr.sdk.aql.dto.operand.BooleanPrimitive;
@@ -131,7 +130,7 @@ public class PathAnalysis {
 
         static {
             LinkedHashSet<String> typesModifiable = new LinkedHashSet<>();
-            Stream.of(RmConstants.COMPOSITION, RmConstants.EHR_STATUS, RmConstants.ORIGINAL_VERSION)
+            Stream.of(RmConstants.EHR_STATUS, RmConstants.COMPOSITION, RmConstants.FOLDER, RmConstants.ORIGINAL_VERSION)
                     .map(AttributeInfos::calculateContainedTypes)
                     .forEach(typesModifiable::addAll);
 
@@ -461,8 +460,14 @@ public class PathAnalysis {
                 .reduce((a, b) -> new AttInfo(
                         a.multipleValued || b.multipleValued,
                         a.nullable || b.nullable,
-                        SetUtils.union(a.targetTypes, b.targetTypes)))
+                        union(a.targetTypes, b.targetTypes)))
                 .orElse(null);
+    }
+
+    private static <T> Set<T> union(Set<T> set1, Set<T> set2) {
+        Set<T> union = new HashSet<>(set1);
+        union.addAll(set2);
+        return union;
     }
 
     /**

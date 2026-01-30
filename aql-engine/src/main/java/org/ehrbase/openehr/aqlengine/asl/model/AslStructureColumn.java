@@ -18,27 +18,36 @@
 package org.ehrbase.openehr.aqlengine.asl.model;
 
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
+import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslColumnField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
+import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.jooq.Field;
+import org.jooq.JSONB;
 
 public enum AslStructureColumn {
     VO_ID(ObjectDataTablePrototype.INSTANCE.VO_ID, UUID.class, null),
     NUM(ObjectDataTablePrototype.INSTANCE.NUM, Integer.class, false),
+    NUM_CAP(ObjectDataTablePrototype.INSTANCE.NUM_CAP, Integer.class, false),
+    PARENT_NUM(ObjectDataTablePrototype.INSTANCE.PARENT_NUM, Integer.class, false),
+    C_ITEM_NUM(ObjectDataTablePrototype.INSTANCE.CITEM_NUM, Integer.class, false),
     EHR_ID(ObjectVersionTablePrototype.INSTANCE.EHR_ID, UUID.class, true),
     ENTITY_IDX(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX, String.class, false),
-    ENTITY_IDX_CAP(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX_CAP, String.class, false),
     ENTITY_IDX_LEN(ObjectDataTablePrototype.INSTANCE.ENTITY_IDX_LEN, Integer.class, false),
     ENTITY_CONCEPT(ObjectDataTablePrototype.INSTANCE.ENTITY_CONCEPT, String.class, false),
     ENTITY_NAME(ObjectDataTablePrototype.INSTANCE.ENTITY_NAME, String.class, AslExtractedColumn.NAME_VALUE, false),
     RM_ENTITY(ObjectDataTablePrototype.INSTANCE.RM_ENTITY, String.class, false),
+    DATA(ObjectDataTablePrototype.INSTANCE.DATA, JSONB.class, false),
     TEMPLATE_ID(COMP_VERSION.TEMPLATE_ID, UUID.class, AslExtractedColumn.TEMPLATE_ID, true),
     SYS_VERSION(ObjectVersionTablePrototype.INSTANCE.SYS_VERSION, Integer.class, true),
+
+    // Columns for FOLDER querying
+    EHR_FOLDER_IDX(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX, Integer.class, true),
 
     // Columns for VERSION querying
     AUDIT_ID(ObjectVersionTablePrototype.INSTANCE.AUDIT_ID, UUID.class, true),
@@ -63,6 +72,11 @@ public enum AslStructureColumn {
 
     public AslField field() {
         return new AslColumnField(clazz, fieldName, null, fromVersionTable, extractedColumn);
+    }
+
+    public AslColumnField fieldWithOwner(AslQuery owner) {
+        return new AslColumnField(
+                clazz, fieldName, AslField.FieldSource.withOwner(owner), fromVersionTable, extractedColumn);
     }
 
     public String getFieldName() {

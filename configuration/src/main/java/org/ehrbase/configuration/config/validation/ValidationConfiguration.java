@@ -18,20 +18,13 @@
 package org.ehrbase.configuration.config.validation;
 
 import com.jayway.jsonpath.DocumentContext;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
-import org.ehrbase.openehr.sdk.util.functional.Try;
-import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
-import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationChain;
-import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.service.validation.FhirTerminologyValidation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +32,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.cache.Cache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.Nullable;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -49,23 +41,23 @@ import org.springframework.web.reactive.function.client.WebClientException;
  * {@link Configuration} for external terminology validation.
  */
 @Configuration
-@EnableConfigurationProperties(ValidationProperties.class)
+@EnableConfigurationProperties(ExternalValidationProperties.class)
 @SuppressWarnings("java:S6212")
 public class ValidationConfiguration {
 
     private static final String ERR_MSG = "External terminology validation is disabled, consider to enable it";
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-    private final ValidationProperties properties;
+    private final Logger logger = LoggerFactory.getLogger(ValidationConfiguration.class);
+    private final ExternalValidationProperties properties;
     private final CacheProvider cacheProvider;
     private final OAuth2AuthorizedClientManager authorizedClientManager;
 
     public ValidationConfiguration(
-            ValidationProperties properties,
+            ExternalValidationProperties properties,
             CacheProvider cacheProvider,
-            @Nullable OAuth2AuthorizedClientManager authorizedClientManager) {
+            Optional<OAuth2AuthorizedClientManager> authorizedClientManager) {
         this.properties = properties;
         this.cacheProvider = cacheProvider;
-        this.authorizedClientManager = authorizedClientManager;
+        this.authorizedClientManager = authorizedClientManager.orElse(null);
     }
 
     @Bean
@@ -75,7 +67,7 @@ public class ValidationConfiguration {
             return nopTerminologyValidation();
         }
 
-        final Map<String, ValidationProperties.Provider> providers = properties.getProvider();
+        final Map<String, ExternalValidationProperties.Provider> providers = properties.getProvider();
 
         if (providers.isEmpty()) {
             throw new IllegalStateException("At least one external terminology provider must be defined "
@@ -85,7 +77,7 @@ public class ValidationConfiguration {
                     providers.entrySet().iterator().next());
         } else {
             ExternalTerminologyValidationChain chain = new ExternalTerminologyValidationChain();
-            for (Map.Entry<String, ValidationProperties.Provider> namedProvider : providers.entrySet()) {
+            for (Map.Entry<String, ExternalValidationProperties.Provider> namedProvider : providers.entrySet()) {
                 chain.addExternalTerminologyValidationSupport(buildExternalTerminologyValidation(namedProvider));
             }
             return chain;
@@ -93,10 +85,10 @@ public class ValidationConfiguration {
     }
 
     private ExternalTerminologyValidation buildExternalTerminologyValidation(
-            Map.Entry<String, ValidationProperties.Provider> namedProvider) {
+            Map.Entry<String, ExternalValidationProperties.Provider> namedProvider) {
 
         final String name = namedProvider.getKey();
-        final ValidationProperties.Provider provider = namedProvider.getValue();
+        final ExternalValidationProperties.Provider provider = namedProvider.getValue();
         String oauth2Client = provider.getOauth2Client();
 
         logger.info(
@@ -110,7 +102,7 @@ public class ValidationConfiguration {
 
         final WebClient webClient = buildWebClient(oauth2Client);
 
-        if (provider.getType() == ValidationProperties.ProviderType.FHIR) {
+        if (provider.getType() == ExternalValidationProperties.ProviderType.FHIR) {
             return fhirTerminologyValidation(provider.getUrl(), webClient);
         }
         throw new IllegalArgumentException("Invalid provider type: " + provider.getType());
@@ -133,23 +125,8 @@ public class ValidationConfiguration {
         return builder.build();
     }
 
-    private ExternalTerminologyValidation nopTerminologyValidation() {
-        return new ExternalTerminologyValidation() {
-
-            private final ConstraintViolation err = new ConstraintViolation(ERR_MSG);
-
-            public Try<Boolean, ConstraintViolationException> validate(TerminologyParam param) {
-                return Try.failure(new ConstraintViolationException(List.of(err)));
-            }
-
-            public boolean supports(TerminologyParam param) {
-                return false;
-            }
-
-            public List<DvCodedText> expand(TerminologyParam param) {
-                return Collections.emptyList();
-            }
-        };
+    public static ExternalTerminologyValidation nopTerminologyValidation() {
+        return new NopExternalTerminologyValidation(ERR_MSG);
     }
 
     private FhirTerminologyValidation fhirTerminologyValidation(String url, WebClient webClient) {
@@ -158,8 +135,8 @@ public class ValidationConfiguration {
             @Override
             protected DocumentContext internalGet(String uri) throws WebClientException {
                 try {
-                    return cacheProvider.get(
-                            CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE, uri, () -> super.internalGet(uri));
+                    return CacheProvider.EXTERNAL_FHIR_TERMINOLOGY_CACHE.get(
+                            cacheProvider, uri, () -> super.internalGet(uri));
                 } catch (Cache.ValueRetrievalException e) {
                     final Throwable cause = e.getCause();
                     // Something went wrong during downstream request - Forward as bad Gateway. We could also catch

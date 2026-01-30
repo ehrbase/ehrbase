@@ -28,16 +28,13 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>server</artifactId>
-    <version>2.1.0-SNAPSHOT</version>
+    <version>2.28.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>jooq-pg</artifactId>
-
-  <name>jooq-pg</name>
-
+  <name>EHRbase JOOQ</name>
 
   <properties>
-    <docker-maven-plugin.version>0.44.0</docker-maven-plugin.version>
     <database.docker.image>ehrbase/ehrbase-postgres:16.2-mvp</database.docker.image>
   </properties>
 
@@ -54,6 +51,10 @@
       <groupId>org.flywaydb</groupId>
       <artifactId>flyway-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-database-postgresql</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -69,6 +70,8 @@
               <name>${database.docker.image}</name>
               <alias>postgres</alias>
               <run>
+                <!-- let the docker engine chose a random container name to prevent clashed during parallel builds @see https://dmp.fabric8.io/#container-name -->
+                <containerNamePattern>%e</containerNamePattern>
                 <env>
                   <EHRBASE_USER_ADMIN>${database.user}</EHRBASE_USER_ADMIN>
                   <EHRBASE_PASSWORD_ADMIN>${database.pass}</EHRBASE_PASSWORD_ADMIN>
@@ -77,10 +80,10 @@
                   <port>${database.port}:5432</port>
                 </ports>
                 <wait>
-                  <!-- The log entry is not usable as indicator since the DB restarts multiple times during init -->
-                  <!-- Possilbe log entry(?): PostgreSQL init process complete; ready for start up. -->
+                  <!-- The log message is not usable as indicator since the DB restarts multiple times during init -->
                   <!--<log>database system is ready to accept connections</log>-->
-                  <time>10000</time>
+                  <log>listening on IPv.*</log>
+                  <time>${database.timeout}</time>
                 </wait>
                 <log>
                   <enabled>true</enabled>
@@ -120,13 +123,11 @@
             <artifactId>postgresql</artifactId>
             <version>${postgresql.version}</version>
           </dependency>
-          <!--
           <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-database-postgresql</artifactId>
             <version>${flyway.version}</version>
           </dependency>
-          -->
         </dependencies>
         <executions>
           <execution>

@@ -17,15 +17,11 @@
  */
 package org.ehrbase.openehr.dbformat;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.nedap.archie.base.OpenEHRBase;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.datavalues.quantity.DvProportion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
@@ -39,7 +35,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeSerializationUtils;
 import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
 
@@ -50,23 +46,10 @@ public final class VersionedObjectDataStructure {
      */
     public static final String MAGNITUDE_FIELD = "_magnitude";
 
-    public static final ObjectMapper MARSHAL_OM = CanonicalJson.MARSHAL_OM
-            .copy()
-            .setDefaultTyping(
-                    new ObjectMapper.DefaultTypeResolverBuilder(ObjectMapper.DefaultTyping.EVERYTHING) {
-                        @Override
-                        public boolean useForType(JavaType t) {
-                            return OpenEHRBase.class.isAssignableFrom(t.getRawClass());
-                        }
-                    }.init(JsonTypeInfo.Id.NAME, new CanonicalJson.CJOpenEHRTypeNaming())
-                            .typeProperty(DbToRmFormat.TYPE_ATTRIBUTE)
-                            .typeIdVisibility(true)
-                            .inclusion(JsonTypeInfo.As.PROPERTY));
-
     private VersionedObjectDataStructure() {}
 
     public static List<StructureNode> createDataStructure(RMObject rmObject) {
-        JsonNode jsonNode = MARSHAL_OM.valueToTree(rmObject);
+        JsonNode jsonNode = RmDbJson.MARSHAL_OM.valueToTree(rmObject);
         fillInMagnitudes(jsonNode);
 
         var root = createStructureDto(
@@ -77,13 +60,17 @@ public final class VersionedObjectDataStructure {
 
         handleSubStructure(root, root.getJsonNode(), null, roots);
 
-        // set num field
+        // set num and parentNum fields
         {
             int num = 0;
+            root.setParentNum(0);
             for (StructureNode r : roots) {
                 // skip intermediates
                 if (r.getStructureRmType().isStructureEntry()) {
                     r.setNum(num++);
+                    r.getChildren().stream()
+                            .filter(c -> c.getStructureRmType().isStructureEntry())
+                            .forEach(c -> c.setParentNum(r.getNum()));
                 }
             }
         }
@@ -118,22 +105,33 @@ public final class VersionedObjectDataStructure {
     private static void addMagnitudeAttribute(String type, ObjectNode object) {
         try {
             switch (type) {
-                case "DV_DATE_TIME" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(
-                                MARSHAL_OM.treeToValue(object, DvDateTime.class)));
-                case "DV_DATE" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(MARSHAL_OM.treeToValue(object, DvDate.class)));
-                case "DV_TIME" -> object.put(
-                        MAGNITUDE_FIELD,
-                        OpenEHRDateTimeSerializationUtils.toMagnitude(MARSHAL_OM.treeToValue(object, DvTime.class)));
-                case "DV_DURATION" -> object.put(
-                        MAGNITUDE_FIELD,
-                        MARSHAL_OM.treeToValue(object, DvDuration.class).getMagnitude());
-                case "DV_PROPORTION" -> object.put(
-                        MAGNITUDE_FIELD,
-                        MARSHAL_OM.treeToValue(object, DvProportion.class).getMagnitude());
+                case "DV_DATE_TIME" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvDateTime.class)));
+                case "DV_DATE" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvDate.class)));
+                case "DV_TIME" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            OpenEHRDateTimeSerializationUtils.toMagnitude(
+                                    RmDbJson.MARSHAL_OM.treeToValue(object, DvTime.class)));
+                case "DV_DURATION" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            RmDbJson.MARSHAL_OM
+                                    .treeToValue(object, DvDuration.class)
+                                    .getMagnitude());
+                case "DV_PROPORTION" ->
+                    object.put(
+                            MAGNITUDE_FIELD,
+                            RmDbJson.MARSHAL_OM
+                                    .treeToValue(object, DvProportion.class)
+                                    .getMagnitude());
                 default -> {
                     /* do not add magnitude */
                 }
@@ -213,8 +211,8 @@ public final class VersionedObjectDataStructure {
                                                 structureRmType))) { // structureRmType.isDataRoot()) {
                             fieldIt.remove();
                         }
-                        StructureNode newRoot = createStructureDto(
-                                root, child, structureRmType, StructureIndex.Node.of(attribute, null));
+                        StructureNode newRoot =
+                                createStructureDto(root, child, structureRmType, StructureIndex.Node.of(attribute, -1));
                         roots.add(newRoot);
                         return newRoot;
                     });
@@ -272,7 +270,7 @@ public final class VersionedObjectDataStructure {
     public static ObjectNode applyRmAliases(ObjectNode jsonNode) {
         ObjectNode newNode = jsonNode.objectNode();
 
-        jsonNode.fields().forEachRemaining(e -> {
+        jsonNode.properties().forEach(e -> {
             String alias = RmAttributeAlias.getAlias(e.getKey());
             JsonNode child = e.getValue();
             if (child.isObject()) {
@@ -291,7 +289,7 @@ public final class VersionedObjectDataStructure {
                 String rmNameAlias = RmTypeAlias.getAlias(child.textValue());
                 child = new TextNode(rmNameAlias);
             }
-            newNode.put(alias, child);
+            newNode.putIfAbsent(alias, child);
         });
 
         return newNode;

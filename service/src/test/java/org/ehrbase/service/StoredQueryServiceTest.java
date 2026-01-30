@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -32,6 +33,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.StoredQueryService;
 import org.ehrbase.cache.CacheProvider;
@@ -49,6 +51,7 @@ import org.springframework.cache.support.SimpleCacheManager;
 
 public class StoredQueryServiceTest {
 
+    private static final String DEFAULT_QUERY_TYPE = "AQL";
     private final StoredQueryRepository mockStoredQueryRepository = mock("Mock Repository");
     private SimpleCacheManager cacheManager;
 
@@ -86,7 +89,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record))); // #2 call final result
 
         QueryDefinitionResultDto result =
-                service().createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es");
+                service().createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertEquals("test::crate::id", result.getQualifiedName());
         assertEquals("0.5.0", result.getVersion());
         assertEquals("test", result.getType());
@@ -106,7 +109,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
         StateConflictException reason = assertThrows(StateConflictException.class, () -> service()
-                .createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es"));
+                .createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
         assertEquals("Version already exists", reason.getMessage());
     }
 
@@ -120,7 +123,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
         IllegalStateException reason = assertThrows(IllegalStateException.class, () -> service()
-                .createStoredQuery("test::name", "0.3.0", "SELECT es FROM EHR_STATUS es"));
+                .createStoredQuery("test::name", "0.3.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
         assertEquals("The database contains stored queries with partial versions", reason.getMessage());
     }
 
@@ -167,6 +170,16 @@ public class StoredQueryServiceTest {
         assertEquals(
                 record.getCreationDate().atZoneSameInstant(ZoneOffset.UTC),
                 result.getSaved().toOffsetDateTime().atZoneSameInstant(ZoneOffset.UTC));
+    }
+
+    @Test
+    void retrieveStoredQueryDoesNotExist() {
+
+        StoredQueryService service = service();
+
+        assertThatThrownBy(() -> service.retrieveStoredQuery("test::cached", "1.4.2"))
+                .isInstanceOf(ObjectNotFoundException.class)
+                .hasMessage("Could not retrieve stored query for qualified name: test::cached");
     }
 
     @Test
@@ -221,7 +234,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.empty()) // #1 call nothing stored
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record))); // #2 call find
 
-        result = service.createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es");
+        result = service.createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertThat(result.getVersion()).isEqualTo("0.5.0");
 
         // Access using partial version
@@ -238,7 +251,7 @@ public class StoredQueryServiceTest {
                 .thenReturn(Optional.empty()) // #1 call nothing stored
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record2))); // #2 call find
 
-        result = service.createStoredQuery("test::name", "0.5.1", "SELECT es FROM EHR_STATUS es");
+        result = service.createStoredQuery("test::name", "0.5.1", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertThat(result.getVersion()).isEqualTo("0.5.1");
 
         when(mockStoredQueryRepository.retrieveQualified(any()))

@@ -1,0 +1,40 @@
+name: "Integration Test - EHRbase CLI"
+
+on:
+  workflow_call:
+    inputs:
+      ehrbase-image-tag:
+        type: string
+        description: 'Docker image tag name'
+        required: true
+      ehrbase-image-artifact:
+        type: string
+        description: 'Archived ehrbase docker image artifact name'
+        required: true
+
+jobs:
+  #
+  # Runs simple CLI integration tests against the EHRbase image
+  #
+  integration-test-cli:
+    name: EHRbase CLI
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Download - Image
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ inputs.ehrbase-image-artifact }}
+          path: ${{ runner.temp }}
+
+      # Docker load login
+      - name: Docker - Load Image
+        run: docker load --input ${{ runner.temp }}/ehrbase-test.tar
+
+      # Docker run test
+      - name: Docker - Test cli help
+        run:  docker run -i --rm ${{ inputs.ehrbase-image-tag }} cli help
+
+      # Docker run test
+      - name: Docker - Test cli database help
+        run:  docker run -i --rm ${{ inputs.ehrbase-image-tag }} cli database help

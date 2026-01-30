@@ -23,7 +23,6 @@ import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.headers.Header;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -68,12 +67,7 @@ public class AdminDirectoryController extends BaseController {
                 @ApiResponse(
                         responseCode = "200",
                         description = "Directory has been deleted successfully",
-                        headers = {
-                            @Header(
-                                    name = CONTENT_TYPE,
-                                    description = RESP_CONTENT_TYPE_DESC,
-                                    schema = @Schema(implementation = MediaType.class))
-                        }),
+                        headers = {@Header(name = CONTENT_TYPE, description = RESP_CONTENT_TYPE_DESC)}),
                 @ApiResponse(responseCode = "401", description = "Client credentials are invalid or have expired."),
                 @ApiResponse(
                         responseCode = "403",

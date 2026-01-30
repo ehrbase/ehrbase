@@ -17,18 +17,21 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
@@ -37,7 +40,7 @@ import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.ehrbase.service.TimeProvider;
 import org.jooq.DSLContext;
-import org.jooq.Record1;
+import org.jooq.Record2;
 import org.jooq.Record3;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Repository;
@@ -53,14 +56,16 @@ public class TemplateStoreRepository {
         this.timeProvider = timeProvider;
     }
 
-    public void store(OPERATIONALTEMPLATE operationaltemplate) {
+    public TemplateMetaData store(OPERATIONALTEMPLATE operationaltemplate) {
         TemplateStoreRecord templateStoreRecord = context.newRecord(TEMPLATE_STORE);
         setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(UUID.randomUUID()));
         templateStoreRecord.setCreationTime(timeProvider.getNow());
         templateStoreRecord.store();
+        return TemplateStoreRepository.buildMetadata(
+                templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
-    public void update(OPERATIONALTEMPLATE operationaltemplate) {
+    public TemplateMetaData update(OPERATIONALTEMPLATE operationaltemplate) {
         String templateId = operationaltemplate.getTemplateId().getValue();
         TemplateStoreRecord templateStoreRecord = context.selectFrom(TEMPLATE_STORE)
                 .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
@@ -71,6 +76,8 @@ public class TemplateStoreRepository {
         setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(rec.getId()));
         templateStoreRecord.setCreationTime(timeProvider.getNow());
         templateStoreRecord.update();
+        return TemplateStoreRepository.buildMetadata(
+                templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
     public List<TemplateMetaData> findAll() {
@@ -81,18 +88,22 @@ public class TemplateStoreRepository {
                 .map(TemplateStoreRepository::buildMetadata);
     }
 
-    public List<String> findAllTemplateIds() {
-        return context.select(TEMPLATE_STORE.TEMPLATE_ID)
+    public Map<UUID, String> findAllTemplateIds() {
+        return context.select(TEMPLATE_STORE.ID, TEMPLATE_STORE.TEMPLATE_ID)
                 .from(TEMPLATE_STORE)
-                .fetch()
-                .map(Record1::value1);
+                .collect(Collectors.toMap(Record2::value1, Record2::value2));
     }
 
     private static TemplateMetaData buildMetadata(Record3<String, OffsetDateTime, UUID> r) {
+        return buildMetadata(r.component3(), r.component2(), r.component1());
+    }
+
+    private static TemplateMetaData buildMetadata(
+            UUID internalId, OffsetDateTime creationTime, String templateContent) {
         TemplateMetaData templateMetaData = new TemplateMetaData();
-        templateMetaData.setOperationalTemplate(buildOperationaltemplate(r.component1()));
-        templateMetaData.setInternalId(r.component3());
-        templateMetaData.setCreatedOn(r.component2());
+        templateMetaData.setOperationalTemplate(buildOperationalTemplate(templateContent));
+        templateMetaData.setCreatedOn(creationTime);
+        templateMetaData.setInternalId(internalId);
         return templateMetaData;
     }
 
@@ -107,14 +118,13 @@ public class TemplateStoreRepository {
         }
     }
 
-    public Optional<OPERATIONALTEMPLATE> findByTemplateId(String templateId) {
+    public Optional<TemplateMetaData> findByTemplateId(String templateId) {
 
-        return context.select(TEMPLATE_STORE.CONTENT)
+        return context.select(TEMPLATE_STORE.CONTENT, TEMPLATE_STORE.CREATION_TIME, TEMPLATE_STORE.ID)
                 .from(TEMPLATE_STORE)
                 .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
                 .fetchOptional()
-                .map(Record1::value1)
-                .map(TemplateStoreRepository::buildOperationaltemplate);
+                .map(TemplateStoreRepository::buildMetadata);
     }
 
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
@@ -131,12 +141,10 @@ public class TemplateStoreRepository {
                 .fetchOptional(TEMPLATE_STORE.ID);
     }
 
-    private static OPERATIONALTEMPLATE buildOperationaltemplate(String content) {
-        InputStream inputStream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
-
+    private static OPERATIONALTEMPLATE buildOperationalTemplate(String content) {
         org.openehr.schemas.v1.TemplateDocument document;
-        try {
-            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(inputStream);
+        try (InputStream in = IOUtils.toInputStream(content, StandardCharsets.UTF_8)) {
+            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
         } catch (XmlException | IOException e) {
             throw new InternalServerException(e.getMessage());
         }
@@ -153,5 +161,13 @@ public class TemplateStoreRepository {
         XmlOptions opts = new XmlOptions();
         opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         templateStoreRecord.setContent(template.xmlText(opts));
+    }
+
+    public List<String> getTemplateUsages() {
+        return context.selectDistinct(TEMPLATE_STORE.TEMPLATE_ID)
+                .from(TEMPLATE_STORE)
+                .join(COMP_VERSION)
+                .on(COMP_VERSION.TEMPLATE_ID.eq(TEMPLATE_STORE.ID))
+                .fetch(TEMPLATE_STORE.TEMPLATE_ID);
     }
 }

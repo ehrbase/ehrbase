@@ -25,6 +25,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.jooq.pg.tables.StoredQuery;
 import org.ehrbase.jooq.pg.tables.records.StoredQueryRecord;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.service.TimeProvider;
@@ -32,12 +33,16 @@ import org.ehrbase.util.SemVer;
 import org.ehrbase.util.StoredQueryQualifiedName;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Field;
 import org.jooq.OrderField;
+import org.jooq.Record1;
+import org.jooq.Record2;
+import org.jooq.SelectLimitPercentStep;
 import org.jooq.SelectOrderByStep;
 import org.jooq.SelectWhereStep;
 import org.jooq.SortOrder;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -51,15 +56,13 @@ public class StoredQueryRepository {
         this.timeProvider = timeProvider;
     }
 
-    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
-
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void store(StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, query, queryType);
         storedQueryRecord.insert();
     }
 
-    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
-
-        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, sourceAqlText);
+    public void update(StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
+        StoredQueryRecord storedQueryRecord = createStoredQueryRecord(storedQueryQualifiedName, query, queryType);
         storedQueryRecord.update();
     }
 
@@ -140,7 +143,7 @@ public class StoredQueryRepository {
         return dto;
     }
 
-    private static @NonNull Condition versionConstraint(SemVer semVer) {
+    private static Condition versionConstraint(SemVer semVer) {
         if (semVer.isRelease() || semVer.isPreRelease()) {
             return STORED_QUERY.SEMVER.eq(semVer.toVersionString());
         }
@@ -160,25 +163,35 @@ public class StoredQueryRepository {
     }
 
     private static Stream<OrderField<?>> orderBySemVerStream(SortOrder sortOrder) {
+        return orderBySemVerStream(STORED_QUERY, sortOrder);
+    }
+
+    private static Stream<OrderField<?>> orderBySemVerStream(StoredQuery table, SortOrder sortOrder) {
+
+        Field<String> svf = table.field(STORED_QUERY.SEMVER);
+
         return Stream.of(
-                DSL.splitPart(STORED_QUERY.SEMVER, ".", 1).cast(Integer.class).sort(sortOrder),
-                DSL.splitPart(STORED_QUERY.SEMVER, ".", 2).cast(Integer.class).sort(sortOrder),
-                DSL.splitPart(DSL.splitPart(STORED_QUERY.SEMVER, ".", 3), "-", 1)
+                DSL.splitPart(svf, ".", 1).cast(Integer.class).sort(sortOrder),
+                DSL.splitPart(svf, ".", 2).cast(Integer.class).sort(sortOrder),
+                DSL.splitPart(DSL.splitPart(svf, ".", 3), "-", 1)
                         .cast(Integer.class)
                         .sort(sortOrder),
-                DSL.splitPart(DSL.splitPart(STORED_QUERY.SEMVER, ".", 3), "-", 2)
-                        .sort(sortOrder));
+                DSL.splitPart(DSL.splitPart(svf, ".", 3), "-", 2).sort(sortOrder));
+    }
+
+    private Condition isNoPreRelease(StoredQuery table) {
+        return table.field(STORED_QUERY.SEMVER).notLike("%-%");
     }
 
     private StoredQueryRecord createStoredQueryRecord(
-            StoredQueryQualifiedName storedQueryQualifiedName, String sourceAqlText) {
+            StoredQueryQualifiedName storedQueryQualifiedName, String query, String queryType) {
         StoredQueryRecord storedQueryRecord = context.newRecord(STORED_QUERY);
 
         storedQueryRecord.setReverseDomainName(storedQueryQualifiedName.reverseDomainName());
         storedQueryRecord.setSemanticId(storedQueryQualifiedName.semanticId());
         storedQueryRecord.setSemver(storedQueryQualifiedName.semVer().toVersionString());
-        storedQueryRecord.setQueryText(sourceAqlText);
-        storedQueryRecord.setType("AQL");
+        storedQueryRecord.setQueryText(query);
+        storedQueryRecord.setType(queryType);
 
         storedQueryRecord.setCreationDate(timeProvider.getNow());
         return storedQueryRecord;
@@ -202,5 +215,39 @@ public class StoredQueryRepository {
         }
 
         return queryRecord;
+    }
+
+    private Stream<StoredQueryRecord> retrieveStoredQueryRecords() {
+        // for each query name retrieve the maximum value
+
+        Table<Record2<String, String>> namesSq = context.selectDistinct(
+                        STORED_QUERY.SEMANTIC_ID, STORED_QUERY.REVERSE_DOMAIN_NAME)
+                .from(STORED_QUERY)
+                .where(isNoPreRelease(STORED_QUERY))
+                .orderBy(STORED_QUERY.REVERSE_DOMAIN_NAME, STORED_QUERY.SEMANTIC_ID)
+                .asTable();
+
+        StoredQuery sub = STORED_QUERY.as("sub");
+
+        SelectLimitPercentStep<Record1<StoredQueryRecord>> sq = DSL.select(DSL.cast(sub, StoredQueryRecord.class))
+                .from(sub)
+                .where(
+                        isNoPreRelease(sub),
+                        sub.field(STORED_QUERY.SEMANTIC_ID).eq(namesSq.field(STORED_QUERY.SEMANTIC_ID)),
+                        sub.field(STORED_QUERY.REVERSE_DOMAIN_NAME).eq(namesSq.field(STORED_QUERY.REVERSE_DOMAIN_NAME)))
+                .orderBy(orderBySemVerStream(sub, SortOrder.DESC).toList())
+                .limit(1);
+
+        Stream<Record1<StoredQueryRecord>> x = context.select(sq.asField().cast(StoredQueryRecord.class))
+                .from(namesSq)
+                .fetchStream();
+
+        return x.map(Record1::component1);
+    }
+
+    public List<QueryDefinitionResultDto> retrieveAllLatest() {
+        return retrieveStoredQueryRecords()
+                .map(StoredQueryRepository::mapToQueryDefinitionDto)
+                .toList();
     }
 }

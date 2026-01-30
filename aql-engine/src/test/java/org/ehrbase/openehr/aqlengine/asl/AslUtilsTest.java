@@ -17,17 +17,18 @@
  */
 package org.ehrbase.openehr.aqlengine.asl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 class AslUtilsTest {
 
     @Test
-    void translateAqlLikePatern() {
-        assertEquals("abc", AslUtils.translateAqlLikePatternToSql("abc"));
-        assertEquals("X\\\\?*\\%\\_%_X", AslUtils.translateAqlLikePatternToSql("X\\\\\\?\\*%_*?X"));
-        assertEquals("\\\\?*\\%\\_%_X", AslUtils.translateAqlLikePatternToSql("\\\\\\?\\*%_*?X"));
-        assertEquals("X\\%\\_%_X\\\\?*", AslUtils.translateAqlLikePatternToSql("X%_*?X\\\\\\?\\*"));
+    void concatStreams() {
+        assertThat(AslUtils.concatStreams()).isEmpty();
+        assertThat(AslUtils.concatStreams(Stream.of("a", "b"))).containsExactly("a", "b");
+        assertThat(AslUtils.concatStreams(Stream.of("a", "b"), Stream.of("c", "d"), Stream.of("e", "f")))
+                .containsExactly("a", "b", "c", "d", "e", "f");
     }
 }

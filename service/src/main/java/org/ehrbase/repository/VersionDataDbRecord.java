@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.dbformat.StructureIndex;
@@ -44,7 +45,8 @@ import org.jooq.JSONB;
  * @param dataRecords a single-use stream of data records (created lazily)
  */
 public record VersionDataDbRecord(
-        ObjectVersionRecordPrototype versionRecord, Supplier<Stream<ObjectDataRecordPrototype>> dataRecords) {
+        ObjectVersionRecordPrototype versionRecord,
+        Supplier<Stream<Pair<StructureNode, ObjectDataRecordPrototype>>> dataRecords) {
 
     public static VersionDataDbRecord toRecords(
             UUID ehrId,
@@ -53,7 +55,6 @@ public record VersionDataDbRecord(
             UUID auditId,
             OffsetDateTime now,
             DSLContext context) {
-        var roots = VersionedObjectDataStructure.createDataStructure(versionDataObject);
 
         UUID voId = UUID.fromString(versionDataObject.getUid().getRoot().getValue());
 
@@ -66,10 +67,9 @@ public record VersionDataDbRecord(
                 auditId,
                 now);
 
-        Supplier<Stream<ObjectDataRecordPrototype>> dataRecords =
-                VersionDataDbRecord.dataRecordsBuilder(voId, roots, context);
+        var roots = VersionedObjectDataStructure.createDataStructure(versionDataObject);
 
-        return new VersionDataDbRecord(versionRecord, dataRecords);
+        return new VersionDataDbRecord(versionRecord, () -> buildDataRecords(voId, roots, context));
     }
 
     private static ObjectVersionRecordPrototype buildVersionRecord(
@@ -93,11 +93,11 @@ public record VersionDataDbRecord(
         return objectDataRecord;
     }
 
-    private static Supplier<Stream<ObjectDataRecordPrototype>> dataRecordsBuilder(
+    private static Stream<Pair<StructureNode, ObjectDataRecordPrototype>> buildDataRecords(
             UUID voId, Collection<StructureNode> nodeList, DSLContext context) {
-        return () -> nodeList.stream()
+        return nodeList.stream()
                 .filter(r -> r.getStructureRmType().isStructureEntry())
-                .map(n -> buildDataRecord(voId, n, context));
+                .map(n -> Pair.of(n, buildDataRecord(voId, n, context)));
     }
 
     private static ObjectDataRecordPrototype buildDataRecord(UUID voId, StructureNode node, DSLContext context) {
@@ -110,6 +110,8 @@ public record VersionDataDbRecord(
                 .map(StructureNode::getContentItem)
                 .map(StructureNode::getNum)
                 .orElse(null));
+        rec.setParentNum(node.getParentNum());
+        rec.setNumCap(node.getNumCap());
         rec.setRmEntity(StructureRmType.byTypeName(node.getRmEntity())
                 .orElseThrow(() -> new InternalServerException("No alias for %s".formatted(node.getRmEntity())))
                 .getAlias());
@@ -118,10 +120,7 @@ public record VersionDataDbRecord(
 
         StructureIndex index = node.getEntityIdx();
         rec.setEntityAttribute(index.printLastAttribute());
-        rec.setEntityPath(index.printIndexString(false, false));
-        rec.setEntityPathCap(index.printIndexString(true, false));
         rec.setEntityIdx(index.printIndexString(false, true));
-        rec.setEntityIdxCap(index.printIndexString(true, true));
         rec.setEntityIdxLen(index.length());
 
         rec.setData(JSONB.valueOf(

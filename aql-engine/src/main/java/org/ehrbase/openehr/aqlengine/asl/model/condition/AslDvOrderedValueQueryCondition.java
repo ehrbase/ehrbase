@@ -21,13 +21,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.openehr.aqlengine.asl.model.field.AslDvOrderedColumnField;
+import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 
 public final class AslDvOrderedValueQueryCondition<T> extends AslFieldValueQueryCondition<T> {
     private final Set<String> typesToCompare;
 
     public AslDvOrderedValueQueryCondition(
-            Set<String> typesToCompare, AslDvOrderedColumnField field, AslConditionOperator operator, List<T> values) {
+            Set<String> typesToCompare, AslField field, AslConditionOperator operator, List<T> values) {
         super(field, operator, values);
         if (CollectionUtils.isEmpty(typesToCompare)) {
             throw new IllegalArgumentException("Affected DV_ORDERED types not specified");

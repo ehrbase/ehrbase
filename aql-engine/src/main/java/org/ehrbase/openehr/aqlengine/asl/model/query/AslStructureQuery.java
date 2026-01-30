@@ -28,10 +28,9 @@ import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.jooq.pg.Tables;
@@ -56,8 +55,10 @@ import org.jooq.TableField;
  * select
  *       "sCOMPOSITIONsq"."vo_id" as "sCOMPOSITIONc0_vo_id",
  *       "sCOMPOSITIONsq"."ehr_id" as "sCOMPOSITIONc0_ehr_id",
+ *       "sCOMPOSITIONsq"."parent_num" as "sCOMPOSITIONc0_parent_num",
+ *       "sCOMPOSITIONsq"."num" as "sCOMPOSITIONc0_num",
+ *       "sCOMPOSITIONsq"."num_cap" as "sCOMPOSITIONc0_num_cap",
  *       "sCOMPOSITIONsq"."entity_idx" as "sCOMPOSITIONc0_entity_idx",
- *       "sCOMPOSITIONsq"."entity_idx_cap" as "sCOMPOSITIONc0_entity_idx_cap",
  *       "sCOMPOSITIONsq"."entity_idx_len" as "sCOMPOSITIONc0_entity_idx_len",
  *       "sCOMPOSITIONsq"."entity_concept" as "sCOMPOSITIONc0_entity_concept",
  *       "sCOMPOSITIONsq"."entity_name" as "sCOMPOSITIONc0_entity_name",
@@ -71,18 +72,6 @@ import org.jooq.TableField;
 public final class AslStructureQuery extends AslQuery {
 
     public static final String ENTITY_ATTRIBUTE = "entity_attribute";
-
-    public boolean isRequiresVersionTableJoin() {
-        return requiresVersionTableJoin;
-    }
-
-    public boolean isRepresentsOriginalVersionExpression() {
-        return representsOriginalVersionExpression;
-    }
-
-    public void setRepresentsOriginalVersionExpression(boolean representsOriginalVersionExpression) {
-        this.representsOriginalVersionExpression = representsOriginalVersionExpression;
-    }
 
     public enum AslSourceRelation {
         EHR(StructureRoot.EHR, null, EHR_),
@@ -138,30 +127,37 @@ public final class AslStructureQuery extends AslQuery {
         }
     }
 
-    private final Map<IdentifiedPath, AslPathFilterJoinCondition> joinConditionsForFiltering = new HashMap<>();
+    private final Map<IdentifiedPath, AslPathFilterJoinCondition> joinConditionsForFiltering = new LinkedHashMap<>();
     private final AslSourceRelation type;
     private final Collection<String> rmTypes;
-    private final List<AslField> fields = new ArrayList<>();
+    private final ArrayList<AslField> fields = new ArrayList<>(0);
     private final String alias;
     private final boolean requiresVersionTableJoin;
-    private boolean representsOriginalVersionExpression = false;
+    private final boolean representsOriginalVersionExpression;
+    private final boolean root;
 
     public AslStructureQuery(
             String alias,
             AslSourceRelation type,
             List<AslField> fields,
             Collection<String> rmTypes,
+            Collection<String> rmTypesConstraint,
             String attribute,
-            boolean requiresVersionTableJoin) {
+            boolean requiresVersionTableJoin,
+            final boolean representsOriginalVersionExpression,
+            final boolean root) {
         super(alias, new ArrayList<>());
         this.type = type;
         this.rmTypes = List.copyOf(rmTypes);
         this.requiresVersionTableJoin = requiresVersionTableJoin;
+        this.representsOriginalVersionExpression = representsOriginalVersionExpression;
+        this.root = root;
+        this.fields.ensureCapacity(fields.size());
         fields.forEach(this::addField);
         this.alias = alias;
         if (type != AslSourceRelation.EHR && type != AslSourceRelation.AUDIT_DETAILS) {
-            if (!rmTypes.isEmpty()) {
-                List<String> aliasedRmTypes = rmTypes.stream()
+            if (!rmTypesConstraint.isEmpty()) {
+                List<String> aliasedRmTypes = rmTypesConstraint.stream()
                         .map(StructureRmType::getAliasOrTypeName)
                         .toList();
                 this.structureConditions.add(new AslFieldValueQueryCondition(
@@ -189,7 +185,7 @@ public final class AslStructureQuery extends AslQuery {
     @Override
     public Map<IdentifiedPath, List<AslPathFilterJoinCondition>> joinConditionsForFiltering() {
         return joinConditionsForFiltering.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, e -> List.of(e.getValue())));
+                .collect(AslUtils.toLinkedHashMap(Map.Entry::getKey, e -> List.of(e.getValue())));
     }
 
     public void addJoinConditionForFiltering(IdentifiedPath ip, AslQueryCondition condition) {
@@ -208,5 +204,17 @@ public final class AslStructureQuery extends AslQuery {
 
     public AslSourceRelation getType() {
         return type;
+    }
+
+    public boolean isRequiresVersionTableJoin() {
+        return requiresVersionTableJoin;
+    }
+
+    public boolean isRepresentsOriginalVersionExpression() {
+        return representsOriginalVersionExpression;
+    }
+
+    public boolean isRoot() {
+        return root;
     }
 }

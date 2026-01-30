@@ -17,13 +17,15 @@
  */
 package org.ehrbase.configuration.config.security;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
 
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
+import org.springframework.boot.actuate.context.ShutdownEndpoint;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 
@@ -36,21 +38,14 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
-     * Supported values for the <code>management.endpoints.web.access</code> property value
+     * Spring boot actuator properties
      */
-    public enum ManagementEndpointsAccessType {
-        ADMIN_ONLY,
-        PRIVATE,
-        PUBLIC
-    }
-
+    protected final WebEndpointProperties webEndpointProperties;
     /**
      * Extended property on spring actuator config that defines who can access the management endpoint.
      */
     @Value("${management.endpoints.web.access:ADMIN_ONLY}")
-    protected ManagementEndpointsAccessType managementEndpointsAccessType;
-
-    protected WebEndpointProperties webEndpointProperties;
+    protected SecurityProperties.AccessType managementEndpointsAccessType;
 
     protected SecurityConfig(WebEndpointProperties webEndpointProperties) {
         this.webEndpointProperties = webEndpointProperties;
@@ -59,7 +54,7 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     protected abstract HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception;
 
     /**
-     * Configures the /management/** endpoint access
+     * Configures management endpoints access
      */
     protected AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
             configureManagementEndpointAccess(
@@ -69,19 +64,20 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
 
         logger.info("Management endpoint access type {}", managementEndpointsAccessType);
 
-        var managementAuthorizedUrl =
-                auth.requestMatchers(antMatcher(this.webEndpointProperties.getBasePath() + "/**"));
-
-        logger.debug("Management endpoints base path {}", this.webEndpointProperties.getBasePath());
+        var endpointRequestMatcher = EndpointRequest.toAnyEndpoint();
 
         return switch (managementEndpointsAccessType) {
-                // management endpoints are locked behind an authorization
-                // and are only available for users with the admin role
-            case ADMIN_ONLY -> managementAuthorizedUrl.hasRole(adminRoleSupplier);
-                // management endpoints are locked behind an authorization, but are available to any role
-            case PRIVATE -> managementAuthorizedUrl.hasAnyRole(privateRolesSupplier.toArray(new String[] {}));
-                // management endpoints can be accessed without an authorization
-            case PUBLIC -> managementAuthorizedUrl.permitAll();
+            // management endpoints are locked behind an authorization
+            // and are only available for users with the admin role
+            case AccessType.ADMIN_ONLY ->
+                auth.requestMatchers(endpointRequestMatcher).hasRole(adminRoleSupplier);
+            // management endpoints are locked behind an authorization, but are available to any role
+            case AccessType.PRIVATE ->
+                auth.requestMatchers(endpointRequestMatcher).hasAnyRole(privateRolesSupplier.toArray(new String[] {}));
+            // management endpoints can be accessed without an authorization
+            case AccessType.PUBLIC ->
+                auth.requestMatchers(endpointRequestMatcher.excluding(ShutdownEndpoint.class))
+                        .permitAll();
         };
     }
 }

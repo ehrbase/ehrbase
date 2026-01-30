@@ -22,6 +22,11 @@ Check out the documentation at https://docs.ehrbase.org
 
 ## Quick Start: Run EHRbase with Docker
 
+> [!TIP]
+> The fastest way to get started with EHRbase and openEHR is the **EHRbase Sandbox** available at https://sandkiste.ehrbase.org/.
+> 
+> For a deployment on premise read below.
+
 Check out the Installation guide at https://docs.ehrbase.org/docs/EHRbase/installation
 
 ## Building and Installing EHRbase
