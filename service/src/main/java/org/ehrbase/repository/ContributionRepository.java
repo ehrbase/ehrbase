@@ -196,7 +196,7 @@ public class ContributionRepository {
         return mapToAuditDetails(auditDetailsRecord);
     }
 
-    private com.nedap.archie.rm.generic.AuditDetails mapToAuditDetails(AuditDetailsRecord auditDetailsRecord) {
+    public com.nedap.archie.rm.generic.AuditDetails mapToAuditDetails(AuditDetailsRecord auditDetailsRecord) {
         if (auditDetailsRecord == null) {
             return null;
         }

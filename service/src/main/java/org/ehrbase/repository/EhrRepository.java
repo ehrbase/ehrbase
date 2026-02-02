@@ -27,6 +27,7 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -182,6 +183,12 @@ public class EhrRepository
                         singleEhrStatusCondition(ehrId, tables.versionHistory()),
                         version)
                 .filter(e -> UUID.fromString(e.getUid().getRoot().getValue()).equals(versionedObjectUid));
+    }
+
+    public RevisionHistory getRevisionHistory(UUID ehrId) {
+        return getRevisionHistory(
+                singleEhrStatusCondition(ehrId, tables.versionHead()),
+                singleEhrStatusCondition(ehrId, tables.versionHistory()));
     }
 
     public OffsetDateTime findEhrCreationTime(UUID ehrId) {

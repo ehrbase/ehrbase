@@ -462,17 +462,13 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition) {
-        // get number of versions
-        int versions = getLastVersionNumber(ehrUid, composition);
-        // fetch each version and add to revision history
-        RevisionHistory revisionHistory = new RevisionHistory();
-        for (int i = 1; i <= versions; i++) {
-            revisionHistory.addItem(revisionHistoryItemFromComposition(
-                    getOriginalVersionComposition(ehrUid, composition, i).orElseThrow()));
-        }
 
+        RevisionHistory revisionHistory = compositionRepository.getRevisionHistory(ehrUid, composition);
         if (revisionHistory.getItems().isEmpty()) {
-            throw new ObjectNotFoundException("VERSIONED_COMPOSITION", null); // never should be empty; not valid
+            throw new ObjectNotFoundException(
+                    "VERSIONED_COMPOSITION",
+                    "No VERSIONED_COMPOSITION with given id: %s"
+                            .formatted(composition)); // never should be empty; not valid
         }
         return revisionHistory;
     }

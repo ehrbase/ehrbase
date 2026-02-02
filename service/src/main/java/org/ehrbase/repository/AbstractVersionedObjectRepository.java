@@ -17,11 +17,15 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
+
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -64,6 +68,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Record3;
+import org.jooq.Record4;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
 import org.jooq.SelectFromStep;
@@ -72,6 +77,7 @@ import org.jooq.SelectLimitPercentStep;
 import org.jooq.SelectOnConditionStep;
 import org.jooq.SelectOrderByStep;
 import org.jooq.SelectQuery;
+import org.jooq.SelectSeekStep1;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.UpdatableRecord;
@@ -310,6 +316,48 @@ public abstract class AbstractVersionedObjectRepository<
         firstRecord.changed(true);
 
         firstRecord.insert();
+    }
+
+    protected RevisionHistory getRevisionHistory(Condition condition, Condition historyCondition) {
+        SelectConditionStep<Record4<UUID, Integer, UUID, UUID>> versionSq = context.select(
+                        VERSION_PROTOTYPE.VO_ID,
+                        VERSION_PROTOTYPE.SYS_VERSION,
+                        VERSION_PROTOTYPE.CONTRIBUTION_ID,
+                        VERSION_PROTOTYPE.AUDIT_ID)
+                .from(tables.versionHead())
+                .where(condition);
+        SelectConditionStep<Record4<UUID, Integer, UUID, UUID>> versionHistorySq = context.select(
+                        VERSION_HISTORY_PROTOTYPE.VO_ID,
+                        VERSION_HISTORY_PROTOTYPE.SYS_VERSION,
+                        VERSION_HISTORY_PROTOTYPE.CONTRIBUTION_ID,
+                        VERSION_PROTOTYPE.AUDIT_ID)
+                .from(tables.versionHistory())
+                .where(historyCondition);
+        SelectSeekStep1<Record4<UUID, Integer, UUID, UUID>, Integer> union =
+                context.selectFrom(versionSq).unionAll(versionHistorySq).orderBy(VERSION_PROTOTYPE.SYS_VERSION);
+        List<RevisionHistoryItem> revisionHistoryItems = context.select(
+                        VERSION_PROTOTYPE.VO_ID,
+                        VERSION_PROTOTYPE.SYS_VERSION,
+                        VERSION_PROTOTYPE.CONTRIBUTION_ID,
+                        VERSION_PROTOTYPE.AUDIT_ID,
+                        AUDIT_DETAILS)
+                .from(union)
+                .join(AUDIT_DETAILS)
+                .on(union.field(VERSION_PROTOTYPE.AUDIT_ID).eq(AUDIT_DETAILS.ID))
+                .fetch(r -> {
+                    ObjectVersionId vid = new ObjectVersionId(
+                            r.value1().toString(),
+                            systemService.getSystemId(),
+                            r.value2().toString());
+                    // Note: is List but only has more than one item when there are contributions regarding this
+                    // object of change type attestation (currently not supported)
+                    List<AuditDetails> auditList = new ArrayList<>();
+                    AuditDetails auditDetails = contributionRepository.mapToAuditDetails(r.value5());
+                    auditList.add(auditDetails);
+                    return new RevisionHistoryItem(vid, auditList);
+                });
+
+        return new RevisionHistory(revisionHistoryItems);
     }
 
     protected Optional<OriginalVersion<O>> getOriginalVersion(

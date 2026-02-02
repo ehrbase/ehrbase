@@ -28,6 +28,7 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import java.time.OffsetDateTime;
@@ -172,6 +173,12 @@ public class CompositionRepository
                 },
                 (n, r) -> {},
                 "No COMPOSITION with given id: %s".formatted(rootId));
+    }
+
+    public RevisionHistory getRevisionHistory(UUID ehrId, UUID compositionId) {
+        return getRevisionHistory(
+                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHead()),
+                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHistory()));
     }
 
     public boolean exists(UUID compId) {
