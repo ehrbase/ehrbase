@@ -614,7 +614,7 @@ public final class AslUtils {
     private static Stream<AslFieldFieldQueryCondition> numCapBetweenJoinConditions(
             AslQuery left, AslStructureQuery leftOwner, AslQuery right, AslStructureQuery rightOwner) {
 
-        if (leftOwner.isRoot()) {
+        if (leftOwner.isRoot() && !rightOwner.isRoot()) {
             // descendants of a root (EHR_STATUS, COMPOSITION) are always constrained by RM type, so no condition on num
             // is necessary
             return Stream.empty();
