@@ -263,9 +263,7 @@ public class EhrServiceImp implements EhrService {
         RevisionHistory revisionHistory = ehrRepository.getRevisionHistory(ehrUid);
 
         if (revisionHistory.getItems().isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "VERSIONED_EHR_STATUS",
-                    "No VERSIONED_EHR_STATUS for ehr_id:" + ehrUid); // never should be empty; not valid
+            raiseEhrNotFoundException(ehrUid);
         }
         return revisionHistory;
     }

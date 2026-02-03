@@ -65,6 +65,7 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertQuery;
 import org.jooq.JSONB;
+import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Record3;
@@ -317,6 +318,8 @@ public abstract class AbstractVersionedObjectRepository<
     }
 
     protected RevisionHistory getRevisionHistory(Condition condition, Condition historyCondition) {
+
+        String systemId = systemService.getSystemId();
         Table<VR> vt = tables.versionHead();
         SelectConditionStep<Record> versionSq = context.select(
                         vt.fields(VERSION_PROTOTYPE.VO_ID, VERSION_PROTOTYPE.SYS_VERSION, VERSION_PROTOTYPE.AUDIT_ID))
@@ -333,14 +336,12 @@ public abstract class AbstractVersionedObjectRepository<
         List<RevisionHistoryItem> revisionHistoryItems = context.select(
                         union.field(VERSION_PROTOTYPE.VO_ID), union.field(VERSION_PROTOTYPE.SYS_VERSION), AUDIT_DETAILS)
                 .from(union)
-                .join(AUDIT_DETAILS)
+                .join(AUDIT_DETAILS, JoinType.LEFT_OUTER_JOIN)
                 .on(union.field(VERSION_PROTOTYPE.AUDIT_ID).eq(AUDIT_DETAILS.ID))
                 .orderBy(union.field(VERSION_PROTOTYPE.SYS_VERSION))
                 .fetch(r -> {
                     ObjectVersionId vid = new ObjectVersionId(
-                            r.value1().toString(),
-                            systemService.getSystemId(),
-                            r.value2().toString());
+                            r.value1().toString(), systemId, r.value2().toString());
                     // Note: is List but only has more than one item when there are contributions regarding this
                     // object of change type attestation (currently not supported)
                     List<AuditDetails> auditList = new ArrayList<>();

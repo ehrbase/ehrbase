@@ -461,9 +461,7 @@ public class CompositionServiceImp implements CompositionService {
         RevisionHistory revisionHistory = compositionRepository.getRevisionHistory(ehrUid, composition);
         if (revisionHistory.getItems().isEmpty()) {
             throw new ObjectNotFoundException(
-                    "VERSIONED_COMPOSITION",
-                    "No VERSIONED_COMPOSITION with given id: %s"
-                            .formatted(composition)); // never should be empty; not valid
+                    "VERSIONED_COMPOSITION", "No VERSIONED_COMPOSITION with given id: %s".formatted(composition));
         }
         return revisionHistory;
     }
