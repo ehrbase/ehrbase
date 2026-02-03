@@ -25,19 +25,14 @@ import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.ObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.dto.EhrStatusDto;
@@ -265,48 +260,12 @@ public class EhrServiceImp implements EhrService {
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid) {
 
-        // get number of versions
-        int versions = Integer.parseInt(
-                getLatestVersionUidOfStatus(ehrUid).getVersionTreeId().getValue());
-        // fetch each version
-        UUID versionedObjectUid = UUID.fromString(
-                getLatestVersionUidOfStatus(ehrUid).getObjectId().getValue());
-        RevisionHistory revisionHistory = new RevisionHistory();
-        for (int i = 1; i <= versions; i++) {
-            Optional<OriginalVersion<EhrStatusDto>> ehrStatus = getEhrStatusAtVersion(ehrUid, versionedObjectUid, i);
-
-            // create RevisionHistoryItem for each version and append it to RevisionHistory
-            if (ehrStatus.isPresent()) revisionHistory.addItem(revisionHistoryItemFromEhrStatus(ehrStatus.get(), i));
-        }
+        RevisionHistory revisionHistory = ehrRepository.getRevisionHistory(ehrUid);
 
         if (revisionHistory.getItems().isEmpty()) {
-            throw new InternalServerException("Problem creating RevisionHistory"); // never should be empty; not valid
+            raiseEhrNotFoundException(ehrUid);
         }
         return revisionHistory;
-    }
-
-    private RevisionHistoryItem revisionHistoryItemFromEhrStatus(OriginalVersion<EhrStatusDto> ehrStatus, int version) {
-
-        String statusId = ehrStatus.getUid().getValue().split("::")[0];
-        ObjectVersionId objectVersionId =
-                new ObjectVersionId(statusId + "::" + systemService.getSystemId() + "::" + version);
-
-        // Note: is List but only has more than one item when there are contributions regarding this object of change
-        // type attestation
-        List<AuditDetails> auditDetailsList = new ArrayList<>();
-        // retrieving the audits
-        auditDetailsList.add(ehrStatus.getCommitAudit());
-
-        // add retrieval of attestations, if there are any
-        if (ehrStatus.getAttestations() != null) {
-            for (Attestation a : ehrStatus.getAttestations()) {
-                AuditDetails newAudit = new AuditDetails(
-                        a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
-                auditDetailsList.add(newAudit);
-            }
-        }
-
-        return new RevisionHistoryItem(objectVersionId, auditDetailsList);
     }
 
     /**

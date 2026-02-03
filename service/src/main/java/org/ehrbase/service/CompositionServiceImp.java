@@ -24,15 +24,10 @@ import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractVe
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -462,41 +457,13 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition) {
-        // get number of versions
-        int versions = getLastVersionNumber(ehrUid, composition);
-        // fetch each version and add to revision history
-        RevisionHistory revisionHistory = new RevisionHistory();
-        for (int i = 1; i <= versions; i++) {
-            revisionHistory.addItem(revisionHistoryItemFromComposition(
-                    getOriginalVersionComposition(ehrUid, composition, i).orElseThrow()));
-        }
 
+        RevisionHistory revisionHistory = compositionRepository.getRevisionHistory(ehrUid, composition);
         if (revisionHistory.getItems().isEmpty()) {
-            throw new ObjectNotFoundException("VERSIONED_COMPOSITION", null); // never should be empty; not valid
+            throw new ObjectNotFoundException(
+                    "VERSIONED_COMPOSITION", "No VERSIONED_COMPOSITION with given id: %s".formatted(composition));
         }
         return revisionHistory;
-    }
-
-    private RevisionHistoryItem revisionHistoryItemFromComposition(OriginalVersion<Composition> composition) {
-
-        ObjectVersionId objectVersionId = composition.getUid();
-
-        // Note: is List but only has more than one item when there are contributions regarding this
-        // object of change type attestation
-        List<AuditDetails> auditDetailsList = new ArrayList<>();
-        // retrieving the audits
-        auditDetailsList.add(composition.getCommitAudit());
-
-        // add retrieval of attestations, if there are any
-        if (composition.getAttestations() != null) {
-            for (Attestation a : composition.getAttestations()) {
-                AuditDetails newAudit = new AuditDetails(
-                        a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
-                auditDetailsList.add(newAudit);
-            }
-        }
-
-        return new RevisionHistoryItem(objectVersionId, auditDetailsList);
     }
 
     @Override
