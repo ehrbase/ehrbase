@@ -653,7 +653,7 @@ public abstract class AbstractVersionedObjectRepository<
      */
     protected <L extends Locatable> Optional<L> toRootLocatable(
             Record /*<UUID, Integer, String, …>*/ jsonbRecord, Class<L> locatableClass) {
-        if (jsonbRecord == null) {
+        if (jsonbRecord == null || jsonbRecord.get(2) == null) {
             return Optional.empty();
         }
         Pair<CharSequence, CharSequence>[] data =
