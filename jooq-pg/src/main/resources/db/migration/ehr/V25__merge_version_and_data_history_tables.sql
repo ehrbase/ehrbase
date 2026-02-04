@@ -15,17 +15,23 @@
  * See the License for the specific LANGUAGE governing permissions and
  * limitations under the License.
  */
+
 -- COMPOSITION
 ALTER TABLE comp_version_history
     SET (toast_tuple_target = 128),
+    ADD COLUMN IF NOT EXISTS data_ref int DEFAULT 0,
     ADD COLUMN IF NOT EXISTS data text DEFAULT NULL,
     ALTER COLUMN data SET STORAGE MAIN,
     ALTER COLUMN root_concept SET STORAGE PLAIN;
 
 UPDATE comp_version_history vh
-SET data = dh.data_agg
+SET data_ref = sys_version,
+    data = dh.data_agg
 FROM (
-         SELECT vo_id, sys_version, string_agg(entity_idx || CASE WHEN num=0 THEN data-'U' ELSE data END, E'\n') as data_agg
+         SELECT vo_id, sys_version, string_agg(
+            entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
+            E'\n' ORDER BY num ASC
+        ) as data_agg
          FROM comp_data_history
          GROUP BY vo_id, sys_version
      ) dh
@@ -36,31 +42,45 @@ DROP TABLE comp_data_history;
 --EHR_STATUS
 ALTER TABLE ehr_status_version_history
     SET (toast_tuple_target = 128),
+    ADD COLUMN IF NOT EXISTS data_ref int DEFAULT 0,
     ADD COLUMN IF NOT EXISTS data text DEFAULT NULL,
-    ALTER COLUMN data SET STORAGE MAIN;
+ALTER COLUMN data SET STORAGE MAIN;
 
 UPDATE ehr_status_version_history vh
-SET data = dh.data_agg
+SET data_ref = sys_version,
+    data = dh.data_agg
 FROM (
-         SELECT vo_id, sys_version, string_agg(entity_idx || CASE WHEN num=0 THEN data-'U' ELSE data END, E'\n') as data_agg
+         SELECT ehr_id, sys_version, string_agg(
+            entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
+            E'\n' ORDER BY num ASC
+        ) as data_agg
          FROM ehr_status_data_history
-         GROUP BY vo_id, sys_version
+         GROUP BY ehr_id, sys_version
      ) dh
-WHERE (vh.vo_id, vh.sys_version)=(dh.vo_id, dh.sys_version);
+WHERE (vh.ehr_id, vh.sys_version)=(dh.ehr_id, dh.sys_version);
 
 DROP TABLE ehr_status_data_history;
 
 --FOLDER
 ALTER TABLE ehr_folder_version_history
     SET (toast_tuple_target = 128),
+    ADD COLUMN IF NOT EXISTS data_ref int DEFAULT 0,
     ADD COLUMN IF NOT EXISTS data text DEFAULT NULL,
     ALTER COLUMN data SET STORAGE MAIN;
 
 UPDATE ehr_folder_version_history vh
-SET data = dh.data_agg
+SET data_ref = sys_version,
+    data = dh.data_agg
 FROM (
-         --TODO: comp id array
-         SELECT ehr_id, ehr_folders_idx, sys_version, string_agg(entity_idx || CASE WHEN num=0 THEN data-'U' ELSE data END, E'\n') as data_agg
+         SELECT
+            ehr_id, ehr_folders_idx, sys_version,
+            string_agg(
+                entity_idx || jsonb_set(
+                    CASE WHEN num=0 THEN data-'U' ELSE data END,
+                    '{IA}',
+                    to_jsonb(item_uuids)
+                )::text,
+                E'\n' ORDER BY num ASC) as data_agg
          FROM ehr_folder_data_history
          GROUP BY ehr_id, ehr_folders_idx, sys_version
      ) dh
