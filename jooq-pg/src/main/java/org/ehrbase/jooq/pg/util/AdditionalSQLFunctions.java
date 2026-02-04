@@ -125,11 +125,17 @@ public final class AdditionalSQLFunctions {
                 : DSL.aggregate("count", SQLDataType.BIGINT, f == null ? DSL.field(DSL.raw("*")) : f);
     }
 
-    
+    /**
+     * DSL.stringAgg / DSL.listAgg is not supported in all postgres derivates
+     *
+     * @param toAggregate
+     * @param separator
+     * @param orderBy
+     * @return
+     */
     public static Field<String> string_agg(Field<String> toAggregate, Field<String> separator, OrderField<?> orderBy) {
-        AggregateFunction<String> stringAgg = DSL.aggregate("string_agg", SQLDataType.CLOB, toAggregate, separator);
         if (orderBy == null) {
-            return stringAgg;
+            return DSL.aggregate("string_agg", SQLDataType.CLOB, toAggregate, separator);
         } else {
             return DSL.field("string_agg({0},{1} ORDER BY {2})", SQLDataType.CLOB, toAggregate, separator, orderBy);
         }
