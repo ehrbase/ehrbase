@@ -658,6 +658,7 @@ public abstract class AbstractVersionedObjectRepository<
                 DbToRmFormat.parseDbObjectAggregateString(jsonbRecord.get(2, String.class));
         ObjectNode reconstructed =
                 DbToRmFormat.reconstructRmObjectTree(data, Pair::getLeft, Pair::getRight, RmDbJson.MARSHAL_OM);
+        DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
         final Locatable rmObject;
         try {
             rmObject = RmDbJson.MARSHAL_OM.treeToValue(reconstructed, locatableClass);
