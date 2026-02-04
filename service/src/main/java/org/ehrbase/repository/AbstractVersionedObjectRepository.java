@@ -64,7 +64,6 @@ import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectHistoryTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.service.TimeProvider;
-import org.jooq.AggregateFunction;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -709,7 +708,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .execute();
     }
 
-    private AggregateFunction<String> stringAggregation(final Table<DR> dataHead) {
+    private Field<String> stringAggregation(final Table<DR> dataHead) {
         return AdditionalSQLFunctions.string_agg(
                 getDataAggregationBase(dataHead),
                 // \n control char cannot be present in jsonb -> use it as separator
@@ -721,7 +720,7 @@ public abstract class AbstractVersionedObjectRepository<
         Field<JSONB> dataField = dataHead.field(DATA_PROTOTYPE.DATA);
         return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
                 .concat(DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
-                        .when(0, DSL.field("{0} - 'U'", dataField))
+                        .when(DSL.inline(0), DSL.field("{0} - 'U'", dataField))
                         .else_(dataField)
                         .cast(SQLDataType.CLOB));
     }

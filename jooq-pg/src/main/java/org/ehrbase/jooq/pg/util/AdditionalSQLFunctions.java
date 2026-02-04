@@ -25,7 +25,6 @@ import org.jooq.AggregateFunction;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.OrderField;
-import org.jooq.OrderedAggregateFunction;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -126,13 +125,13 @@ public final class AdditionalSQLFunctions {
                 : DSL.aggregate("count", SQLDataType.BIGINT, f == null ? DSL.field(DSL.raw("*")) : f);
     }
 
-    public static AggregateFunction<String> string_agg(
-            Field<String> toAggregate, Field<String> separator, OrderField<?>... orderBy) {
+    
+    public static Field<String> string_agg(Field<String> toAggregate, Field<String> separator, OrderField<?> orderBy) {
         AggregateFunction<String> stringAgg = DSL.aggregate("string_agg", SQLDataType.CLOB, toAggregate, separator);
-        if (orderBy == null || orderBy.length == 0) {
+        if (orderBy == null) {
             return stringAgg;
         } else {
-            return (AggregateFunction<String>) ((OrderedAggregateFunction<String>) stringAgg).orderBy(orderBy);
+            return DSL.field("string_agg({0},{1} ORDER BY {2})", SQLDataType.CLOB, toAggregate, separator, orderBy);
         }
     }
 }

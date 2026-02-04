@@ -96,7 +96,7 @@ public class EhrFolderRepository
         return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
                 .concat(DSL.jsonbSet(
                                 DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
-                                        .when(0, DSL.field("{0} - 'U'", SQLDataType.JSONB, dataField))
+                                        .when(DSL.inline(0), DSL.field("{0} - 'U'", SQLDataType.JSONB, dataField))
                                         .else_(dataField),
                                 "IA",
                                 AdditionalSQLFunctions.to_jsonb(dataHead.field(EHR_FOLDER_DATA.ITEM_UUIDS)))
