@@ -558,28 +558,30 @@ public abstract class AbstractVersionedObjectRepository<
         }
 
         List<Field<?>> selectFields;
-        List<Field<?>> groupByFields;
+        List<Field<?>> groupByFields = Collections.emptyList();
         Field<?>[] additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
             selectFields = List.of(voIdField, sysVersionField, stringAggregationField);
-            groupByFields = List.of(voIdField, sysVersionField);
-
+            if (head) {
+                groupByFields = List.of(voIdField, sysVersionField);
+            }
         } else {
             selectFields = new ArrayList<>(3 + additionalFields.length);
-            groupByFields = new ArrayList<>(2 + additionalFields.length);
             selectFields.add(voIdField);
             selectFields.add(sysVersionField);
             selectFields.add(stringAggregationField);
             Collections.addAll(selectFields, additionalFields);
-            groupByFields.add(voIdField);
-            groupByFields.add(sysVersionField);
-            Collections.addAll(groupByFields, additionalFields);
+            if (head) {
+                groupByFields = new ArrayList<>(2 + additionalFields.length);
+                groupByFields.add(voIdField);
+                groupByFields.add(sysVersionField);
+                Collections.addAll(groupByFields, additionalFields);
+            }
         }
 
-        return fromJoinedVersionData(context.select(selectFields), head)
-                .where(condition)
-                .groupBy(groupByFields)
-                .getQuery();
+        SelectConditionStep<Record> query =
+                fromJoinedVersionData(context.select(selectFields), head).where(condition);
+        return (groupByFields.isEmpty() ? query : query.groupBy(groupByFields)).getQuery();
     }
 
     protected <R extends Record> SelectJoinStep<R> fromJoinedVersionData(SelectFromStep<R> select, boolean head) {
