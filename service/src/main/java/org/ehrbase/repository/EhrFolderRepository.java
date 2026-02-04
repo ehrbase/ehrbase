@@ -32,10 +32,8 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
-import org.ehrbase.jooq.pg.tables.EhrFolderDataHistory;
 import org.ehrbase.jooq.pg.tables.EhrFolderVersion;
 import org.ehrbase.jooq.pg.tables.EhrFolderVersionHistory;
-import org.ehrbase.jooq.pg.tables.records.EhrFolderDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionRecord;
@@ -63,11 +61,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class EhrFolderRepository
         extends AbstractVersionedObjectRepository<
-                EhrFolderVersionRecord,
-                EhrFolderDataRecord,
-                EhrFolderVersionHistoryRecord,
-                EhrFolderDataHistoryRecord,
-                Folder> {
+                EhrFolderVersionRecord, EhrFolderDataRecord, EhrFolderVersionHistoryRecord, Folder> {
 
     public EhrFolderRepository(
             DSLContext context,
@@ -79,7 +73,6 @@ public class EhrFolderRepository
                 EhrFolderVersion.EHR_FOLDER_VERSION,
                 EhrFolderData.EHR_FOLDER_DATA,
                 EhrFolderVersionHistory.EHR_FOLDER_VERSION_HISTORY,
-                EhrFolderDataHistory.EHR_FOLDER_DATA_HISTORY,
                 context,
                 contributionRepository,
                 systemService,
@@ -105,7 +98,7 @@ public class EhrFolderRepository
                 .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
                 .else_(AdditionalSQLFunctions.jsonb_set(
                         dataField,
-                        AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                        AdditionalSQLFunctions.to_jsonb(uuidsField),
                         DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
 
         return DSL.arrayAgg(DSL.field(DSL.row(keyField, valueField)));
@@ -182,7 +175,7 @@ public class EhrFolderRepository
                 ehrId,
                 folder,
                 singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx),
-                singleFolderInEhrCondition(tables.versionHistory(), ehrId, ehrFoldersIdx),
+                singleFolderInEhrCondition(tables.history(), ehrId, ehrFoldersIdx),
                 contributionId,
                 auditId,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
@@ -221,7 +214,7 @@ public class EhrFolderRepository
 
         return findByVersion(
                 singleFolderInEhrCondition(tables.versionHead(), ehrId, folderIdx),
-                singleFolderInEhrCondition(tables.versionHistory(), ehrId, folderIdx),
+                singleFolderInEhrCondition(tables.history(), ehrId, folderIdx),
                 version);
     }
 
@@ -233,7 +226,7 @@ public class EhrFolderRepository
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, int folderIdx, OffsetDateTime time) {
         return findVersionByTime(
                 singleFolderInEhrCondition(tables.versionHead(), ehrId, folderIdx),
-                singleFolderInEhrCondition(tables.versionHistory(), ehrId, folderIdx),
+                singleFolderInEhrCondition(tables.history(), ehrId, folderIdx),
                 time);
     }
 
@@ -244,8 +237,8 @@ public class EhrFolderRepository
                 .where(singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFolderIdx));
 
         var historyQuery = context.selectOne()
-                .from(tables.versionHistory())
-                .where(singleFolderInEhrCondition(tables.versionHistory(), ehrId, ehrFolderIdx));
+                .from(tables.history())
+                .where(singleFolderInEhrCondition(tables.history(), ehrId, ehrFolderIdx));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
     }
@@ -253,7 +246,7 @@ public class EhrFolderRepository
     public boolean hasFolderInEhrForVoId(UUID ehrId, UUID voId, int ehrFolderIdx) {
 
         final Table<EhrFolderVersionRecord> versionTable = tables.versionHead();
-        final Table<EhrFolderVersionHistoryRecord> historyTable = tables.versionHistory();
+        final Table<EhrFolderVersionHistoryRecord> historyTable = tables.history();
 
         var headQuery = context.selectOne()
                 .from(versionTable)
@@ -276,9 +269,8 @@ public class EhrFolderRepository
         }
         deleteQuery.execute();
 
-        DeleteConditionStep<EhrFolderVersionHistoryRecord> deleteHistoryQuery = context.deleteFrom(
-                        tables.versionHistory())
-                .where(field(VERSION_HISTORY_PROTOTYPE.EHR_ID).eq(ehrId));
+        DeleteConditionStep<EhrFolderVersionHistoryRecord> deleteHistoryQuery = context.deleteFrom(tables.history())
+                .where(field(HISTORY_PROTOTYPE.EHR_ID).eq(ehrId));
 
         if (ehrFoldersIdx != null) {
             deleteHistoryQuery = deleteHistoryQuery.and(EHR_FOLDER_VERSION_HISTORY.EHR_FOLDERS_IDX.eq(ehrFoldersIdx));

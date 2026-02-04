@@ -659,7 +659,7 @@ public class AqlSqlQueryBuilder {
                     .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
                     .else_(AdditionalSQLFunctions.jsonb_set(
                             dataField,
-                            AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                            AdditionalSQLFunctions.to_jsonb(uuidsField),
                             DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
         } else {
             valueField = dataField;

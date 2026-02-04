@@ -18,7 +18,6 @@
 package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
-import static org.ehrbase.jooq.pg.Tables.COMP_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION_HISTORY;
 
@@ -38,7 +37,6 @@ import java.util.UUID;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
-import org.ehrbase.jooq.pg.tables.records.CompDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompDataRecord;
 import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompVersionRecord;
@@ -55,7 +53,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class CompositionRepository
         extends AbstractVersionedObjectRepository<
-                CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, CompDataHistoryRecord, Composition> {
+                CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, Composition> {
 
     private final KnowledgeCacheService knowledgeCache;
 
@@ -70,7 +68,6 @@ public class CompositionRepository
                 COMP_VERSION,
                 COMP_DATA,
                 COMP_VERSION_HISTORY,
-                COMP_DATA_HISTORY,
                 context,
                 contributionRepository,
                 systemService,
@@ -164,7 +161,7 @@ public class CompositionRepository
                 ehrId,
                 composition,
                 singleCompositionInEhrCondition(ehrId, rootId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, rootId, tables.versionHistory()),
+                singleCompositionInEhrCondition(ehrId, rootId, tables.history()),
                 contributionId,
                 auditId,
                 r -> {
@@ -178,7 +175,7 @@ public class CompositionRepository
     public RevisionHistory getRevisionHistory(UUID ehrId, UUID compositionId) {
         return getRevisionHistory(
                 singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHistory()));
+                singleCompositionInEhrCondition(ehrId, compositionId, tables.history()));
     }
 
     public boolean exists(UUID compId) {
@@ -220,7 +217,7 @@ public class CompositionRepository
     public boolean isDeleted(UUID ehrId, UUID compId, Integer version) {
         return isDeleted(
                 singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHistory()),
+                singleCompositionInEhrCondition(ehrId, compId, tables.history()),
                 version);
     }
 
@@ -236,7 +233,7 @@ public class CompositionRepository
 
         return findByVersion(
                 singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHistory()),
+                singleCompositionInEhrCondition(ehrId, compId, tables.history()),
                 version);
     }
 
@@ -247,7 +244,7 @@ public class CompositionRepository
     private Optional<CompVersionHistoryRecord> findRootRecordByVersion(UUID ehrId, UUID compId, int version) {
         return findRootRecordByVersion(
                 singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHistory()),
+                singleCompositionInEhrCondition(ehrId, compId, tables.history()),
                 version);
     }
 
@@ -266,7 +263,7 @@ public class CompositionRepository
                 .from(tables.versionHead())
                 .where(COMP_VERSION.VO_ID.eq(compId), COMP_VERSION.SYS_VERSION.eq(1))
                 .unionAll(context.select(COMP_VERSION_HISTORY.TEMPLATE_ID)
-                        .from(tables.versionHistory())
+                        .from(tables.history())
                         .where(COMP_VERSION_HISTORY.VO_ID.eq(compId), COMP_VERSION_HISTORY.SYS_VERSION.eq(1)))
                 .fetchOptional(Record1::value1)
                 .flatMap(knowledgeCache::findTemplateIdByUuid);
@@ -291,7 +288,7 @@ public class CompositionRepository
 
         return getOriginalVersion(
                 singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.versionHistory()),
+                singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.history()),
                 version);
     }
 

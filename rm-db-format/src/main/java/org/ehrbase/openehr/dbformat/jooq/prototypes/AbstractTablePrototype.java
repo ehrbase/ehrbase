@@ -31,10 +31,7 @@ import org.jooq.impl.TableImpl;
 
 public abstract sealed class AbstractTablePrototype<P extends AbstractTablePrototype<P, R>, R extends Record>
         extends TableImpl<R>
-        permits ObjectDataHistoryTablePrototype,
-                ObjectDataTablePrototype,
-                ObjectVersionHistoryTablePrototype,
-                ObjectVersionTablePrototype {
+        permits ObjectDataTablePrototype, ObjectHistoryTablePrototype, ObjectVersionTablePrototype {
 
     private static final long serialVersionUID = 1L;
 

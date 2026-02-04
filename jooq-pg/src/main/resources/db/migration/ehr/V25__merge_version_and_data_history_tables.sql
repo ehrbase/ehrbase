@@ -19,14 +19,14 @@
 -- COMPOSITION
 ALTER TABLE comp_version_history
     SET (toast_tuple_target = 128),
-    ADD COLUMN IF NOT EXISTS data_ref int DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS data text DEFAULT NULL,
-    ALTER COLUMN data SET STORAGE MAIN,
+    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
+    ALTER COLUMN ov_data SET STORAGE MAIN,
     ALTER COLUMN root_concept SET STORAGE PLAIN;
 
 UPDATE comp_version_history vh
-SET data_ref = vh.sys_version,
-    data = dh.data_agg
+SET ov_ref = vh.sys_version,
+    ov_data = dh.data_agg
 FROM (
          SELECT vo_id, sys_version, string_agg(
             entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
@@ -42,13 +42,13 @@ DROP TABLE comp_data_history;
 --EHR_STATUS
 ALTER TABLE ehr_status_version_history
     SET (toast_tuple_target = 128),
-    ADD COLUMN IF NOT EXISTS data_ref int DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS data text DEFAULT NULL,
-ALTER COLUMN data SET STORAGE MAIN;
+    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
+    ALTER COLUMN ov_data SET STORAGE MAIN;
 
 UPDATE ehr_status_version_history vh
-SET data_ref = vh.sys_version,
-    data = dh.data_agg
+SET ov_ref = vh.sys_version,
+    ov_data = dh.data_agg
 FROM (
          SELECT ehr_id, sys_version, string_agg(
             entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
@@ -64,13 +64,13 @@ DROP TABLE ehr_status_data_history;
 --FOLDER
 ALTER TABLE ehr_folder_version_history
     SET (toast_tuple_target = 128),
-    ADD COLUMN IF NOT EXISTS data_ref int DEFAULT 0,
-    ADD COLUMN IF NOT EXISTS data text DEFAULT NULL,
-    ALTER COLUMN data SET STORAGE MAIN;
+    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
+    ALTER COLUMN ov_data SET STORAGE MAIN;
 
 UPDATE ehr_folder_version_history vh
-SET data_ref = vh.sys_version,
-    data = dh.data_agg
+SET ov_ref = vh.sys_version,
+    ov_data = dh.data_agg
 FROM (
          SELECT
             ehr_id, ehr_folders_idx, sys_version,

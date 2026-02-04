@@ -27,38 +27,39 @@ import org.jooq.impl.SQLDataType;
  */
 public enum FieldPrototype {
     // all
-    VO_ID(SQLDataType.UUID.nullable(false), true, true, true, true),
+    VO_ID(SQLDataType.UUID.nullable(false), true, true, true),
     // version
-    EHR_ID(SQLDataType.UUID.nullable(false), true, true, false, false),
-    CONTRIBUTION_ID(SQLDataType.UUID.nullable(false), true, true, false, false),
-    AUDIT_ID(SQLDataType.UUID.nullable(false), true, true, false, false),
-    SYS_PERIOD_LOWER(SQLDataType.TIMESTAMPWITHTIMEZONE(6).nullable(false), true, true, false, false),
+    EHR_ID(SQLDataType.UUID.nullable(false), true, true, false),
+    CONTRIBUTION_ID(SQLDataType.UUID.nullable(false), true, true, false),
+    AUDIT_ID(SQLDataType.UUID.nullable(false), true, true, false),
+    SYS_PERIOD_LOWER(SQLDataType.TIMESTAMPWITHTIMEZONE(6).nullable(false), true, true, false),
     // version and data history
-    SYS_VERSION(SQLDataType.INTEGER.nullable(false), true, true, false, true),
-    // version history
-    SYS_PERIOD_UPPER(SQLDataType.TIMESTAMPWITHTIMEZONE(6), false, true, false, false),
-    SYS_DELETED(SQLDataType.BOOLEAN.nullable(false), false, true, false, false),
+    SYS_VERSION(SQLDataType.INTEGER.nullable(false), true, true, false),
+    // history
+    SYS_PERIOD_UPPER(SQLDataType.TIMESTAMPWITHTIMEZONE(6), false, true, false),
+    SYS_DELETED(SQLDataType.BOOLEAN.nullable(false), false, true, false),
+    OV_DATA(SQLDataType.CLOB, false, true, false),
+    OV_REF(SQLDataType.INTEGER.nullable(false), false, true, false),
 
     // DATA
-    NUM(SQLDataType.INTEGER.nullable(false), false, false, true, true),
-    NUM_CAP(SQLDataType.INTEGER.nullable(false), false, false, true, true),
-    PARENT_NUM(SQLDataType.INTEGER.nullable(false), false, false, true, true),
-    CITEM_NUM(SQLDataType.INTEGER, false, false, true, true),
-    RM_ENTITY(SQLDataType.CLOB.nullable(false), false, false, true, true),
-    ENTITY_CONCEPT(SQLDataType.CLOB, false, false, true, true),
-    ENTITY_NAME(SQLDataType.CLOB, false, false, true, true),
-    ENTITY_ATTRIBUTE(SQLDataType.CLOB, false, false, true, true),
-    ENTITY_IDX(SQLDataType.CLOB.nullable(false), false, false, true, true),
-    ENTITY_IDX_LEN(SQLDataType.INTEGER.nullable(false), false, false, true, true),
-    DATA(SQLDataType.JSONB.nullable(false), false, false, true, true);
+    NUM(SQLDataType.INTEGER.nullable(false), false, false, true),
+    NUM_CAP(SQLDataType.INTEGER.nullable(false), false, false, true),
+    PARENT_NUM(SQLDataType.INTEGER.nullable(false), false, false, true),
+    CITEM_NUM(SQLDataType.INTEGER, false, false, true),
+    RM_ENTITY(SQLDataType.CLOB.nullable(false), false, false, true),
+    ENTITY_CONCEPT(SQLDataType.CLOB, false, false, true),
+    ENTITY_NAME(SQLDataType.CLOB, false, false, true),
+    ENTITY_ATTRIBUTE(SQLDataType.CLOB, false, false, true),
+    ENTITY_IDX(SQLDataType.CLOB.nullable(false), false, false, true),
+    ENTITY_IDX_LEN(SQLDataType.INTEGER.nullable(false), false, false, true),
+    DATA(SQLDataType.JSONB.nullable(false), false, false, true);
 
     private final DataType<?> type;
     private final Name fieldName;
     private final boolean[][] availableIn;
 
-    FieldPrototype(
-            DataType<?> type, boolean versionHead, boolean versionHistory, boolean dataHead, boolean dataHistory) {
-        this.availableIn = new boolean[][] {{versionHead, versionHistory}, {dataHead, dataHistory}};
+    FieldPrototype(DataType<?> type, boolean versionHead, boolean versionHistory, boolean dataHead) {
+        this.availableIn = new boolean[][] {{versionHead, versionHistory}, {dataHead, false}};
         this.fieldName = DSL.name(name().toLowerCase());
         this.type = type;
     }

@@ -19,7 +19,6 @@ package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.EHR_;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
-import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION_HISTORY;
 
@@ -39,7 +38,6 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrStatusDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionRecord;
@@ -60,11 +58,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class EhrRepository
         extends AbstractVersionedObjectRepository<
-                EhrStatusVersionRecord,
-                EhrStatusDataRecord,
-                EhrStatusVersionHistoryRecord,
-                EhrStatusDataHistoryRecord,
-                EhrStatus> {
+                EhrStatusVersionRecord, EhrStatusDataRecord, EhrStatusVersionHistoryRecord, EhrStatus> {
 
     public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttributeAlias.rmToJsonPathParts("is_modifiable");
     public static final String[] SUBJECT_ID_JSON_PATH =
@@ -83,7 +77,6 @@ public class EhrRepository
                 EHR_STATUS_VERSION,
                 EHR_STATUS_DATA,
                 EHR_STATUS_VERSION_HISTORY,
-                EHR_STATUS_DATA_HISTORY,
                 context,
                 contributionRepository,
                 systemService,
@@ -154,7 +147,7 @@ public class EhrRepository
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, OffsetDateTime time) {
         return findVersionByTime(
                 singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
+                singleEhrStatusCondition(ehrId, tables.history()),
                 time);
     }
 
@@ -180,7 +173,7 @@ public class EhrRepository
 
         return getOriginalVersion(
                         singleEhrStatusCondition(ehrId, tables.versionHead()),
-                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
+                        singleEhrStatusCondition(ehrId, tables.history()),
                         version)
                 .filter(e -> UUID.fromString(e.getUid().getRoot().getValue()).equals(versionedObjectUid));
     }
@@ -188,7 +181,7 @@ public class EhrRepository
     public RevisionHistory getRevisionHistory(UUID ehrId) {
         return getRevisionHistory(
                 singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()));
+                singleEhrStatusCondition(ehrId, tables.history()));
     }
 
     public OffsetDateTime findEhrCreationTime(UUID ehrId) {
@@ -205,8 +198,8 @@ public class EhrRepository
         context.deleteFrom(tables.versionHead())
                 .where(field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId))
                 .execute();
-        context.deleteFrom(tables.versionHistory())
-                .where(field(VERSION_HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
+        context.deleteFrom(tables.history())
+                .where(field(HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
                 .execute();
         context.deleteFrom(EHR_).where(EHR_.ID.eq(ehrId)).execute();
     }
@@ -218,7 +211,7 @@ public class EhrRepository
                 ehrId,
                 ehrStatus,
                 singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
+                singleEhrStatusCondition(ehrId, tables.history()),
                 contributionId,
                 auditId,
                 r -> {},
@@ -230,7 +223,7 @@ public class EhrRepository
 
         return findRootRecordByVersion(
                         singleEhrStatusCondition(ehrId, tables.versionHead()),
-                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
+                        singleEhrStatusCondition(ehrId, tables.history()),
                         1)
                 .map(root -> recordToVersionedEhrStatus(ehrId, root));
     }
