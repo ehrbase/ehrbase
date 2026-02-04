@@ -94,12 +94,12 @@ public class EhrFolderRepository
     protected Field<String> getDataAggregationBase(final Table<EhrFolderDataRecord> dataHead) {
         Field<JSONB> dataField = dataHead.field(DATA_PROTOTYPE.DATA);
         return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
-                .concat(DSL.jsonbSet(
+                .concat(AdditionalSQLFunctions.jsonb_set(
                                 DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
                                         .when(DSL.inline(0), DSL.field("{0} - 'U'", SQLDataType.JSONB, dataField))
                                         .else_(dataField),
-                                "IA",
-                                AdditionalSQLFunctions.to_jsonb(dataHead.field(EHR_FOLDER_DATA.ITEM_UUIDS)))
+                                AdditionalSQLFunctions.to_jsonb(dataHead.field(EHR_FOLDER_DATA.ITEM_UUIDS)),
+                                "IA")
                         .cast(SQLDataType.CLOB));
     }
 
