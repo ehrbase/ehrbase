@@ -25,7 +25,7 @@ ALTER TABLE comp_version_history
     ALTER COLUMN root_concept SET STORAGE PLAIN;
 
 UPDATE comp_version_history vh
-SET data_ref = sys_version,
+SET data_ref = vh.sys_version,
     data = dh.data_agg
 FROM (
          SELECT vo_id, sys_version, string_agg(
@@ -47,7 +47,7 @@ ALTER TABLE ehr_status_version_history
 ALTER COLUMN data SET STORAGE MAIN;
 
 UPDATE ehr_status_version_history vh
-SET data_ref = sys_version,
+SET data_ref = vh.sys_version,
     data = dh.data_agg
 FROM (
          SELECT ehr_id, sys_version, string_agg(
@@ -69,7 +69,7 @@ ALTER TABLE ehr_folder_version_history
     ALTER COLUMN data SET STORAGE MAIN;
 
 UPDATE ehr_folder_version_history vh
-SET data_ref = sys_version,
+SET data_ref = vh.sys_version,
     data = dh.data_agg
 FROM (
          SELECT
