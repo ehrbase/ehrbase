@@ -19,6 +19,8 @@ package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -43,6 +45,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -58,8 +62,9 @@ import org.ehrbase.openehr.dbformat.jooq.prototypes.AbstractTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectHistoryTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
+import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.service.TimeProvider;
-import org.jooq.ArrayAggOrderByStep;
+import org.jooq.AggregateFunction;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -165,7 +170,7 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected Optional<O> findHead(Condition condition) {
         SelectQuery<Record> locatableDataQuery = buildLocatableDataQuery(condition, true);
-        return toLocatable(locatableDataQuery.fetchOne(), getLocatableClass());
+        return toRootLocatable(locatableDataQuery.fetchOne(), getLocatableClass());
     }
 
     public Optional<O> findByVersion(Condition condition, Condition historyCondition, int version) {
@@ -183,7 +188,7 @@ public abstract class AbstractVersionedObjectRepository<
             throw new ObjectNotFoundException(typeName, "No %s with given ID found".formatted(typeName));
         }
 
-        return toLocatable(dataRecord, getLocatableClass());
+        return toRootLocatable(dataRecord, getLocatableClass());
     }
 
     protected <T> Field<T> field(TableField<? extends AbstractRecordPrototype<?>, T> field) {
@@ -537,7 +542,7 @@ public abstract class AbstractVersionedObjectRepository<
      *
      * @param condition
      * @param head
-     * @return SelectQuery<Record<UUID, Integer, JSONB, ...>
+     * @return SelectQuery<Record<UUID, Integer, String, ...>
      */
     protected SelectQuery<Record> buildLocatableDataQuery(Condition condition, boolean head) {
         Table<?> versionTable = tables.get(true, head);
@@ -545,13 +550,19 @@ public abstract class AbstractVersionedObjectRepository<
 
         Field<UUID> voIdField = versionTable.field(VERSION_PROTOTYPE.VO_ID);
         Field<Integer> sysVersionField = versionTable.field(VERSION_PROTOTYPE.SYS_VERSION);
-        Field<Record2<String, JSONB>[]> dataAggregationField = dataArrayAggregation(dataTable);
+        Field<String> stringAggregationField;
+        if (head) {
+            stringAggregationField = stringAggregation((Table<DR>) dataTable);
+        } else {
+            // TODO CDR-2204 ov_ref
+            stringAggregationField = dataTable.field(HISTORY_PROTOTYPE.OV_DATA);
+        }
 
         List<Field<?>> selectFields;
         List<Field<?>> groupByFields;
         Field<?>[] additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
-            selectFields = List.of(voIdField, sysVersionField, dataAggregationField);
+            selectFields = List.of(voIdField, sysVersionField, stringAggregationField);
             groupByFields = List.of(voIdField, sysVersionField);
 
         } else {
@@ -559,7 +570,7 @@ public abstract class AbstractVersionedObjectRepository<
             groupByFields = new ArrayList<>(2 + additionalFields.length);
             selectFields.add(voIdField);
             selectFields.add(sysVersionField);
-            selectFields.add(dataAggregationField);
+            selectFields.add(stringAggregationField);
             Collections.addAll(selectFields, additionalFields);
             groupByFields.add(voIdField);
             groupByFields.add(sysVersionField);
@@ -570,12 +581,6 @@ public abstract class AbstractVersionedObjectRepository<
                 .where(condition)
                 .groupBy(groupByFields)
                 .getQuery();
-    }
-
-    protected ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(Table<?> dataTable) {
-        Field<String> keyField = dataTable.field(DATA_PROTOTYPE.ENTITY_IDX);
-        Field<JSONB> dataField = dataTable.field(DATA_PROTOTYPE.DATA);
-        return DSL.arrayAgg(DSL.field(DSL.row(keyField, dataField)));
     }
 
     protected <R extends Record> SelectJoinStep<R> fromJoinedVersionData(SelectFromStep<R> select, boolean head) {
@@ -645,13 +650,21 @@ public abstract class AbstractVersionedObjectRepository<
      * @return
      * @param <L>
      */
-    protected <L extends Locatable> Optional<L> toLocatable(
-            Record /*<UUID, Integer, Record2<String, JSONB>[], …>*/ jsonbRecord, Class<L> locatableClass) {
+    protected <L extends Locatable> Optional<L> toRootLocatable(
+            Record /*<UUID, Integer, String, …>*/ jsonbRecord, Class<L> locatableClass) {
         if (jsonbRecord == null) {
             return Optional.empty();
         }
-        Record2<String, ?>[] jsonObjects = jsonbRecord.get(2, Record2[].class);
-        final Locatable rmObject = DbToRmFormat.reconstructRmObject(locatableClass, jsonObjects);
+        Pair<CharSequence, CharSequence>[] data =
+                DbToRmFormat.parseDbObjectAggregateString(jsonbRecord.get(2, String.class));
+        ObjectNode reconstructed =
+                DbToRmFormat.reconstructRmObjectTree(data, Pair::getLeft, Pair::getRight, RmDbJson.MARSHAL_OM);
+        final Locatable rmObject;
+        try {
+            rmObject = RmDbJson.MARSHAL_OM.treeToValue(reconstructed, locatableClass);
+        } catch (JsonProcessingException e) {
+            throw new InternalServerException(e);
+        }
         rmObject.setUid(
                 buildObjectVersionId(jsonbRecord.get(0, UUID.class), jsonbRecord.get(1, Integer.class), systemService));
         return Optional.of((L) rmObject);
@@ -667,11 +680,7 @@ public abstract class AbstractVersionedObjectRepository<
                                 DSL.inline(now),
                                 DSL.inline(false),
                                 versionHead.field(VERSION_PROTOTYPE.SYS_VERSION),
-                                AdditionalSQLFunctions.string_agg(
-                                        getDataAggregationBase(dataHead),
-                                        // \n control char cannot be present in jsonb -> use it as separator
-                                        DSL.field("E'\\n'", String.class),
-                                        dataHead.field(DATA_PROTOTYPE.NUM).asc())))
+                                stringAggregation(dataHead)))
                 .toArray(Field<?>[]::new);
 
         Condition pkeyConstraint = DSL.and(getVersionDataJoinFields().stream()
@@ -700,11 +709,21 @@ public abstract class AbstractVersionedObjectRepository<
                 .execute();
     }
 
-    protected Field<String> getDataAggregationBase(final Table<DR> dataHead) {
+    private AggregateFunction<String> stringAggregation(final Table<DR> dataHead) {
+        return AdditionalSQLFunctions.string_agg(
+                getDataAggregationBase(dataHead),
+                // \n control char cannot be present in jsonb -> use it as separator
+                DSL.field("E'\\n'", String.class),
+                dataHead.field(DATA_PROTOTYPE.NUM).asc());
+    }
 
-        // TODO: folder.items
+    protected Field<String> getDataAggregationBase(final Table<DR> dataHead) {
+        Field<JSONB> dataField = dataHead.field(DATA_PROTOTYPE.DATA);
         return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
-                .concat(dataHead.field(DATA_PROTOTYPE.DATA).cast(SQLDataType.CLOB));
+                .concat(DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
+                        .when(0, DSL.field("{0} - 'U'", dataField))
+                        .else_(dataField)
+                        .cast(SQLDataType.CLOB));
     }
 
     protected void deleteHead(

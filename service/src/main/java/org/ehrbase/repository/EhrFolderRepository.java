@@ -17,6 +17,7 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_DATA;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
@@ -38,20 +39,18 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionRecord;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
-import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.StructureNode;
 import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
 import org.ehrbase.service.TimeProvider;
-import org.jooq.ArrayAggOrderByStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Field;
 import org.jooq.JSONB;
-import org.jooq.Record2;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,24 +83,24 @@ public class EhrFolderRepository
         return List.of(EHR_FOLDER_VERSION.EHR_ID, EHR_FOLDER_VERSION.EHR_FOLDERS_IDX);
     }
 
-    /**
-     * Inserts item_uuids into json, so the FOLDER.items can be restored later.
-     * Restoring could be done by the db,
-     * but then the whole objects would need to be transferred.
-     */
+    /*
+    * entity_idx || jsonb_set(
+                    CASE WHEN num=0 THEN data-'U' ELSE data END,
+                    '{IA}',
+                    to_jsonb(item_uuids)
+                )::text
+    * */
     @Override
-    protected ArrayAggOrderByStep<Record2<String, JSONB>[]> dataArrayAggregation(Table<?> dataTable) {
-        Field<String> keyField = dataTable.field(DATA_PROTOTYPE.ENTITY_IDX);
-        Field<JSONB> dataField = dataTable.field(DATA_PROTOTYPE.DATA);
-        Field<UUID[]> uuidsField = dataTable.field(EhrFolderData.EHR_FOLDER_DATA.ITEM_UUIDS);
-        Field<JSONB> valueField = DSL.case_()
-                .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
-                .else_(AdditionalSQLFunctions.jsonb_set(
-                        dataField,
-                        AdditionalSQLFunctions.to_jsonb(uuidsField),
-                        DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
-
-        return DSL.arrayAgg(DSL.field(DSL.row(keyField, valueField)));
+    protected Field<String> getDataAggregationBase(final Table<EhrFolderDataRecord> dataHead) {
+        Field<JSONB> dataField = dataHead.field(DATA_PROTOTYPE.DATA);
+        return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
+                .concat(DSL.jsonbSet(
+                                DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
+                                        .when(0, DSL.field("{0} - 'U'", SQLDataType.JSONB, dataField))
+                                        .else_(dataField),
+                                "IA",
+                                AdditionalSQLFunctions.to_jsonb(dataHead.field(EHR_FOLDER_DATA.ITEM_UUIDS)))
+                        .cast(SQLDataType.CLOB));
     }
 
     /**
