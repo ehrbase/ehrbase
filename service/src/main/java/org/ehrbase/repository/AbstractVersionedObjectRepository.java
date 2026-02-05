@@ -677,7 +677,9 @@ public abstract class AbstractVersionedObjectRepository<
         Table<DR> dataHead = tables.dataHead();
         Table<VR> versionHead = tables.versionHead();
         Field<?>[] fields = Streams.concat(
-                        Arrays.stream(versionHead.fields()),
+                        Arrays.stream(tables.history().fields())
+                                .map(versionHead::field)
+                                .filter(Objects::nonNull),
                         Stream.of(
                                 DSL.inline(now),
                                 DSL.inline(false),
@@ -703,6 +705,7 @@ public abstract class AbstractVersionedObjectRepository<
                                 HISTORY_PROTOTYPE.OV_REF,
                                 HISTORY_PROTOTYPE.OV_DATA))
                 .map(tables.history()::field)
+                .filter(Objects::nonNull)
                 .toArray(Field<?>[]::new);
 
         context.insertInto(tables.history())

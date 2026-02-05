@@ -22,7 +22,7 @@ ALTER TABLE comp_version_history
     ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
     ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
     ALTER COLUMN ov_data SET STORAGE MAIN,
-    ALTER COLUMN root_concept SET STORAGE PLAIN;
+    DROP COLUMN root_concept;
 
 UPDATE comp_version_history vh
 SET ov_ref = vh.sys_version,
