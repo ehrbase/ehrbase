@@ -213,6 +213,7 @@ public abstract class AbstractVersionedObjectRepository<
                         Arrays.stream(head.fields()),
                         Stream.of(HISTORY_PROTOTYPE.SYS_PERIOD_UPPER, HISTORY_PROTOTYPE.SYS_DELETED))
                 .map(history::field)
+                .map(f -> f == null ? DSL.inline((String) null) : f)
                 .toArray(Field[]::new);
 
         return versionHeadQueryExtended(context)
