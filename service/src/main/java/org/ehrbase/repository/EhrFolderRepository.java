@@ -39,6 +39,7 @@ import org.ehrbase.jooq.pg.tables.records.EhrFolderDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionRecord;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
+import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.StructureNode;
 import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
 import org.ehrbase.service.TimeProvider;
@@ -96,10 +97,15 @@ public class EhrFolderRepository
         return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
                 .concat(AdditionalSQLFunctions.jsonb_set(
                                 DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
-                                        .when(DSL.inline(0), DSL.field("{0} - 'U'", SQLDataType.JSONB, dataField))
+                                        .when(
+                                                DSL.inline(0),
+                                                DSL.field(
+                                                        "{0} - '" + DbToRmFormat.UID_ALIAS + "'",
+                                                        SQLDataType.JSONB,
+                                                        dataField))
                                         .else_(dataField),
                                 AdditionalSQLFunctions.to_jsonb(dataHead.field(EHR_FOLDER_DATA.ITEM_UUIDS)),
-                                "IA")
+                                DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS)
                         .cast(SQLDataType.CLOB));
     }
 

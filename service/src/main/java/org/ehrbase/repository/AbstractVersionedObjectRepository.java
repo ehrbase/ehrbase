@@ -727,7 +727,7 @@ public abstract class AbstractVersionedObjectRepository<
         Field<JSONB> dataField = dataHead.field(DATA_PROTOTYPE.DATA);
         return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
                 .concat(DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
-                        .when(DSL.inline(0), DSL.field("{0} - 'U'", dataField))
+                        .when(DSL.inline(0), DSL.field("{0} - '" + DbToRmFormat.UID_ALIAS + "'", dataField))
                         .else_(dataField)
                         .cast(SQLDataType.CLOB));
     }

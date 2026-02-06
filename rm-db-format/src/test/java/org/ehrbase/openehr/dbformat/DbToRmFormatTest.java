@@ -18,6 +18,7 @@
 package org.ehrbase.openehr.dbformat;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -74,6 +75,28 @@ class DbToRmFormatTest {
     @Test
     void testTypeAlias() {
         assertThat(DbToRmFormat.TYPE_ALIAS).isEqualTo(RmAttributeAlias.getAlias(DbToRmFormat.TYPE_ATTRIBUTE));
+    }
+
+    @Test
+    void testMagnitudeAlias() {
+        assertThat(DbToRmFormat.MAGNITUDE_ALIAS)
+                .isEqualTo(RmAttributeAlias.getAlias(VersionedObjectDataStructure.MAGNITUDE_FIELD));
+    }
+
+    @Test
+    void testFeederAuditAttributeAlias() {
+        assertThat(DbToRmFormat.FEEDER_AUDIT_ATTRIBUTE_ALIAS).isEqualTo(RmAttributeAlias.getAlias("feeder_audit"));
+    }
+
+    @Test
+    void testFolderItemsUuidArrayAlias() {
+        assertThatThrownBy(() -> RmAttributeAlias.getAttribute(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void testUidAlias() {
+        assertThat(DbToRmFormat.UID_ALIAS).isEqualTo(RmAttributeAlias.getAlias("uid"));
     }
 
     @Test
