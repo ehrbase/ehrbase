@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRestClient;
 import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRestTemplateEndpoint;
@@ -58,7 +59,6 @@ public class TemplateSupport {
     }
 
     public void ensureTemplateExistence(Composition composition) {
-        String templateId = composition.getArchetypeDetails().getTemplateId().getValue();
-        endpoint.get().ensureExistence(templateId);
+        endpoint.get().ensureExistence(LocatableUtils.getTemplateId(composition));
     }
 }

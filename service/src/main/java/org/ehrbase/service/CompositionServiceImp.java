@@ -19,7 +19,6 @@ package org.ehrbase.service;
 
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.buildObjectVersionId;
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractUid;
-import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractVersion;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
@@ -44,7 +43,7 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
@@ -222,16 +221,15 @@ public class CompositionServiceImp implements CompositionService {
             throw new InternalServerException(e);
         }
 
-        UUID compId = UUID.fromString(compositionId.getObjectId().getValue());
-        int version = Integer.parseInt(compositionId.getVersionTreeId().getValue());
+        UUID compId = LocatableUtils.getUuid(compositionId);
+        int version = LocatableUtils.getUidVersion(compositionId);
 
         String existingTemplateId = compositionRepository
                 .findTemplateId(compId)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "composition", "No COMPOSITION with given id: %s".formatted(compId)));
 
-        String inputTemplateId =
-                composition.getArchetypeDetails().getTemplateId().getValue();
+        String inputTemplateId = LocatableUtils.getTemplateId(composition);
         if (!existingTemplateId.equals(inputTemplateId)) {
             // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
             if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0])) {
@@ -278,8 +276,8 @@ public class CompositionServiceImp implements CompositionService {
 
         compositionRepository.delete(
                 ehrId,
-                UUID.fromString(compositionId.getObjectId().getValue()),
-                extractVersion(compositionId),
+                LocatableUtils.getUuid(compositionId),
+                LocatableUtils.getUidVersion(compositionId),
                 contributionId,
                 audit);
     }
@@ -314,50 +312,50 @@ public class CompositionServiceImp implements CompositionService {
      * and the desired target serialized string format. Will parse the composition dto into target
      * format either with a custom lambda expression for desired target format
      *
-     * @param composition Composition dto from database
+     * @param composition Composition from database
      * @param format      Target format
      * @return Structured string with string of data and content format
      */
     @Override
-    public StructuredString serialize(CompositionDto composition, CompositionFormat format) {
-        final StructuredString compositionString;
+    public StructuredString serialize(Composition composition, CompositionFormat format) {
+
+        final String marshalled;
+        final StructuredStringFormat stringFormat;
         switch (format) {
             case XML:
-                compositionString = new StructuredString(
-                        new CanonicalXML().marshal(composition.getComposition(), false), StructuredStringFormat.XML);
+                marshalled = CanonicalXML.DEFAULT_INSTANCE.marshal(composition, false);
+                stringFormat = StructuredStringFormat.XML;
                 break;
             case JSON:
-                compositionString = new StructuredString(
-                        new CanonicalJson().marshal(composition.getComposition()), StructuredStringFormat.JSON);
+                marshalled = CanonicalJson.DEFAULT_INSTANCE.marshal(composition);
+                stringFormat = StructuredStringFormat.JSON;
                 break;
             case FLAT:
-                compositionString = new StructuredString(
-                        new FlatJasonProvider(createTemplateProvider())
-                                .buildFlatJson(FlatFormat.SIM_SDT, composition.getTemplateId())
-                                .marshal(composition.getComposition()),
-                        StructuredStringFormat.JSON);
+                marshalled = new FlatJasonProvider(createTemplateProvider())
+                        .buildFlatJson(FlatFormat.SIM_SDT, LocatableUtils.getTemplateId(composition))
+                        .marshal(composition);
+                stringFormat = StructuredStringFormat.JSON;
                 break;
             case STRUCTURED:
-                compositionString = new StructuredString(
-                        new FlatJasonProvider(createTemplateProvider())
-                                .buildFlatJson(FlatFormat.STRUCTURED, composition.getTemplateId())
-                                .marshal(composition.getComposition()),
-                        StructuredStringFormat.JSON);
+                marshalled = new FlatJasonProvider(createTemplateProvider())
+                        .buildFlatJson(FlatFormat.STRUCTURED, LocatableUtils.getTemplateId(composition))
+                        .marshal(composition);
+                stringFormat = StructuredStringFormat.JSON;
                 break;
             default:
                 throw new UnexpectedSwitchCaseException(format);
         }
-        return compositionString;
+        return new StructuredString(marshalled, stringFormat);
     }
 
     public Composition buildComposition(String content, CompositionFormat format, String templateId) {
         final Composition composition;
         switch (format) {
             case XML:
-                composition = new CanonicalXML().unmarshal(content, Composition.class);
+                composition = CanonicalXML.DEFAULT_INSTANCE.unmarshal(content, Composition.class);
                 break;
             case JSON:
-                composition = new CanonicalJson().unmarshal(content, Composition.class);
+                composition = CanonicalJson.DEFAULT_INSTANCE.unmarshal(content, Composition.class);
                 break;
             case FLAT:
                 composition = new FlatJasonProvider(createTemplateProvider())

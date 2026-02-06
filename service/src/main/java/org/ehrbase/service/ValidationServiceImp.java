@@ -18,6 +18,8 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.query.RMPathQuery;
+import com.nedap.archie.rm.archetyped.Archetyped;
+import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
@@ -147,14 +149,15 @@ public class ValidationServiceImp implements ValidationService {
         compositionMandatoryProperty(composition.getLanguage(), "language");
         compositionMandatoryProperty(composition.getCategory(), "category");
         compositionMandatoryProperty(composition.getComposer(), "composer");
-        compositionMandatoryProperty(composition.getArchetypeDetails(), "archetype details");
-        compositionMandatoryProperty(
-                composition.getArchetypeDetails().getTemplateId(), "archetype details/template_id");
+        Archetyped archetypeDetails = composition.getArchetypeDetails();
+        compositionMandatoryProperty(archetypeDetails, "archetype details");
+        TemplateId templateId = archetypeDetails.getTemplateId();
+        compositionMandatoryProperty(templateId, "archetype details/template_id");
 
-        String templateID = composition.getArchetypeDetails().getTemplateId().getValue();
-        check(templateID, composition);
+        String templateIdValue = templateId.getValue();
+        check(templateIdValue, composition);
 
-        logger.debug("Validated Composition against WebTemplate[{}]", templateID);
+        logger.trace("Validated Composition against WebTemplate[{}]", templateIdValue);
     }
 
     private void check(String templateID, Composition composition) {

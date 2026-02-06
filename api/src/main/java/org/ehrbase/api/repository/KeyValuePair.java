@@ -21,21 +21,21 @@ import java.util.UUID;
 
 public interface KeyValuePair {
 
-    public static KeyValuePair of(String pluginId, String key, String value) {
+    static KeyValuePair of(String pluginId, String key, String value) {
         return KeyValuePair.of(UUID.randomUUID(), pluginId, key, value);
     }
 
-    public static KeyValuePair of(UUID id, String pluginId, String key, String value) {
+    static KeyValuePair of(UUID id, String pluginId, String key, String value) {
         return new KeyValueEntry(id, pluginId, key, value);
     }
 
-    public UUID getId();
+    UUID getId();
 
-    public String getContext();
+    String getContext();
 
-    public String getKey();
+    String getKey();
 
-    public String getValue();
+    String getValue();
 }
 
 class KeyValueEntry implements KeyValuePair {

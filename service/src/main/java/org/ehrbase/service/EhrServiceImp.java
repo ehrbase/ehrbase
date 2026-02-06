@@ -44,6 +44,7 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
@@ -135,7 +136,7 @@ public class EhrServiceImp implements EhrService {
         validateEhrStatus(status);
 
         UUID ehrStatusId = UUID.fromString(ifMatch.getObjectId().getValue());
-        int version = Integer.parseInt(ifMatch.getVersionTreeId().getValue());
+        int version = LocatableUtils.getUidVersion(ifMatch);
 
         // set correct next id with incremented version
         ObjectVersionId statusVersionId = buildObjectVersionId(ehrStatusId, version + 1, systemService);

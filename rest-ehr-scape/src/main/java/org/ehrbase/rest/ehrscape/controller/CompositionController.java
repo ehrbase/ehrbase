@@ -32,7 +32,7 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.SystemService;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
@@ -126,34 +126,29 @@ public class CompositionController extends BaseController {
         }
 
         UUID ehrId = getEhrIdForComposition(identifier);
-        Optional<CompositionDto> compositionDto =
-                compositionService.retrieve(ehrId, identifier, version).map(c -> CompositionService.from(ehrId, c));
-        if (compositionDto.isPresent()) {
+        return compositionService
+                .retrieve(ehrId, identifier, version)
+                .map(c -> {
 
-            // Serialize onto target format
-            StructuredString serialize = compositionService.serialize(compositionDto.get(), format);
+                    // Serialize onto target format
+                    StructuredString serialize = compositionService.serialize(c, format);
 
-            CompositionResponseData responseDto = new CompositionResponseData();
-            responseDto.setComposition(serialize);
-            responseDto.setAction(Action.RETRIEVE);
-            responseDto.setFormat(format);
-            responseDto.setTemplateId(compositionDto.get().getTemplateId());
-            String fullUid = compositionDto.get().getUuid() + "::"
-                    + systemService.getSystemId() + "::"
-                    + compositionService.getLastVersionNumber(
-                            ehrId, compositionDto.get().getUuid());
-            responseDto.setCompositionUid(fullUid);
-            responseDto.setEhrId(compositionDto.get().getEhrId());
-            Meta meta = buildMeta(responseDto.getCompositionUid());
-            responseDto.setMeta(meta);
-            return ResponseEntity.ok()
-                    .headers(deprecationHeaders("COMPOSITION/getComposition", "COMPOSITION/getComposition"))
-                    .body(responseDto);
-        } else {
-            return ResponseEntity.notFound()
-                    .headers(deprecationHeaders("COMPOSITION/getComposition", "COMPOSITION/getComposition"))
-                    .build();
-        }
+                    CompositionResponseData responseDto = new CompositionResponseData();
+                    responseDto.setComposition(serialize);
+                    responseDto.setAction(Action.RETRIEVE);
+                    responseDto.setFormat(format);
+                    responseDto.setTemplateId(LocatableUtils.getTemplateId(c));
+                    responseDto.setCompositionUid(
+                            LocatableUtils.getUidRootString(c).orElseThrow());
+                    responseDto.setEhrId(ehrId);
+                    responseDto.setMeta(buildMeta(responseDto.getCompositionUid()));
+                    return ResponseEntity.ok()
+                            .headers(deprecationHeaders("COMPOSITION/getComposition", "COMPOSITION/getComposition"))
+                            .body(responseDto);
+                })
+                .orElseGet(() -> ResponseEntity.notFound()
+                        .headers(deprecationHeaders("COMPOSITION/getComposition", "COMPOSITION/getComposition"))
+                        .build());
     }
 
     @PutMapping(path = "/{uid}")
