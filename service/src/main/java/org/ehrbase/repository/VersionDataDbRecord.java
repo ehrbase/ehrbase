@@ -93,7 +93,7 @@ public record VersionDataDbRecord(
         return objectDataRecord;
     }
 
-    private static Stream<Pair<StructureNode, ObjectDataRecordPrototype>> buildDataRecords(
+    public static Stream<Pair<StructureNode, ObjectDataRecordPrototype>> buildDataRecords(
             UUID voId, Collection<StructureNode> nodeList, DSLContext context) {
         return nodeList.stream()
                 .filter(r -> r.getStructureRmType().isStructureEntry())

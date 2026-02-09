@@ -129,7 +129,7 @@ public class EhrFolderRepository
                 (n, r) -> addExtraFolderData(ehrId, ehrFoldersIdx, n, r));
     }
 
-    private void addExtraFolderData(UUID ehrId, int ehrFoldersIdx, StructureNode n, EhrFolderDataRecord r) {
+    public static void addExtraFolderData(UUID ehrId, int ehrFoldersIdx, StructureNode n, EhrFolderDataRecord r) {
         // TODO could be moved to earlier stage.
         //  r.data - items needs to be performed and setting data twice should be omitted
         JsonNode itemsNode = n.getJsonNode().remove("items");
@@ -144,7 +144,7 @@ public class EhrFolderRepository
         r.setEhrFoldersIdx(ehrFoldersIdx);
     }
 
-    private UUID[] getItemUuids(JsonNode itemsNode) {
+    private static UUID[] getItemUuids(JsonNode itemsNode) {
         if (itemsNode == null) {
             return new UUID[0];
         }
