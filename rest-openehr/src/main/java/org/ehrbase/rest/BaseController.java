@@ -220,13 +220,17 @@ public abstract class BaseController {
      * @return uuid <code>[UUID]</code> part
      */
     protected UUID extractVersionedObjectUidFromVersionUid(String versionUid) {
-        if (!versionUid.contains("::")) {
-            return UUID.fromString(versionUid);
+        int sepIdx = versionUid.indexOf("::");
+        String uuidStr;
+        if (sepIdx >= 0) {
+            uuidStr = versionUid.substring(0, sepIdx);
+        } else {
+            uuidStr = versionUid;
         }
-        return UUID.fromString(versionUid.substring(0, versionUid.indexOf("::")));
+        return UUID.fromString(uuidStr);
     }
 
-    protected Optional<Integer> extractVersionFromVersionUid(String versionUid) {
+    protected OptionalInt extractVersionFromVersionUid(String versionUid) {
         // extract the version from string of format "$UUID::$SYSTEM::$VERSION"
         // via making a substring starting at last occurrence of "::" + 2
         int lastOccurrence = versionUid.lastIndexOf("::");
@@ -235,9 +239,9 @@ public abstract class BaseController {
             if (version < 1) {
                 throw new InvalidApiParameterException("Version can't be zero or negative.");
             }
-            return Optional.of(version);
+            return OptionalInt.of(version);
         }
-        return Optional.empty();
+        return OptionalInt.empty();
     }
 
     /**

@@ -17,16 +17,11 @@
  */
 package org.ehrbase.service;
 
-import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractVersion;
-
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.UID;
-import com.nedap.archie.rm.support.identification.UIDBasedId;
 import com.nedap.archie.rm.support.identification.VersionTreeId;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,6 +31,7 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.util.FolderUtils;
 import org.ehrbase.util.UuidGenerator;
@@ -70,16 +66,22 @@ public class DirectoryServiceImp implements InternalDirectoryService {
             root = ehrFolderRepository.findHead(ehrId, 1);
 
         } else {
-            VersionTreeId versionTreeId = folderId.getVersionTreeId();
-            if (versionTreeId.isBranch()) {
-                throw new UnsupportedOperationException(
-                        "Version branching is not supported: %s".formatted(versionTreeId.getValue()));
-            }
             // check creating system matches
             if (!folderId.getCreatingSystemId().getValue().equals(systemService.getSystemId())) {
                 return Optional.empty();
             }
-            int version = Integer.parseInt(versionTreeId.getValue());
+            int version;
+            try {
+                version = LocatableUtils.getUidVersion(folderId);
+            } catch (NumberFormatException e) {
+                VersionTreeId versionTreeId = folderId.getVersionTreeId();
+                if (versionTreeId.isBranch()) {
+                    throw new UnsupportedOperationException(
+                            "Version branching is not supported: %s".formatted(versionTreeId.getValue()));
+                } else {
+                    throw e;
+                }
+            }
 
             // directory
             root = ehrFolderRepository.findByVersion(ehrId, 1, version);
@@ -90,13 +92,11 @@ public class DirectoryServiceImp implements InternalDirectoryService {
             ehrService.checkEhrExists(ehrId);
             return Optional.empty();
         }
-
-        // check if id matches
-        if (folderId != null && !folderId.getRoot().equals(root.get().getUid().getRoot())) {
-            return Optional.empty();
-        }
-
-        return findByPath(root.get(), StringUtils.split(path, '/'));
+        return root
+                // check if id matches
+                .filter(f ->
+                        folderId == null || folderId.getRoot().equals(f.getUid().getRoot()))
+                .flatMap(f -> findByPath(f, StringUtils.split(path, '/')));
     }
 
     @Override
@@ -105,7 +105,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         Optional<ObjectVersionId> versionByTime = ehrFolderRepository.findVersionByTime(ehrId, 1, time);
 
         return versionByTime
-                .flatMap(v -> ehrFolderRepository.findByVersion(ehrId, 1, extractVersion(v)))
+                .flatMap(v -> ehrFolderRepository.findByVersion(ehrId, 1, LocatableUtils.getUidVersion(v)))
                 .flatMap(f -> findByPath(f, StringUtils.split(path, '/')));
     }
 
@@ -140,11 +140,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         }
 
         FolderUtils.checkSiblingNameConflicts(folder);
-        UUID folderUid = Optional.ofNullable(folder.getUid())
-                .map(UIDBasedId::getRoot)
-                .map(UID::getValue)
-                .map(UUID::fromString)
-                .orElse(UuidGenerator.randomUUID());
+        UUID folderUid = Optional.of(folder).map(LocatableUtils::getUuid).orElse(UuidGenerator.randomUUID());
 
         updateUuid(folder, true, folderUid, 1);
 
@@ -169,15 +165,12 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         UUID uuid = UUID.fromString(ifMatches.getObjectId().getValue());
 
         // Ensure UIDs matching
-        String folderUidValue = Optional.ofNullable(folder.getUid())
-                .map(UIDBasedId::getRoot)
-                .map(UID::getValue)
-                .orElse(null);
-
-        if (folderUidValue != null && !Objects.equals(uuid.toString(), folderUidValue)) {
-            throw new PreconditionFailedException(
-                    String.format("FOLDER uid %s does not match %s", folderUidValue, uuid));
-        }
+        Optional.of(folder)
+                .map(LocatableUtils::getUuid)
+                .filter(u -> !u.equals(uuid))
+                .ifPresent(u -> {
+                    throw new PreconditionFailedException(String.format("FOLDER uid %s does not match %s", u, uuid));
+                });
 
         // validation
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
@@ -194,7 +187,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         FolderUtils.checkSiblingNameConflicts(folder);
 
-        int version = Integer.parseInt(ifMatches.getVersionTreeId().getValue());
+        int version = LocatableUtils.getUidVersion(ifMatches);
 
         updateUuid(folder, true, uuid, version + 1);
         ehrFolderRepository.update(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
@@ -220,7 +213,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         ehrFolderRepository.delete(
                 ehrId,
                 UUID.fromString(ifMatches.getObjectId().getValue()),
-                Integer.parseInt(ifMatches.getVersionTreeId().getValue()),
+                LocatableUtils.getUidVersion(ifMatches),
                 1,
                 contributionId,
                 auditId);
@@ -258,7 +251,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         if (latest.isPresent()) {
             Folder from = latest.get();
 
-            if (!UUID.fromString(from.getUid().getRoot().getValue()).equals(folderId)) {
+            if (!LocatableUtils.getUuid(from).equals(folderId)) {
                 throw new IllegalArgumentException("FolderIds do not match");
             }
 
