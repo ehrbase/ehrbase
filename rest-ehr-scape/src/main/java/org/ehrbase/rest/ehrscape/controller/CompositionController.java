@@ -138,8 +138,7 @@ public class CompositionController extends BaseController {
                     responseDto.setAction(Action.RETRIEVE);
                     responseDto.setFormat(format);
                     responseDto.setTemplateId(LocatableUtils.getTemplateId(c));
-                    responseDto.setCompositionUid(
-                            LocatableUtils.getUidRootString(c).orElseThrow());
+                    responseDto.setCompositionUid(c.getUid().getValue());
                     responseDto.setEhrId(ehrId);
                     responseDto.setMeta(buildMeta(responseDto.getCompositionUid()));
                     return ResponseEntity.ok()
