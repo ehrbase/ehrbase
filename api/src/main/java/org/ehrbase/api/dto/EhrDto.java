@@ -22,9 +22,6 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.support.identification.HierObjectId;
-import java.util.List;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 
 /**
  * Basic set of response data regarding <code>EHR_STATUS</code>. operations. Used as default or when <code>PREFER</code>
@@ -36,6 +33,4 @@ public record EhrDto(
         @JsonProperty(value = "system_id") HierObjectId systemId,
         @JsonProperty(value = "ehr_id") HierObjectId ehrId,
         @JsonProperty(value = "ehr_status") EhrStatusDto ehrStatus,
-        @JsonProperty(value = "time_created") DvDateTime timeCreated,
-        @JsonProperty(value = "compositions") List<CompositionDto> compositions,
-        @JsonProperty(value = "contributions") List<ContributionDto> contributions) {}
+        @JsonProperty(value = "time_created") DvDateTime timeCreated) {}

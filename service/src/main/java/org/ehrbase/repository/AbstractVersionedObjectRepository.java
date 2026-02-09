@@ -51,6 +51,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.Ehr;
@@ -392,13 +393,8 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected abstract Class<O> getLocatableClass();
 
-    public static int extractVersion(UIDBasedId uid) {
-        return Integer.parseInt(((ObjectVersionId) uid).getVersionTreeId().getValue());
-    }
-
     public static UUID extractUid(UIDBasedId uid) {
-
-        return UUID.fromString(uid.getRoot().getValue());
+        return LocatableUtils.getUuid(uid);
     }
 
     public static String extractSystemId(UIDBasedId uid) {
@@ -799,7 +795,7 @@ public abstract class AbstractVersionedObjectRepository<
             throw new PreconditionFailedException(NOT_MATCH_SYSTEM_ID);
         }
         // versions not consecutive
-        if ((headVersion + 1) != extractVersion(uid)) {
+        if ((headVersion + 1) != LocatableUtils.getUidVersion(uid)) {
             throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
         }
     }

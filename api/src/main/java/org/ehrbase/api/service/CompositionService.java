@@ -25,20 +25,10 @@ import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 
 public interface CompositionService extends VersionedObjectService<Composition, UUID> {
-
-    static CompositionDto from(UUID ehrId, Composition composition) {
-
-        return new CompositionDto(
-                composition,
-                composition.getArchetypeDetails().getTemplateId().getValue(),
-                UUID.fromString(composition.getUid().getRoot().getValue()),
-                ehrId);
-    }
 
     /**
      * @param compositionId The {@link UUID} of the composition to be returned.
@@ -58,7 +48,7 @@ public interface CompositionService extends VersionedObjectService<Composition, 
      * @param format      Target format
      * @return Structured string with string of data and content format
      */
-    StructuredString serialize(CompositionDto composition, CompositionFormat format);
+    StructuredString serialize(Composition composition, CompositionFormat format);
 
     /**
      * Retrieve the latest version number for the given composition ID.

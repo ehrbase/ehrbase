@@ -21,8 +21,6 @@ import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION_HISTORY;
 
-import com.nedap.archie.rm.archetyped.Archetyped;
-import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -36,6 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.records.CompDataRecord;
 import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
@@ -88,9 +87,7 @@ public class CompositionRepository
     @Transactional
     public void commit(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
         UUID templateId = Optional.of(composition)
-                .map(Composition::getArchetypeDetails)
-                .map(Archetyped::getTemplateId)
-                .map(TemplateId::getValue)
+                .map(LocatableUtils::getTemplateId)
                 .flatMap(knowledgeCache::findUuidByTemplateId)
                 .orElseThrow(
                         () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
@@ -146,11 +143,10 @@ public class CompositionRepository
     @Transactional
     public void update(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
 
-        UUID rootId = extractUid(composition.getUid());
+        UUID rootId = LocatableUtils.getUuid(composition);
+
         UUID templateId = Optional.of(composition)
-                .map(Composition::getArchetypeDetails)
-                .map(Archetyped::getTemplateId)
-                .map(TemplateId::getValue)
+                .map(LocatableUtils::getTemplateId)
                 .flatMap(knowledgeCache::findUuidByTemplateId)
                 .orElseThrow(
                         () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
@@ -296,7 +292,7 @@ public class CompositionRepository
 
         return findVersionByTime(
                         COMP_VERSION.VO_ID.eq(compositionId), COMP_VERSION_HISTORY.VO_ID.eq(compositionId), time)
-                .map(AbstractVersionedObjectRepository::extractVersion);
+                .map(LocatableUtils::getUidVersion);
     }
 
     @Transactional

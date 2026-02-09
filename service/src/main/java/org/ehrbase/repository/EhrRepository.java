@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
@@ -175,7 +176,7 @@ public class EhrRepository
                         singleEhrStatusCondition(ehrId, tables.versionHead()),
                         singleEhrStatusCondition(ehrId, tables.history()),
                         version)
-                .filter(e -> UUID.fromString(e.getUid().getRoot().getValue()).equals(versionedObjectUid));
+                .filter(e -> LocatableUtils.getUuid(e.getUid()).equals(versionedObjectUid));
     }
 
     public RevisionHistory getRevisionHistory(UUID ehrId) {

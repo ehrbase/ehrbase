@@ -27,7 +27,6 @@ import java.util.Objects;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.rest.ehrscape.responsedata.Action;
@@ -79,8 +78,7 @@ public class TemplateController extends BaseController {
         }
 
         Composition composition = templateService.buildExample(templateId);
-        CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
-        StructuredString serialized = compositionService.serialize(compositionDto, format);
+        StructuredString serialized = compositionService.serialize(composition, format);
 
         MediaType contentType =
                 format == CompositionFormat.XML ? MediaType.APPLICATION_XML : MediaType.APPLICATION_JSON;

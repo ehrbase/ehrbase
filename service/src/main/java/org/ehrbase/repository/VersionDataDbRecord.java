@@ -26,6 +26,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
 import org.ehrbase.openehr.dbformat.StructureIndex;
 import org.ehrbase.openehr.dbformat.StructureNode;
@@ -56,13 +57,13 @@ public record VersionDataDbRecord(
             OffsetDateTime now,
             DSLContext context) {
 
-        UUID voId = UUID.fromString(versionDataObject.getUid().getRoot().getValue());
+        UUID voId = LocatableUtils.getUuid(versionDataObject);
 
         ObjectVersionRecordPrototype versionRecord = VersionDataDbRecord.buildVersionRecord(
                 context,
                 ehrId,
                 voId,
-                AbstractVersionedObjectRepository.extractVersion(versionDataObject.getUid()),
+                LocatableUtils.getUidVersion(versionDataObject.getUid()),
                 contributionId,
                 auditId,
                 now);
