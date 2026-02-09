@@ -224,7 +224,7 @@ public class EhrFolderRepository
     }
 
     @Override
-    protected Class<Folder> getLocatableClass() {
+    public Class<Folder> getLocatableClass() {
         return Folder.class;
     }
 

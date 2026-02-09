@@ -235,7 +235,7 @@ public class EhrRepository
     }
 
     @Override
-    protected Class<EhrStatus> getLocatableClass() {
+    public Class<EhrStatus> getLocatableClass() {
         return EhrStatus.class;
     }
 

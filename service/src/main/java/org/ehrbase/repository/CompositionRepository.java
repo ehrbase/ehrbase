@@ -75,7 +75,7 @@ public class CompositionRepository
     }
 
     @Override
-    protected Class<Composition> getLocatableClass() {
+    public Class<Composition> getLocatableClass() {
         return Composition.class;
     }
 

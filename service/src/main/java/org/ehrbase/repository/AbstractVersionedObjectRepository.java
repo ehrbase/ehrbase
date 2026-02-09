@@ -391,7 +391,7 @@ public abstract class AbstractVersionedObjectRepository<
         return context.fetchExists(Ehr.EHR_, Ehr.EHR_.ID.eq(ehrId));
     }
 
-    protected abstract Class<O> getLocatableClass();
+    public abstract Class<O> getLocatableClass();
 
     public static UUID extractUid(UIDBasedId uid) {
         return LocatableUtils.getUuid(uid);
@@ -711,7 +711,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .execute();
     }
 
-    private Field<String> stringAggregation(final Table<DR> dataHead) {
+    public Field<String> stringAggregation(final Table<DR> dataHead) {
         return AdditionalSQLFunctions.string_agg(
                 getDataAggregationBase(dataHead),
                 // \n control char cannot be present in jsonb -> use it as separator
