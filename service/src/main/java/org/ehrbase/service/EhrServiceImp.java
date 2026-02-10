@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.buildObjectVersionId;
-import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractVersion;
 import static org.ehrbase.util.OriginalVersionUtil.originalVersionCopyWithData;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -312,7 +311,7 @@ public class EhrServiceImp implements EhrService {
 
             ObjectVersionId versionId = (ObjectVersionId) folder.getUid();
             UUID folderId = UUID.fromString(versionId.getRoot().getValue());
-            int folderVersion = extractVersion(versionId);
+            int folderVersion = LocatableUtils.getUidVersion(versionId);
             ehrFolderRepository.delete(ehrId, folderId, folderVersion, 1, contributionId, deleteAuditId);
         });
 
