@@ -64,25 +64,33 @@ DROP TABLE ehr_status_data_history;
 --FOLDER
 ALTER TABLE ehr_folder_version_history
     SET (toast_tuple_target = 128),
+    ADD COLUMN IF NOT EXISTS ov_item_uuids uuid[] DEFAULT NULL,
     ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
     ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
     ALTER COLUMN ov_data SET STORAGE MAIN;
 
 UPDATE ehr_folder_version_history vh
 SET ov_ref = vh.sys_version,
-    ov_data = dh.data_agg
+    ov_data = dh.data_agg,
+	ov_item_uuids=dh.item_uuids
 FROM (
          SELECT
             ehr_id, ehr_folders_idx, sys_version,
             string_agg(
-                entity_idx || jsonb_set(
-                    CASE WHEN num=0 THEN data-'U' ELSE data END,
-                    '{IA}',
-                    to_jsonb(item_uuids)
-                )::text,
-                E'\n' ORDER BY num ASC) as data_agg
-         FROM ehr_folder_data_history
-         GROUP BY ehr_id, ehr_folders_idx, sys_version
+                entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
+                E'\n' ORDER BY num ASC) as data_agg,
+             trim_array((SELECT array_agg(uid.v ORDER BY num ASC)
+				FROM
+				ehr_folder_data_history h2
+				join lateral (
+				select * from
+				unnest(h2.item_uuids)
+				UNION ALL
+				SELECT NULL) as uid(v) on true
+				where (h.ehr_id, h.ehr_folders_idx, h.sys_version)=(h2.ehr_id, h2.ehr_folders_idx, h2.sys_version)
+				), 1) as item_uuids
+         FROM ehr_folder_data_history h
+         GROUP BY h.ehr_id, h.ehr_folders_idx, h.sys_version
      ) dh
 WHERE (vh.ehr_id, vh.ehr_folders_idx, vh.sys_version)=(dh.ehr_id, dh.ehr_folders_idx, dh.sys_version);
 

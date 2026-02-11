@@ -22,6 +22,9 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Streams;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
@@ -29,6 +32,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
@@ -48,10 +53,14 @@ import org.jooq.DSLContext;
 import org.jooq.DeleteConditionStep;
 import org.jooq.Field;
 import org.jooq.JSONB;
+import org.jooq.Record;
+import org.jooq.Record1;
+import org.jooq.SelectConditionStep;
+import org.jooq.SelectSelectStep;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
-import org.jooq.impl.SQLDataType;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,29 +93,89 @@ public class EhrFolderRepository
         return List.of(EHR_FOLDER_VERSION.EHR_ID, EHR_FOLDER_VERSION.EHR_FOLDERS_IDX);
     }
 
-    /*
-    * entity_idx || jsonb_set(
-                    CASE WHEN num=0 THEN data-'U' ELSE data END,
-                    '{IA}',
-                    to_jsonb(item_uuids)
-                )::text
-    * */
     @Override
-    protected Field<String> getDataAggregationBase(final Table<EhrFolderDataRecord> dataHead) {
-        Field<JSONB> dataField = dataHead.field(DATA_PROTOTYPE.DATA);
-        return dataHead.field(DATA_PROTOTYPE.ENTITY_IDX)
-                .concat(AdditionalSQLFunctions.jsonb_set(
-                                DSL.case_(dataHead.field(DATA_PROTOTYPE.NUM))
-                                        .when(
-                                                DSL.inline(0),
-                                                DSL.field(
-                                                        "{0} - '" + DbToRmFormat.UID_ALIAS + "'",
-                                                        SQLDataType.JSONB,
-                                                        dataField))
-                                        .else_(dataField),
-                                AdditionalSQLFunctions.to_jsonb(dataHead.field(EHR_FOLDER_DATA.ITEM_UUIDS)),
-                                DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS)
-                        .cast(SQLDataType.CLOB));
+    protected Field<?>[] getAdditionalSelectFields(
+            final Table<?> versionTable, final Table<?> dataTable, final boolean head) {
+        // TODO CDR-2204 head == true case use itemUuidFieldAggregation()
+        return new Field[] {
+            head
+                    ? dataTable.field(EHR_FOLDER_DATA.ITEM_UUIDS)
+                    : versionTable.field(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)
+        };
+    }
+
+    @Override
+    protected Pair<Stream<Field<?>>, Stream<Field<?>>> additionalCopyToHistoryFields(
+            final Table<EhrFolderVersionRecord> versionHead,
+            final Table<EhrFolderDataRecord> dataHead,
+            final OffsetDateTime now) {
+        Pair<Stream<Field<?>>, Stream<Field<?>>> base = super.additionalCopyToHistoryFields(versionHead, dataHead, now);
+        Field<?> uuidArrayField = itemUuidFieldAggregation(versionHead);
+        return Pair.of(
+                Streams.concat(base.getLeft(), Stream.of(uuidArrayField)),
+                Streams.concat(base.getRight(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
+    }
+
+    /**
+     * trim_array(
+     * (SELECT array_agg(uid.v ORDER BY num ASC)
+     * 				FROM
+     * 				ehr_folder_data h2
+     * 				join lateral (
+     * 				select * from
+     * 				unnest(h2.item_uuids)
+     * 				UNION ALL
+     * 				SELECT NULL) as uid(v) on true
+     * 				where (h.ehr_id, h.ehr_folders_idx, h.sys_version)=(h2.ehr_id, h2.ehr_folders_idx, h2.sys_version)
+     * 				)
+     * 	, 1)
+     *
+     * @param versionHead
+     * @return
+     */
+    private @NonNull Field<?> itemUuidFieldAggregation(final Table<EhrFolderVersionRecord> versionHead) {
+        Table<EhrFolderDataRecord> sqTable = tables.dataHead().as("h2");
+
+        SelectSelectStep<Record1<UUID>> separator = DSL.select(DSL.castNull(UUID.class));
+        Table<?> itemUuids = DSL.unnest(sqTable.field(EHR_FOLDER_DATA.ITEM_UUIDS));
+        Field<UUID> unnestedUuid = itemUuids.field(0, UUID.class).as("v");
+        Table<Record1<UUID>> unnestedWithSeparator = DSL.lateral(
+                        context.select(unnestedUuid).from(itemUuids).unionAll(separator))
+                .as("uid");
+
+        SelectConditionStep<Record1<UUID[]>> aggregated = context.select(DSL.arrayAgg(unnestedUuid)
+                        .orderBy(sqTable.field(DATA_PROTOTYPE.NUM).asc()))
+                .from(sqTable)
+                .join(unnestedWithSeparator)
+                .on(DSL.trueCondition())
+                .where(sqTable.field(VERSION_PROTOTYPE.EHR_ID)
+                        .eq(versionHead.field(VERSION_PROTOTYPE.EHR_ID))
+                        .and(sqTable.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
+                                .eq(versionHead.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX))));
+
+        return AdditionalSQLFunctions.trim_array(aggregated.asField(), DSL.inline(1));
+    }
+
+    @Override
+    protected Pair<CharSequence, ObjectNode> parseJsonData(
+            final Pair<CharSequence, CharSequence> p, final Record rec, final int idx) {
+        Pair<CharSequence, ObjectNode> parsed = super.parseJsonData(p, rec, idx);
+        UUID[] uuids = rec.get(3, UUID[].class);
+        ObjectNode node = parsed.getRight();
+        int row = 0;
+        ArrayNode itemUuidsNode = node.putArray(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS);
+        for (final UUID uuid : uuids) {
+            if (uuid == null) {
+                row++;
+                if (row > idx) {
+                    break;
+                }
+            } else if (row == idx) {
+                itemUuidsNode.add(uuid.toString());
+            }
+        }
+
+        return parsed;
     }
 
     /**

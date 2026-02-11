@@ -33,6 +33,8 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,11 +42,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.PrimitiveIterator.OfInt;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.apache.commons.io.input.CharSequenceReader;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -556,6 +561,7 @@ public abstract class AbstractVersionedObjectRepository<
 
         List<Field<?>> selectFields;
         List<Field<?>> groupByFields = Collections.emptyList();
+        // TODO CDR-2204 not all fields should to be part of group by
         Field<?>[] additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
             selectFields = List.of(voIdField, sysVersionField, stringAggregationField);
@@ -653,10 +659,14 @@ public abstract class AbstractVersionedObjectRepository<
         if (jsonbRecord == null || jsonbRecord.get(2) == null) {
             return Optional.empty();
         }
-        Pair<CharSequence, CharSequence>[] data =
-                DbToRmFormat.parseDbObjectAggregateString(jsonbRecord.get(2, String.class));
+        OfInt idx = IntStream.iterate(0, i -> i + 1).iterator();
+        Pair<CharSequence, ObjectNode>[] parsed = Arrays.stream(
+                        DbToRmFormat.parseDbObjectAggregateString(jsonbRecord.get(2, String.class)))
+                .sequential()
+                .map(p -> parseJsonData(p, jsonbRecord, idx.next()))
+                .toArray(Pair[]::new);
         ObjectNode reconstructed =
-                DbToRmFormat.reconstructRmObjectTree(data, Pair::getLeft, Pair::getRight, RmDbJson.MARSHAL_OM);
+                DbToRmFormat.reconstructRmObjectTree(parsed, Pair::getLeft, Pair::getRight, RmDbJson.MARSHAL_OM);
         DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
         final Locatable rmObject;
         try {
@@ -669,19 +679,42 @@ public abstract class AbstractVersionedObjectRepository<
         return Optional.of((L) rmObject);
     }
 
+    protected Pair<CharSequence, ObjectNode> parseJsonData(Pair<CharSequence, CharSequence> p, Record rec, int idx) {
+        try {
+            return Pair.of(
+                    p.getLeft(), (ObjectNode) RmDbJson.MARSHAL_OM.readTree(new CharSequenceReader(p.getRight())));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    protected Pair<Stream<Field<?>>, Stream<Field<?>>> additionalCopyToHistoryFields(
+            final Table<VR> versionHead, final Table<DR> dataHead, OffsetDateTime now) {
+        return Pair.of(
+                Stream.of(
+                        DSL.inline(now),
+                        DSL.inline(false),
+                        versionHead.field(VERSION_PROTOTYPE.SYS_VERSION),
+                        stringAggregation(dataHead)),
+                Stream.of(
+                        HISTORY_PROTOTYPE.SYS_PERIOD_UPPER,
+                        HISTORY_PROTOTYPE.SYS_DELETED,
+                        HISTORY_PROTOTYPE.OV_REF,
+                        HISTORY_PROTOTYPE.OV_DATA));
+    }
+
     protected void copyHeadToHistory(HR historyRecord, OffsetDateTime now) {
 
-        Table<DR> dataHead = tables.dataHead();
-        Table<VR> versionHead = tables.versionHead();
+        Table<DR> dataHead = tables.dataHead().as("dataHead");
+        Table<VR> versionHead = tables.versionHead().as("versionHead");
+        Pair<Stream<Field<?>>, Stream<Field<?>>> additionalFields =
+                additionalCopyToHistoryFields(versionHead, dataHead, now);
         Field<?>[] fields = Streams.concat(
+                        // version fields which are also present in version_history
                         Arrays.stream(tables.history().fields())
                                 .map(versionHead::field)
                                 .filter(Objects::nonNull),
-                        Stream.of(
-                                DSL.inline(now),
-                                DSL.inline(false),
-                                versionHead.field(VERSION_PROTOTYPE.SYS_VERSION),
-                                stringAggregation(dataHead)))
+                        additionalFields.getLeft())
                 .toArray(Field<?>[]::new);
 
         Condition pkeyConstraint = DSL.and(getVersionDataJoinFields().stream()
@@ -694,13 +727,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .where(pkeyConstraint)
                 .groupBy(versionHead.getPrimaryKey().getFields());
 
-        Field<?>[] historyFields = Streams.concat(
-                        Arrays.stream(versionHead.fields()),
-                        Stream.of(
-                                HISTORY_PROTOTYPE.SYS_PERIOD_UPPER,
-                                HISTORY_PROTOTYPE.SYS_DELETED,
-                                HISTORY_PROTOTYPE.OV_REF,
-                                HISTORY_PROTOTYPE.OV_DATA))
+        Field<?>[] historyFields = Streams.concat(Arrays.stream(versionHead.fields()), additionalFields.getRight())
                 .map(tables.history()::field)
                 .filter(Objects::nonNull)
                 .toArray(Field<?>[]::new);

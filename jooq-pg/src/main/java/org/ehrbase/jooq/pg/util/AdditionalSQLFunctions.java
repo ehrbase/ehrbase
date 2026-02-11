@@ -140,4 +140,8 @@ public final class AdditionalSQLFunctions {
             return DSL.field("string_agg({0},{1} ORDER BY {2})", SQLDataType.CLOB, toAggregate, separator, orderBy);
         }
     }
+
+    public static <T> Field<T[]> trim_array(Field<T[]> field, Field<Integer> elementsToTrim) {
+        return DSL.function("trim_array", (Class<T[]>) field.getType().arrayType(), field, elementsToTrim);
+    }
 }
