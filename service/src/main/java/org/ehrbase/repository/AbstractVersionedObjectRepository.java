@@ -92,15 +92,6 @@ import org.jooq.impl.SQLDataType;
 public abstract class AbstractVersionedObjectRepository<
         VR extends UpdatableRecord, DR extends UpdatableRecord, HR extends UpdatableRecord, O extends Locatable> {
 
-    public static final String NOT_MATCH_UID = "If-Match version_uid does not match uid";
-    public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
-    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version";
-
-    protected static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
-    protected static final ObjectHistoryTablePrototype HISTORY_PROTOTYPE = ObjectHistoryTablePrototype.INSTANCE;
-    protected static final ObjectDataTablePrototype DATA_PROTOTYPE = ObjectDataTablePrototype.INSTANCE;
-    private final AuditDetailsTargetType targetType;
-
     protected final class Tables {
         private final Table<VR> versionHead;
         private final Table<DR> dataHead;
@@ -139,11 +130,19 @@ public abstract class AbstractVersionedObjectRepository<
         }
     }
 
-    protected final Tables tables;
+    public static final String NOT_MATCH_UID = "If-Match version_uid does not match uid";
+    public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
+    public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version";
 
+    protected static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
+    protected static final ObjectHistoryTablePrototype HISTORY_PROTOTYPE = ObjectHistoryTablePrototype.INSTANCE;
+    protected static final ObjectDataTablePrototype DATA_PROTOTYPE = ObjectDataTablePrototype.INSTANCE;
+
+    private final AuditDetailsTargetType targetType;
+
+    protected final Tables tables;
     protected final DSLContext context;
     protected final ContributionRepository contributionRepository;
-
     protected final SystemService systemService;
     protected final TimeProvider timeProvider;
 

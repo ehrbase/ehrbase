@@ -256,10 +256,10 @@ public class CompositionRepository
 
     public Optional<String> findTemplateId(UUID compId) {
         return context.select(COMP_VERSION.TEMPLATE_ID)
-                .from(tables.versionHead())
+                .from(COMP_VERSION)
                 .where(COMP_VERSION.VO_ID.eq(compId), COMP_VERSION.SYS_VERSION.eq(1))
                 .unionAll(context.select(COMP_VERSION_HISTORY.TEMPLATE_ID)
-                        .from(tables.history())
+                        .from(COMP_VERSION_HISTORY)
                         .where(COMP_VERSION_HISTORY.VO_ID.eq(compId), COMP_VERSION_HISTORY.SYS_VERSION.eq(1)))
                 .fetchOptional(Record1::value1)
                 .flatMap(knowledgeCache::findTemplateIdByUuid);
@@ -267,7 +267,7 @@ public class CompositionRepository
 
     public Optional<UUID> findEHRforComposition(UUID compId) {
         return context.select(COMP_VERSION.EHR_ID)
-                .from(tables.versionHead())
+                .from(COMP_VERSION)
                 .where(COMP_VERSION.VO_ID.eq(compId))
                 .limit(1)
                 .unionAll(context.select(COMP_VERSION_HISTORY.EHR_ID)
