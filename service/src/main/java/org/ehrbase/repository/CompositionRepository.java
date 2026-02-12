@@ -46,6 +46,7 @@ import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Table;
 import org.jooq.TableField;
+import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -222,7 +223,11 @@ public class CompositionRepository
         return versionTable
                 .field(VERSION_PROTOTYPE.EHR_ID)
                 .eq(ehrId)
-                .and(versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(compId));
+                .and(singleCompositionCondition(compId, versionTable));
+    }
+
+    private @NonNull Condition singleCompositionCondition(final UUID compId, final Table<?> versionTable) {
+        return versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(compId);
     }
 
     public Optional<Composition> findByVersion(UUID ehrId, UUID compId, int version) {
@@ -291,7 +296,9 @@ public class CompositionRepository
     public Optional<Integer> findVersionByTime(UUID compositionId, OffsetDateTime time) {
 
         return findVersionByTime(
-                        COMP_VERSION.VO_ID.eq(compositionId), COMP_VERSION_HISTORY.VO_ID.eq(compositionId), time)
+                        singleCompositionCondition(compositionId, tables.versionHead()),
+                        singleCompositionCondition(compositionId, tables.history()),
+                        time)
                 .map(LocatableUtils::getUidVersion);
     }
 

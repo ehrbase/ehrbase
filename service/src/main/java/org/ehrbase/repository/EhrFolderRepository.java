@@ -343,7 +343,8 @@ public class EhrFolderRepository
         DeleteConditionStep<EhrFolderVersionRecord> deleteQuery = context.deleteFrom(versionHead)
                 .where(versionHead.field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId));
         if (ehrFoldersIdx != null) {
-            deleteQuery = deleteQuery.and(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX.eq(ehrFoldersIdx));
+            deleteQuery = deleteQuery.and(
+                    versionHead.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(ehrFoldersIdx));
         }
         deleteQuery.execute();
 
@@ -352,7 +353,8 @@ public class EhrFolderRepository
                 .where(history.field(HISTORY_PROTOTYPE.EHR_ID).eq(ehrId));
 
         if (ehrFoldersIdx != null) {
-            deleteHistoryQuery = deleteHistoryQuery.and(EHR_FOLDER_VERSION_HISTORY.EHR_FOLDERS_IDX.eq(ehrFoldersIdx));
+            deleteHistoryQuery = deleteHistoryQuery.and(
+                    history.field(EHR_FOLDER_VERSION_HISTORY.EHR_FOLDERS_IDX).eq(ehrFoldersIdx));
         }
 
         deleteHistoryQuery.execute();
