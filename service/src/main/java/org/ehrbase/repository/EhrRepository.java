@@ -119,12 +119,13 @@ public class EhrRepository
     }
 
     public Boolean fetchIsModifiable(UUID ehrId) {
-        return fromJoinedVersionData(
-                        context.select(jsonDataField(tables.dataHead(), IS_MODIFIABLE_JSON_PATH)
-                                .cast(Boolean.class)),
-                        true)
-                .where(singleEhrStatusCondition(ehrId, tables.versionHead()))
-                .and(dataRootCondition(tables.dataHead()))
+        VersionDataJoin versionDataJoin = fromJoinedVersionData(true);
+        Table<?> version = versionDataJoin.versionTable();
+        Table<?> data = versionDataJoin.dataTable();
+        return context.select(jsonDataField(data, IS_MODIFIABLE_JSON_PATH).cast(Boolean.class))
+                .from(versionDataJoin.joined())
+                .where(singleEhrStatusCondition(ehrId, version))
+                .and(dataRootCondition(data))
                 .fetchOptional()
                 .map(Record1::value1)
                 .orElse(null);
@@ -132,14 +133,17 @@ public class EhrRepository
 
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
 
-        return fromJoinedVersionData(context.select(field(VERSION_PROTOTYPE.EHR_ID)), true)
-                .where(subjectCondition(subjectId, nameSpace, tables.dataHead()))
-                .and(dataRootCondition(tables.dataHead()))
+        VersionDataJoin versionDataJoin = fromJoinedVersionData(true);
+        Table<?> data = versionDataJoin.dataTable();
+        return context.select(versionDataJoin.versionTable().field(VERSION_PROTOTYPE.EHR_ID))
+                .from(versionDataJoin.joined())
+                .where(subjectCondition(subjectId, nameSpace, data))
+                .and(dataRootCondition(data))
                 .fetchOptional()
                 .map(Record1::value1);
     }
 
-    Condition subjectCondition(String subjectId, String nameSpace, Table<EhrStatusDataRecord> dataTable) {
+    Condition subjectCondition(String subjectId, String nameSpace, Table<?> dataTable) {
         return dataRootCondition(dataTable)
                 .and(jsonDataField(dataTable, SUBJECT_ID_JSON_PATH).eq(subjectId))
                 .and(jsonDataField(dataTable, SUBJECT_NAMESPACE_JSON_PATH).eq(nameSpace));
@@ -153,9 +157,11 @@ public class EhrRepository
     }
 
     public Optional<ObjectVersionId> findLatestVersion(UUID ehrId) {
-        return context.select(field(VERSION_PROTOTYPE.VO_ID), field(VERSION_PROTOTYPE.SYS_VERSION))
-                .from(tables.versionHead())
-                .where(singleEhrStatusCondition(ehrId, tables.versionHead()))
+        Table<EhrStatusVersionRecord> versionHead = tables.versionHead();
+        return context.select(
+                        versionHead.field(VERSION_PROTOTYPE.VO_ID), versionHead.field(VERSION_PROTOTYPE.SYS_VERSION))
+                .from(versionHead)
+                .where(singleEhrStatusCondition(ehrId, versionHead))
                 .fetchOptional()
                 .map(r -> buildObjectVersionId(r.value1(), r.value2(), systemService));
     }
@@ -196,11 +202,13 @@ public class EhrRepository
 
     public void adminDelete(UUID ehrId) {
 
-        context.deleteFrom(tables.versionHead())
-                .where(field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId))
+        Table<EhrStatusVersionRecord> versionHead = tables.versionHead();
+        context.deleteFrom(versionHead)
+                .where(versionHead.field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId))
                 .execute();
-        context.deleteFrom(tables.history())
-                .where(field(HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
+        Table<EhrStatusVersionHistoryRecord> history = tables.history();
+        context.deleteFrom(history)
+                .where(history.field(HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
                 .execute();
         context.deleteFrom(EHR_).where(EHR_.ID.eq(ehrId)).execute();
     }

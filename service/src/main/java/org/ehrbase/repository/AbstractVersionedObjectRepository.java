@@ -63,8 +63,6 @@ import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.StructureNode;
-import org.ehrbase.openehr.dbformat.jooq.prototypes.AbstractRecordPrototype;
-import org.ehrbase.openehr.dbformat.jooq.prototypes.AbstractTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectHistoryTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
@@ -80,7 +78,6 @@ import org.jooq.Record2;
 import org.jooq.Record3;
 import org.jooq.Result;
 import org.jooq.SelectConditionStep;
-import org.jooq.SelectFromStep;
 import org.jooq.SelectHavingStep;
 import org.jooq.SelectJoinStep;
 import org.jooq.SelectLimitPercentStep;
@@ -160,7 +157,7 @@ public abstract class AbstractVersionedObjectRepository<
             SystemService systemService,
             TimeProvider timeProvider) {
         this.targetType = targetType;
-        this.tables = new Tables(versionHead, dataHead, versionHistory);
+        this.tables = new Tables(versionHead.as("version"), dataHead.as("data"), versionHistory.as("history"));
         this.context = context;
         this.contributionRepository = contributionRepository;
         this.systemService = systemService;
@@ -180,11 +177,13 @@ public abstract class AbstractVersionedObjectRepository<
 
     public Optional<O> findByVersion(Condition condition, Condition historyCondition, int version) {
         SelectQuery<Record /*<UUID, Integer, JSONB, …>*/> headQuery = buildLocatableDataQuery(condition, true);
-        headQuery.addConditions(field(VERSION_PROTOTYPE.SYS_VERSION).eq(version));
+        headQuery.addConditions(
+                tables.versionHead().field(VERSION_PROTOTYPE.SYS_VERSION).eq(version));
 
         SelectQuery<Record /*<UUID, Integer, JSONB, …>*/> historyQuery =
                 buildLocatableDataQuery(historyCondition, false);
-        historyQuery.addConditions(field(HISTORY_PROTOTYPE.SYS_VERSION).eq(version));
+        historyQuery.addConditions(
+                tables.history().field(HISTORY_PROTOTYPE.SYS_VERSION).eq(version));
 
         Record /*<UUID, Integer, JSONB, …>*/ dataRecord =
                 headQuery.unionAll(historyQuery).fetchOne();
@@ -196,24 +195,10 @@ public abstract class AbstractVersionedObjectRepository<
         return toRootLocatable(dataRecord, getLocatableClass());
     }
 
-    protected <T> Field<T> field(TableField<? extends AbstractRecordPrototype<?>, T> field) {
-        if (field.getTable() instanceof AbstractTablePrototype t) {
-            var targetTable =
-                    switch (t) {
-                        case ObjectVersionTablePrototype __ -> tables.versionHead();
-                        case ObjectHistoryTablePrototype __ -> tables.history();
-                        case ObjectDataTablePrototype __ -> tables.dataHead();
-                    };
-            return targetTable.field(field);
-        } else {
-            throw new IllegalArgumentException("Type of table not supported: %s".formatted(field.getTable()));
-        }
-    }
-
     protected Optional<HR> findRootRecordByVersion(Condition condition, Condition historyCondition, int version) {
 
-        var head = tables.versionHead;
-        var history = tables.history;
+        Table<VR> head = tables.versionHead();
+        Table<HR> history = tables.history();
 
         Field[] historyFields = Stream.concat(
                         Arrays.stream(head.fields()),
@@ -222,9 +207,9 @@ public abstract class AbstractVersionedObjectRepository<
                 .map(f -> f == null ? DSL.inline((String) null) : f)
                 .toArray(Field[]::new);
 
-        return versionHeadQueryExtended(context)
+        return versionHeadQueryExtended(head, context)
                 .where(condition)
-                .and(field(VERSION_PROTOTYPE.SYS_VERSION).eq(version))
+                .and(head.field(VERSION_PROTOTYPE.SYS_VERSION).eq(version))
                 .unionAll(context.select(historyFields)
                         .from(history)
                         .where(historyCondition)
@@ -235,8 +220,12 @@ public abstract class AbstractVersionedObjectRepository<
 
     public SelectOrderByStep<Record3<String, UUID, Integer>> buildVersionIdsByContributionQuery(
             String rmKey, UUID ehrId, UUID contributionId) {
-        return context.select(DSL.inline(rmKey), field(VERSION_PROTOTYPE.VO_ID), field(VERSION_PROTOTYPE.SYS_VERSION))
-                .from(tables.versionHead)
+        Table<VR> table = tables.versionHead();
+        return context.select(
+                        DSL.inline(rmKey),
+                        table.field(VERSION_PROTOTYPE.VO_ID),
+                        table.field(VERSION_PROTOTYPE.SYS_VERSION))
+                .from(table)
                 .where(contributionCondition(ehrId, contributionId, tables.versionHead))
                 .unionAll(context.select(
                                 DSL.inline(rmKey),
@@ -254,14 +243,15 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected boolean isDeleted(Condition condition, Condition historyCondition, Integer version) {
         return findRootRecordByVersion(condition, historyCondition, version)
-                .filter(r -> r.get(field(HISTORY_PROTOTYPE.SYS_DELETED)))
+                .filter(r -> r.get(HISTORY_PROTOTYPE.SYS_DELETED))
                 .isPresent();
     }
 
     protected Optional<HR> findLatestHistoryRoot(Condition condition) {
-        return context.selectFrom(tables.history)
+        Table<HR> history = tables.history();
+        return context.selectFrom(history)
                 .where(condition)
-                .orderBy(field(HISTORY_PROTOTYPE.SYS_VERSION).desc())
+                .orderBy(history.field(HISTORY_PROTOTYPE.SYS_VERSION).desc())
                 .limit(1)
                 .fetchOptional();
     }
@@ -535,7 +525,8 @@ public abstract class AbstractVersionedObjectRepository<
      * @param head
      * @return
      */
-    protected Field<?>[] getAdditionalSelectFields(Table<?> versionTable, Table<?> dataTable, boolean head) {
+    protected Pair<Field<?>[], Field<?>[]> getAdditionalSelectFields(
+            Table<?> versionTable, Table<?> dataTable, boolean head) {
         return null;
     }
 
@@ -546,8 +537,10 @@ public abstract class AbstractVersionedObjectRepository<
      * @return SelectQuery<Record<UUID, Integer, String, ...>
      */
     protected SelectQuery<Record> buildLocatableDataQuery(Condition condition, boolean head) {
-        Table<?> versionTable = tables.get(true, head);
-        Table<?> dataTable = tables.get(false, head);
+
+        VersionDataJoin versionDataJoin = fromJoinedVersionData(head);
+        Table<?> versionTable = versionDataJoin.versionTable();
+        Table<?> dataTable = versionDataJoin.dataTable();
 
         Field<UUID> voIdField = versionTable.field(VERSION_PROTOTYPE.VO_ID);
         Field<Integer> sysVersionField = versionTable.field(VERSION_PROTOTYPE.SYS_VERSION);
@@ -561,44 +554,47 @@ public abstract class AbstractVersionedObjectRepository<
 
         List<Field<?>> selectFields;
         List<Field<?>> groupByFields = Collections.emptyList();
-        // TODO CDR-2204 not all fields should to be part of group by
-        Field<?>[] additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
+        Pair<Field<?>[], Field<?>[]> additionalFields = getAdditionalSelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
             selectFields = List.of(voIdField, sysVersionField, stringAggregationField);
             if (head) {
                 groupByFields = List.of(voIdField, sysVersionField);
             }
         } else {
-            selectFields = new ArrayList<>(3 + additionalFields.length);
+            Field<?>[] additionalSelectFields = additionalFields.getLeft();
+            selectFields = new ArrayList<>(3 + additionalSelectFields.length);
             selectFields.add(voIdField);
             selectFields.add(sysVersionField);
             selectFields.add(stringAggregationField);
-            Collections.addAll(selectFields, additionalFields);
+            Collections.addAll(selectFields, additionalSelectFields);
             if (head) {
-                groupByFields = new ArrayList<>(2 + additionalFields.length);
+                Field<?>[] additionalGroupByFields = additionalFields.getRight();
+                groupByFields = new ArrayList<>(2 + additionalGroupByFields.length);
                 groupByFields.add(voIdField);
                 groupByFields.add(sysVersionField);
-                Collections.addAll(groupByFields, additionalFields);
+                Collections.addAll(groupByFields, additionalGroupByFields);
             }
         }
 
         SelectConditionStep<Record> query =
-                fromJoinedVersionData(context.select(selectFields), head).where(condition);
+                context.select(selectFields).from(versionDataJoin.joined()).where(condition);
         return (groupByFields.isEmpty() ? query : query.groupBy(groupByFields)).getQuery();
     }
 
-    protected <R extends Record> SelectJoinStep<R> fromJoinedVersionData(SelectFromStep<R> select, boolean head) {
-        if (!head) {
-            return select.from(tables.history());
+    protected record VersionDataJoin(Table<?> versionTable, Table<?> dataTable, Table<?> joined) {}
+
+    protected VersionDataJoin fromJoinedVersionData(boolean head) {
+        if (head) {
+            Table<?> versionTable = tables.versionHead();
+            Table<?> dataTable = tables.dataHead();
+            Condition joinCondition =
+                    versionDataJoinCondition(f -> versionTable.field(f).eq(dataTable.field(f)));
+            return new VersionDataJoin(
+                    versionTable, dataTable, versionTable.join(dataTable).on(joinCondition));
+        } else {
+            Table<?> historyTable = tables.history();
+            return new VersionDataJoin(historyTable, historyTable, historyTable);
         }
-
-        Table<?> versionTable = tables.get(true, true);
-        Table<?> dataTable = tables.get(false, true);
-
-        Condition joinCondition =
-                versionDataJoinCondition(f -> versionTable.field(f).eq(dataTable.field(f)));
-
-        return select.from(versionTable).join(dataTable).on(joinCondition);
     }
 
     protected abstract List<TableField<VR, ?>> getVersionDataJoinFields();
@@ -622,21 +618,24 @@ public abstract class AbstractVersionedObjectRepository<
     protected Optional<ObjectVersionId> findVersionByTime(
             Condition condition, Condition historyCondition, OffsetDateTime time) {
 
+        Table<VR> versionHead = tables.versionHead();
         SelectLimitPercentStep<Record2<Integer, UUID>> headQuery = context.select(
-                        field(VERSION_PROTOTYPE.SYS_VERSION), field(VERSION_PROTOTYPE.VO_ID))
-                .from(tables.versionHead)
-                .where(field(VERSION_PROTOTYPE.SYS_PERIOD_LOWER).lessOrEqual(time))
+                        versionHead.field(VERSION_PROTOTYPE.SYS_VERSION), versionHead.field(VERSION_PROTOTYPE.VO_ID))
+                .from(versionHead)
+                .where(versionHead.field(VERSION_PROTOTYPE.SYS_PERIOD_LOWER).lessOrEqual(time))
                 .and(condition)
                 .limit(1);
 
+        Table<HR> history = tables.history();
         SelectLimitPercentStep<Record2<Integer, UUID>> historyQuery = context.select(
-                        field(HISTORY_PROTOTYPE.SYS_VERSION), field(HISTORY_PROTOTYPE.VO_ID))
-                .from(tables.history)
+                        history.field(HISTORY_PROTOTYPE.SYS_VERSION), history.field(HISTORY_PROTOTYPE.VO_ID))
+                .from(history)
                 .where(
-                        field(HISTORY_PROTOTYPE.SYS_PERIOD_LOWER).lessOrEqual(time),
-                        field(HISTORY_PROTOTYPE.SYS_PERIOD_UPPER)
+                        history.field(HISTORY_PROTOTYPE.SYS_PERIOD_LOWER).lessOrEqual(time),
+                        history.field(HISTORY_PROTOTYPE.SYS_PERIOD_UPPER)
                                 .greaterThan(time)
-                                .or(field(HISTORY_PROTOTYPE.SYS_PERIOD_UPPER).isNull()))
+                                .or(history.field(HISTORY_PROTOTYPE.SYS_PERIOD_UPPER)
+                                        .isNull()))
                 .and((historyCondition))
                 .limit(1);
 
@@ -665,8 +664,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .sequential()
                 .map(p -> parseJsonData(p, jsonbRecord, idx.next()))
                 .toArray(Pair[]::new);
-        ObjectNode reconstructed =
-                DbToRmFormat.reconstructRmObjectTree(parsed, Pair::getLeft, Pair::getRight, RmDbJson.MARSHAL_OM);
+        ObjectNode reconstructed = DbToRmFormat.reconstructRmObjectTree(parsed, Pair::getLeft, Pair::getRight);
         DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
         final Locatable rmObject;
         try {
@@ -705,8 +703,9 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected void copyHeadToHistory(HR historyRecord, OffsetDateTime now) {
 
-        Table<DR> dataHead = tables.dataHead().as("dataHead");
-        Table<VR> versionHead = tables.versionHead().as("versionHead");
+        VersionDataJoin versionDataJoin = fromJoinedVersionData(true);
+        Table<DR> dataHead = (Table<DR>) versionDataJoin.dataTable();
+        Table<VR> versionHead = (Table<VR>) versionDataJoin.versionTable();
         Pair<Stream<Field<?>>, Stream<Field<?>>> additionalFields =
                 additionalCopyToHistoryFields(versionHead, dataHead, now);
         Field<?>[] fields = Streams.concat(
@@ -723,9 +722,10 @@ public abstract class AbstractVersionedObjectRepository<
                     return tables.dataHead().field(f).eq(val);
                 })
                 .toArray(Condition[]::new));
-        SelectHavingStep<Record> dataSelect = fromJoinedVersionData(context.select(fields), true)
+        SelectHavingStep<Record> dataSelect = context.select(fields)
+                .from(versionDataJoin.joined())
                 .where(pkeyConstraint)
-                .groupBy(versionHead.getPrimaryKey().getFields());
+                .groupBy(versionHead.fields(versionHead.getPrimaryKey().getFieldsArray()));
 
         Field<?>[] historyFields = Streams.concat(Arrays.stream(versionHead.fields()), additionalFields.getRight())
                 .map(tables.history()::field)
@@ -759,8 +759,10 @@ public abstract class AbstractVersionedObjectRepository<
             Condition versionCondition, int oldVersion, Function<String, RuntimeException> exceptionProvider) {
 
         // delete head
-        int deleteCount = context.deleteFrom(tables.versionHead)
-                .where(versionCondition.and(field(VERSION_PROTOTYPE.SYS_VERSION).eq(oldVersion)))
+        Table<VR> table = tables.versionHead();
+        int deleteCount = context.deleteFrom(table)
+                .where(versionCondition.and(
+                        table.field(VERSION_PROTOTYPE.SYS_VERSION).eq(oldVersion)))
                 .execute();
 
         if (deleteCount == 0) {
@@ -777,19 +779,21 @@ public abstract class AbstractVersionedObjectRepository<
      * @param context
      * @return
      */
-    protected SelectJoinStep<Record> versionHeadQueryExtended(DSLContext context) {
-        return context.select(tables.versionHead.fields())
+    protected SelectJoinStep<Record> versionHeadQueryExtended(Table<?> versionHead, DSLContext context) {
+        return context.select(versionHead.fields())
                 .select(
                         DSL.inline((Object) null).as(HISTORY_PROTOTYPE.SYS_PERIOD_UPPER.getName()),
                         DSL.inline(false).as(HISTORY_PROTOTYPE.SYS_DELETED.getName()))
-                .from(tables.versionHead);
+                .from(versionHead);
     }
 
     protected Result<HR> findVersionHeadRecords(Condition condition) {
-        return versionHeadQueryExtended(context).where(condition).fetchInto(tables.history);
+        return versionHeadQueryExtended(tables.versionHead(), context)
+                .where(condition)
+                .fetchInto(tables.history);
     }
 
-    protected Field<String> jsonDataField(Table<DR> table, String... path) {
+    protected Field<String> jsonDataField(Table<?> table, String... path) {
         return AdditionalSQLFunctions.jsonbAttributePathText(table.field(DATA_PROTOTYPE.DATA), path);
     }
 
