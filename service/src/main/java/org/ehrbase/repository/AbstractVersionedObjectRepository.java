@@ -45,6 +45,7 @@ import java.util.Optional;
 import java.util.PrimitiveIterator.OfInt;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
@@ -657,13 +658,8 @@ public abstract class AbstractVersionedObjectRepository<
         if (jsonbRecord == null || jsonbRecord.get(2) == null) {
             return Optional.empty();
         }
-        OfInt idx = IntStream.iterate(0, i -> i + 1).iterator();
-        Pair<CharSequence, ObjectNode>[] parsed = Arrays.stream(
-                        DbToRmFormat.parseDbObjectAggregateString(jsonbRecord.get(2, String.class)))
-                .sequential()
-                .map(p -> parseJsonData(p, jsonbRecord, idx.next()))
-                .toArray(Pair[]::new);
-        ObjectNode reconstructed = DbToRmFormat.reconstructRmObjectTree(parsed, Pair::getLeft, Pair::getRight);
+        String dbFormat = jsonbRecord.get(2, String.class);
+        ObjectNode reconstructed = reconstruct(dbFormat, (p, idx) -> parseJsonData(p, jsonbRecord, idx));
         DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
         final Locatable rmObject;
         try {
@@ -676,7 +672,22 @@ public abstract class AbstractVersionedObjectRepository<
         return Optional.of((L) rmObject);
     }
 
+    public static ObjectNode reconstruct(
+            final String dbFormat,
+            BiFunction<Pair<CharSequence, CharSequence>, Integer, Pair<CharSequence, ObjectNode>> parseFunc) {
+        OfInt idx = IntStream.iterate(0, i -> i + 1).iterator();
+        Pair<CharSequence, ObjectNode>[] parsed = Arrays.stream(DbToRmFormat.parseDbObjectAggregateString(dbFormat))
+                .sequential()
+                .map(p -> parseFunc.apply(p, idx.next()))
+                .toArray(Pair[]::new);
+        return DbToRmFormat.reconstructRmObjectTree(parsed, Pair::getLeft, Pair::getRight);
+    }
+
     protected Pair<CharSequence, ObjectNode> parseJsonData(Pair<CharSequence, CharSequence> p, Record rec, int idx) {
+        return parseRow(p);
+    }
+
+    public static Pair<CharSequence, ObjectNode> parseRow(final Pair<CharSequence, CharSequence> p) {
         try {
             return Pair.of(
                     p.getLeft(), (ObjectNode) RmDbJson.MARSHAL_OM.readTree(new CharSequenceReader(p.getRight())));

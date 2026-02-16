@@ -161,11 +161,15 @@ public class EhrFolderRepository
     protected Pair<CharSequence, ObjectNode> parseJsonData(
             final Pair<CharSequence, CharSequence> p, final Record rec, final int idx) {
         Pair<CharSequence, ObjectNode> parsed = super.parseJsonData(p, rec, idx);
-        UUID[] uuids = rec.get(3, UUID[].class);
+        return insertFolderItemsArray(rec.get(3, UUID[].class), idx, parsed);
+    }
+
+    public static @NonNull Pair<CharSequence, ObjectNode> insertFolderItemsArray(
+            UUID[] itemIds, final int idx, final Pair<CharSequence, ObjectNode> parsed) {
         ObjectNode node = parsed.getRight();
         int row = 0;
         ArrayNode itemUuidsNode = node.putArray(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS);
-        for (final UUID uuid : uuids) {
+        for (final UUID uuid : itemIds) {
             if (uuid == null) {
                 row++;
                 if (row > idx) {
