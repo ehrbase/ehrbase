@@ -168,7 +168,7 @@ public class EhrFolderRepository
             UUID[] itemIds, final int idx, final Pair<CharSequence, ObjectNode> parsed) {
         ObjectNode node = parsed.getRight();
         int row = 0;
-        ArrayNode itemUuidsNode = node.putArray(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS);
+        ArrayNode itemUuidsNode = node.arrayNode();
         for (final UUID uuid : itemIds) {
             if (uuid == null) {
                 row++;
@@ -178,6 +178,9 @@ public class EhrFolderRepository
             } else if (row == idx) {
                 itemUuidsNode.add(uuid.toString());
             }
+        }
+        if (!itemUuidsNode.isEmpty()) {
+            node.set(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS, itemUuidsNode);
         }
         return parsed;
     }
