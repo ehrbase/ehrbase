@@ -139,6 +139,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
             throw new StateConflictException("EHR with id %s already contains a directory.".formatted(ehrId));
         }
 
+        //TODO CDR-2204 / CDR-2270 validate RM constraints
         FolderUtils.checkSiblingNameConflicts(folder);
         UUID folderUid = Optional.of(folder).map(LocatableUtils::getUuid).orElse(UuidGenerator.randomUUID());
 

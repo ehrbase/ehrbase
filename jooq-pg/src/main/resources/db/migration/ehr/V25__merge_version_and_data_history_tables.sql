@@ -76,6 +76,7 @@ SET ov_ref = vh.sys_version,
 FROM (
          SELECT
             ehr_id, ehr_folders_idx, sys_version,
+            --TODO CDR-2204 / CDR-2270
             string_agg(
                 entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
                 E'\n' ORDER BY num ASC) as data_agg,
