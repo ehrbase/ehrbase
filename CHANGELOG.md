@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- DIRECTORY endpoint responses now include all LOCATABLE attributes [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
 
 ## [2.28.0]
  ### Added

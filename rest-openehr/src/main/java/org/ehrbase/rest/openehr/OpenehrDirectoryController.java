@@ -34,7 +34,6 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.DirectoryService;
-import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.DirectoryApiSpecification;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -73,7 +72,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
      */
     @Override
     @PostMapping(path = "/{ehr_id}/directory")
-    public ResponseEntity<DirectoryResponseData> createDirectory(
+    public ResponseEntity<Folder> createDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
@@ -92,7 +91,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
      */
     @Override
     @PutMapping(path = "/{ehr_id}/directory")
-    public ResponseEntity<DirectoryResponseData> updateDirectory(
+    public ResponseEntity<Folder> updateDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
@@ -115,7 +114,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
      */
     @Override
     @DeleteMapping(path = "/{ehr_id}/directory")
-    public ResponseEntity<DirectoryResponseData> deleteDirectory(
+    public ResponseEntity<Folder> deleteDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
@@ -136,7 +135,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
      */
     @Override
     @GetMapping(path = "/{ehr_id}/directory/{version_uid}")
-    public ResponseEntity<DirectoryResponseData> getFolderInDirectory(
+    public ResponseEntity<Folder> getFolderInDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @PathVariable(name = "version_uid") ObjectVersionId versionUid,
             @RequestParam(name = "path", required = false) String path,
@@ -176,7 +175,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
     @Override
     @GetMapping(path = "/{ehr_id}/directory")
-    public ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
+    public ResponseEntity<Folder> getFolderInDirectoryVersionAtTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime,
             @RequestParam(name = "path", required = false) String path,
@@ -207,25 +206,15 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         return createDirectoryResponse(HttpMethod.GET, RETURN_REPRESENTATION, accept, foundFolder.get(), ehrId);
     }
 
-    private DirectoryResponseData buildResponse(Folder folderDto) {
-        DirectoryResponseData resBody = new DirectoryResponseData();
-        resBody.setDetails(folderDto.getDetails());
-        resBody.setFolders(folderDto.getFolders());
-        resBody.setItems(folderDto.getItems());
-        resBody.setName(folderDto.getName());
-        resBody.setUid(folderDto.getUid());
-        return resBody;
-    }
-
-    private ResponseEntity<DirectoryResponseData> createDirectoryResponse(
+    private ResponseEntity<Folder> createDirectoryResponse(
             HttpMethod method, String prefer, String accept, Folder folderDto, UUID ehrId) {
         HttpHeaders headers = new HttpHeaders();
         HttpStatus successStatus;
-        DirectoryResponseData body;
+        Folder body;
 
         if (prefer != null && prefer.equals(RETURN_REPRESENTATION)) {
             headers.setContentType(resolveContentType(accept));
-            body = buildResponse(folderDto);
+            body = folderDto;
             successStatus = getSuccessStatus(method);
         } else {
             body = null;
