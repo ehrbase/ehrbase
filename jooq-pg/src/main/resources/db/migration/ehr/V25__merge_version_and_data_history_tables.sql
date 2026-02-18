@@ -69,6 +69,28 @@ ALTER TABLE ehr_folder_version_history
     ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
     ALTER COLUMN ov_data SET STORAGE MAIN;
 
+CREATE FUNCTION pg_temp.add_missing_folder_attributes(folder jsonb, entity_concept text)
+RETURNS jsonb
+LANGUAGE plpgsql
+AS $$
+DECLARE
+BEGIN
+IF starts_with(entity_concept, '.') THEN
+    --add archetype_details to archetype root if missing
+    IF folder ? 'ad' THEN
+        RETURN folder;
+    ELSE
+        RETURN folder || ('{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "' || folder ->> 'A' || '"}}}')::jsonb;
+    END IF;
+ELSIF entity_concept IS NULL THEN
+    --treat missing archetype_node_id as generic folder archetype
+    RETURN folder || '{"A":"openEHR-EHR-FOLDER.generic.v1", "ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "openEHR-EHR-FOLDER.generic.v1"}}}'::jsonb;
+ELSE
+    RETURN folder;
+END IF;
+END
+$$;
+
 UPDATE ehr_folder_version_history vh
 SET ov_ref = vh.sys_version,
     ov_data = dh.data_agg,
@@ -76,9 +98,9 @@ SET ov_ref = vh.sys_version,
 FROM (
          SELECT
             ehr_id, ehr_folders_idx, sys_version,
-            --TODO CDR-2204 / CDR-2270
             string_agg(
-                entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
+                entity_idx ||
+                pg_temp.add_missing_folder_attributes(CASE WHEN num=0 THEN data-'U' ELSE data END, entity_concept)::text,
                 E'\n' ORDER BY num ASC) as data_agg,
              trim_array((SELECT array_agg(uid.v ORDER BY num ASC)
 				FROM
