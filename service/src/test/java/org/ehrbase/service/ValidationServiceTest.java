@@ -81,7 +81,7 @@ class ValidationServiceTest {
 
     private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
 
-    private final ValidationProperties serverConfig = new ValidationProperties(true, true);
+    private final ValidationProperties serverConfig = new ValidationProperties(true, true, true);
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 
