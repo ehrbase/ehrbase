@@ -18,6 +18,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.directory.Folder;
 import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
@@ -39,6 +40,8 @@ public interface ValidationService {
      * @throws IllegalArgumentException in case the given <code>composition</code> is invalid.
      */
     void check(Composition composition);
+
+    void check(Folder folder);
 
     /**
      * Initially check if <code>ehrStatus</code> is valid for further processing.

@@ -31,9 +31,9 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.repository.EhrFolderRepository;
-import org.ehrbase.util.FolderUtils;
 import org.ehrbase.util.UuidGenerator;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,15 +46,19 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
     private final SystemService systemService;
     private final EhrService ehrService;
-
     private final EhrFolderRepository ehrFolderRepository;
+    private final ValidationService validationService;
 
     public DirectoryServiceImp(
-            SystemService systemService, EhrService ehrService, EhrFolderRepository ehrFolderRepository) {
+            SystemService systemService,
+            EhrService ehrService,
+            EhrFolderRepository ehrFolderRepository,
+            final ValidationService validationService) {
 
         this.systemService = systemService;
         this.ehrService = ehrService;
         this.ehrFolderRepository = ehrFolderRepository;
+        this.validationService = validationService;
     }
 
     @Override
@@ -139,11 +143,9 @@ public class DirectoryServiceImp implements InternalDirectoryService {
             throw new StateConflictException("EHR with id %s already contains a directory.".formatted(ehrId));
         }
 
-        //TODO CDR-2204 / CDR-2270 validate RM constraints
-        FolderUtils.checkSiblingNameConflicts(folder);
         UUID folderUid = Optional.of(folder).map(LocatableUtils::getUuid).orElse(UuidGenerator.randomUUID());
-
         updateUuid(folder, true, folderUid, 1);
+        validationService.check(folder);
 
         try {
             ehrFolderRepository.commit(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
@@ -186,11 +188,10 @@ public class DirectoryServiceImp implements InternalDirectoryService {
                     String.format("EHR with id %s does not contain a directory with id %s", ehrId, uuid));
         }
 
-        FolderUtils.checkSiblingNameConflicts(folder);
-
         int version = LocatableUtils.getUidVersion(ifMatches);
 
         updateUuid(folder, true, uuid, version + 1);
+        validationService.check(folder);
         ehrFolderRepository.update(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
 
         return get(ehrId, null, null).orElseThrow();
