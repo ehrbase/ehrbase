@@ -80,7 +80,7 @@ IF starts_with(entity_concept, '.') THEN
     IF folder ? 'ad' THEN
         RETURN folder;
     ELSE
-        RETURN folder || ('{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "' || folder ->> 'A' || '"}}}')::jsonb;
+        RETURN folder || ('{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "' || (folder ->> 'A') || '"}}}')::jsonb;
     END IF;
 ELSIF entity_concept IS NULL THEN
     --treat missing archetype_node_id as generic folder archetype
