@@ -75,6 +75,7 @@ public class ValidationServiceImp implements ValidationService {
     private final KnowledgeCacheServiceImp knowledgeCacheService;
 
     private final TerminologyService terminologyService;
+    private final boolean folderValidationEnabled;
 
     private final ThreadLocal<LocatableValidator> locatableValidator;
 
@@ -88,6 +89,7 @@ public class ValidationServiceImp implements ValidationService {
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
+        this.folderValidationEnabled = validationProperties.validateFolders();
 
         boolean disableStrictValidation = !validationProperties.validateRmConstraints();
         if (disableStrictValidation) {
@@ -194,9 +196,12 @@ public class ValidationServiceImp implements ValidationService {
     @Override
     public void check(Folder folder) {
         FolderUtils.checkSiblingNameConflicts(folder);
-        List<ConstraintViolation> result = locatableValidator.get().validate(folder);
-        if (!result.isEmpty()) {
-            throw new ConstraintViolationException(result);
+
+        if (folderValidationEnabled) {
+            List<ConstraintViolation> result = locatableValidator.get().validate(folder);
+            if (!result.isEmpty()) {
+                throw new ConstraintViolationException(result);
+            }
         }
     }
 

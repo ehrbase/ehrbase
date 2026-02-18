@@ -7,8 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+- RM constraint validation for DIRECTORY (with feature toggle) [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
  ### Changed 
- ### Fixed 
+ ### Fixed
 - DIRECTORY endpoint responses now include all LOCATABLE attributes [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
 
 ## [2.28.0]
