@@ -266,8 +266,6 @@ public class EhrFolderRepository
 
     public Optional<Folder> findHead(UUID ehrId, int ehrFoldersIdx) {
         return findHead(singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx));
-        // return Optional.of(new
-        // Folder(HierObjectId.createRandomUUID(),null,null,null,null,null,null,null,null,null,null));
     }
 
     /**
