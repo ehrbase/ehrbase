@@ -28,6 +28,7 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.ResourceGoneException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
@@ -113,6 +114,12 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(StateConflictException.class)
     public ResponseEntity<Object> handleStateConflictException(StateConflictException ex) {
         return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    // 410
+    @ExceptionHandler({ResourceGoneException.class})
+    public ResponseEntity<Object> handleResourceGoneException(ResourceGoneException ex) {
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.GONE);
     }
 
     // 412

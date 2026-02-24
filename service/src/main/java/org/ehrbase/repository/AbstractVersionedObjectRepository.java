@@ -55,6 +55,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.ResourceGoneException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
@@ -92,6 +93,8 @@ import org.jooq.impl.SQLDataType;
 
 public abstract class AbstractVersionedObjectRepository<
         VR extends UpdatableRecord, DR extends UpdatableRecord, HR extends UpdatableRecord, O extends Locatable> {
+
+    public static final String GONE_MARKER = "GONE";
 
     protected final class Tables {
         private final Table<VR> versionHead;
@@ -548,8 +551,7 @@ public abstract class AbstractVersionedObjectRepository<
         if (head) {
             stringAggregationField = stringAggregation((Table<DR>) dataTable);
         } else {
-            // TODO CDR-2204 ov_ref
-            stringAggregationField = dataTable.field(HISTORY_PROTOTYPE.OV_DATA);
+            stringAggregationField = historyDataField(dataTable);
         }
 
         List<Field<?>> selectFields;
@@ -579,6 +581,19 @@ public abstract class AbstractVersionedObjectRepository<
         SelectConditionStep<Record> query =
                 context.select(selectFields).from(versionDataJoin.joined()).where(condition);
         return (groupByFields.isEmpty() ? query : query.groupBy(groupByFields)).getQuery();
+    }
+
+    protected Field<String> historyDataField(final Table<?> dataTable) {
+        Field<String> ovData = dataTable.field(HISTORY_PROTOTYPE.OV_DATA);
+        return DSL.case_()
+                .when(
+                        dataTable
+                                .field(HISTORY_PROTOTYPE.OV_REF)
+                                .isNull()
+                                .and(ovData.isNull())
+                                .and(DSL.not(dataTable.field(HISTORY_PROTOTYPE.SYS_DELETED))),
+                        DSL.inline(GONE_MARKER))
+                .else_(ovData);
     }
 
     protected record VersionDataJoin(Table<?> versionTable, Table<?> dataTable, Table<?> joined) {}
@@ -658,6 +673,12 @@ public abstract class AbstractVersionedObjectRepository<
         if (jsonbRecord == null || jsonbRecord.get(2) == null) {
             return Optional.empty();
         }
+        UUID id = jsonbRecord.get(0, UUID.class);
+        Integer version = jsonbRecord.get(1, Integer.class);
+        if (GONE_MARKER.equals(jsonbRecord.get(2))) {
+            throw new ResourceGoneException(
+                    "Data for %s (id: %s, version: %s) gone".formatted(targetType, id, version));
+        }
         String dbFormat = jsonbRecord.get(2, String.class);
         ObjectNode reconstructed = reconstruct(dbFormat, (p, idx) -> parseJsonData(p, jsonbRecord, idx));
         DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
@@ -667,8 +688,7 @@ public abstract class AbstractVersionedObjectRepository<
         } catch (JsonProcessingException e) {
             throw new InternalServerException(e);
         }
-        rmObject.setUid(
-                buildObjectVersionId(jsonbRecord.get(0, UUID.class), jsonbRecord.get(1, Integer.class), systemService));
+        rmObject.setUid(buildObjectVersionId(id, version, systemService));
         return Optional.of((L) rmObject);
     }
 
@@ -699,11 +719,7 @@ public abstract class AbstractVersionedObjectRepository<
     protected Pair<Stream<Field<?>>, Stream<Field<?>>> additionalCopyToHistoryFields(
             final Table<VR> versionHead, final Table<DR> dataHead, OffsetDateTime now) {
         return Pair.of(
-                Stream.of(
-                        DSL.inline(now),
-                        DSL.inline(false),
-                        DSL.castNull(Integer.class),
-                        stringAggregation(dataHead)),
+                Stream.of(DSL.inline(now), DSL.inline(false), DSL.castNull(Integer.class), stringAggregation(dataHead)),
                 Stream.of(
                         HISTORY_PROTOTYPE.SYS_PERIOD_UPPER,
                         HISTORY_PROTOTYPE.SYS_DELETED,
