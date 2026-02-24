@@ -18,15 +18,16 @@
 
 -- COMPOSITION
 ALTER TABLE comp_version_history
+    DROP COLUMN IF EXISTS ov_ref;
+ALTER TABLE comp_version_history
     SET (toast_tuple_target = 128),
-    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
+    ADD COLUMN ov_ref int DEFAULT NULL,
     ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
     ALTER COLUMN ov_data SET STORAGE MAIN,
     DROP COLUMN root_concept;
 
 UPDATE comp_version_history vh
-SET ov_ref = vh.sys_version,
-    ov_data = dh.data_agg
+SET ov_data = dh.data_agg
 FROM (
          SELECT vo_id, sys_version, string_agg(
             entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
@@ -37,18 +38,18 @@ FROM (
      ) dh
 WHERE (vh.vo_id, vh.sys_version)=(dh.vo_id, dh.sys_version);
 
+DROP INDEX IF EXISTS mig_move_history_date;
 DROP TABLE comp_data_history;
 
 --EHR_STATUS
 ALTER TABLE ehr_status_version_history
     SET (toast_tuple_target = 128),
-    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT NULL,
     ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
     ALTER COLUMN ov_data SET STORAGE MAIN;
 
 UPDATE ehr_status_version_history vh
-SET ov_ref = vh.sys_version,
-    ov_data = dh.data_agg
+SET ov_data = dh.data_agg
 FROM (
          SELECT ehr_id, sys_version, string_agg(
             entity_idx || (CASE WHEN num=0 THEN data-'U' ELSE data END)::text,
@@ -65,7 +66,7 @@ DROP TABLE ehr_status_data_history;
 ALTER TABLE ehr_folder_version_history
     SET (toast_tuple_target = 128),
     ADD COLUMN IF NOT EXISTS ov_item_uuids uuid[] DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT 0,
+    ADD COLUMN IF NOT EXISTS ov_ref int DEFAULT NULL,
     ADD COLUMN IF NOT EXISTS ov_data text DEFAULT NULL,
     ALTER COLUMN ov_data SET STORAGE MAIN;
 
@@ -82,7 +83,7 @@ IF starts_with(entity_concept, '.') THEN
     ELSE
         RETURN folder || ('{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "' || (folder ->> 'A') || '"}}}')::jsonb;
     END IF;
-ELSIF entity_concept IS NULL THEN
+ELSIF entity_concept IS NULL AND (folder ->> 'T') = 'F' THEN
     --treat missing archetype_node_id as generic folder archetype
     RETURN folder || '{"A":"openEHR-EHR-FOLDER.generic.v1", "ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "openEHR-EHR-FOLDER.generic.v1"}}}'::jsonb;
 ELSE
@@ -92,8 +93,7 @@ END
 $$;
 
 UPDATE ehr_folder_version_history vh
-SET ov_ref = vh.sys_version,
-    ov_data = dh.data_agg,
+SET ov_data = dh.data_agg,
 	ov_item_uuids=dh.item_uuids
 FROM (
          SELECT

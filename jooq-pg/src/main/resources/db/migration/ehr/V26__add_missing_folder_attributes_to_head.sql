@@ -32,4 +32,4 @@ SET data = data ||
         ELSE
             entity_concept
         END
-WHERE entity_concept IS NULL OR (starts_with(entity_concept, '.') AND NOT data ? 'ad');
+WHERE (entity_concept IS NULL AND rm_entity='F') OR (starts_with(entity_concept, '.') AND NOT data ? 'ad');

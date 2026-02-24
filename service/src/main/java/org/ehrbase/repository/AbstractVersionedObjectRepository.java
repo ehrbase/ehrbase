@@ -702,7 +702,7 @@ public abstract class AbstractVersionedObjectRepository<
                 Stream.of(
                         DSL.inline(now),
                         DSL.inline(false),
-                        versionHead.field(VERSION_PROTOTYPE.SYS_VERSION),
+                        DSL.castNull(Integer.class),
                         stringAggregation(dataHead)),
                 Stream.of(
                         HISTORY_PROTOTYPE.SYS_PERIOD_UPPER,
