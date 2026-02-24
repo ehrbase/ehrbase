@@ -47,12 +47,10 @@ import org.jooq.Record1;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jspecify.annotations.NonNull;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-@ConditionalOnMissingBean
 public class CompositionRepository
         extends AbstractVersionedObjectRepository<
                 CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, Composition> {

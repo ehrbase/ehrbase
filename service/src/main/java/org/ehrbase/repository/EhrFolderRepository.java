@@ -61,7 +61,6 @@ import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.jspecify.annotations.NonNull;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,7 +68,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Handles DB-Access to {@link org.ehrbase.jooq.pg.tables.EhrFolderVersion} etc.
  */
 @Repository
-@ConditionalOnMissingBean
 public class EhrFolderRepository
         extends AbstractVersionedObjectRepository<
                 EhrFolderVersionRecord, EhrFolderDataRecord, EhrFolderVersionHistoryRecord, Folder> {

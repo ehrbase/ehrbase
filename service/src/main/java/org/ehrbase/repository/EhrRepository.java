@@ -49,7 +49,6 @@ import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Table;
 import org.jooq.TableField;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +57,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Handles DB Access to {@link  org.ehrbase.jooq.pg.tables.Ehr} and {@link  org.ehrbase.jooq.pg.tables.EhrStatusVersion} etc.
  */
 @Repository
-@ConditionalOnMissingBean
 public class EhrRepository
         extends AbstractVersionedObjectRepository<
                 EhrStatusVersionRecord, EhrStatusDataRecord, EhrStatusVersionHistoryRecord, EhrStatus> {
