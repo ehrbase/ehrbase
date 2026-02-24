@@ -70,6 +70,7 @@ import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectHistoryTablePrototype;
 import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectVersionTablePrototype;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.service.TimeProvider;
+import org.jooq.CaseConditionStep;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.Field;
@@ -138,9 +139,9 @@ public abstract class AbstractVersionedObjectRepository<
     public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
     public static final String NOT_MATCH_LATEST_VERSION = "If-Match version_uid does not match latest version";
 
-    protected static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
-    protected static final ObjectHistoryTablePrototype HISTORY_PROTOTYPE = ObjectHistoryTablePrototype.INSTANCE;
-    protected static final ObjectDataTablePrototype DATA_PROTOTYPE = ObjectDataTablePrototype.INSTANCE;
+    public static final ObjectVersionTablePrototype VERSION_PROTOTYPE = ObjectVersionTablePrototype.INSTANCE;
+    public static final ObjectHistoryTablePrototype HISTORY_PROTOTYPE = ObjectHistoryTablePrototype.INSTANCE;
+    public static final ObjectDataTablePrototype DATA_PROTOTYPE = ObjectDataTablePrototype.INSTANCE;
 
     private final AuditDetailsTargetType targetType;
 
@@ -584,16 +585,18 @@ public abstract class AbstractVersionedObjectRepository<
     }
 
     protected Field<String> historyDataField(final Table<?> dataTable) {
-        Field<String> ovData = dataTable.field(HISTORY_PROTOTYPE.OV_DATA);
+        return historyDataGoneCase(dataTable).else_(dataTable.field(HISTORY_PROTOTYPE.OV_DATA));
+    }
+
+    public static CaseConditionStep<String> historyDataGoneCase(final Table<?> dataTable) {
         return DSL.case_()
                 .when(
                         dataTable
                                 .field(HISTORY_PROTOTYPE.OV_REF)
                                 .isNull()
-                                .and(ovData.isNull())
+                                .and(dataTable.field(HISTORY_PROTOTYPE.OV_DATA).isNull())
                                 .and(DSL.not(dataTable.field(HISTORY_PROTOTYPE.SYS_DELETED))),
-                        DSL.inline(GONE_MARKER))
-                .else_(ovData);
+                        DSL.inline(GONE_MARKER));
     }
 
     protected record VersionDataJoin(Table<?> versionTable, Table<?> dataTable, Table<?> joined) {}
