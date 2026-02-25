@@ -26,6 +26,7 @@ import static org.mockito.Mockito.spy;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -38,13 +39,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.dto.VersionedEhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.junit.jupiter.api.AfterEach;
@@ -63,7 +62,7 @@ class OpenehrVersionedEhrStatusControllerTest {
 
     private final ContributionService mockContributionService = mock();
 
-    private final EhrStatusDto mockEhrStatus = mock();
+    private final EhrStatus mockEhrStatus = mock();
 
     private final OpenehrVersionedEhrStatusController spyController =
             spy(new OpenehrVersionedEhrStatusController(mockEhrService, mockContributionService));
@@ -200,14 +199,13 @@ class OpenehrVersionedEhrStatusControllerTest {
     }
 
     private void runRetrieveOriginalVersionTest(
-            BiFunction<UUID, OriginalVersion<EhrStatusDto>, ResponseEntity<OriginalVersionResponseData<EhrStatusDto>>>
-                    invocation) {
+            BiFunction<UUID, OriginalVersion<EhrStatus>, ResponseEntity<OriginalVersion<EhrStatus>>> invocation) {
 
         UUID ehrId = UUID.fromString("77c7df3a-fe41-41e1-9ccd-f1140c2f54b4");
         ObjectVersionId objectVersionId = new ObjectVersionId("337167e4-f325-47c1-8e9b-e9fb9fd136df", "test", "42");
         HierObjectId contributionId = new HierObjectId("f23c4a76-4a76-46c0-8e85-a0d1591d5195");
 
-        OriginalVersion<EhrStatusDto> originalVersion = new OriginalVersion<>();
+        OriginalVersion<EhrStatus> originalVersion = new OriginalVersion<>();
         originalVersion.setUid(objectVersionId);
         originalVersion.setData(mockEhrStatus);
         originalVersion.setContribution(new ObjectRef<>(contributionId, "namespace", "EHR_STATUS"));
@@ -224,14 +222,14 @@ class OpenehrVersionedEhrStatusControllerTest {
                 UUID.fromString(originalVersion.getContribution().getId().getValue()), Map.of(), null);
         doReturn(contribution).when(mockContributionService).getContribution(ehrId, contribution.getUuid());
 
-        ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> response = invocation.apply(ehrId, originalVersion);
+        ResponseEntity<OriginalVersion<EhrStatus>> response = invocation.apply(ehrId, originalVersion);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        OriginalVersionResponseData<EhrStatusDto> body = response.getBody();
+        OriginalVersion<EhrStatus> body = response.getBody();
         assertThat(body).isNotNull();
-        assertThat(body.getVersionId()).isEqualTo(objectVersionId);
+        assertThat(body.getUid()).isEqualTo(objectVersionId);
         assertThat(body.getData()).isSameAs(originalVersion.getData());
-        assertThat(body.getContribution().getUid()).isEqualTo(contributionId);
+        assertThat(body.getContribution().getId()).isEqualTo(contributionId);
     }
 }

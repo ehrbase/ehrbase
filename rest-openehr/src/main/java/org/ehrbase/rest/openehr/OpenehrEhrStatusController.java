@@ -23,6 +23,7 @@ import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.Instant;
@@ -69,7 +70,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
 
     @Override
     @GetMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<EhrStatusDto> getEhrStatusVersionByTime(
+    public ResponseEntity<EhrStatus> getEhrStatusVersionByTime(
             @PathVariable(name = "ehr_id") UUID ehrId,
             @RequestParam(name = "version_at_time", required = false) String versionAtTime) {
 
@@ -85,7 +86,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(objectVersionId.getValue());
         int version = extractVersionFromVersionUid(objectVersionId.getValue()).orElseThrow();
 
-        OriginalVersion<EhrStatusDto> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
+        OriginalVersion<EhrStatus> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
         return responseBuilder(HttpStatus.OK, ehrId, originalVersion).body(originalVersion.getData());
     }
 
@@ -93,7 +94,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     @GetMapping(
             path = "/{version_uid}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<EhrStatusDto> getEhrStatusByVersionId(
+    public ResponseEntity<EhrStatus> getEhrStatusByVersionId(
             @PathVariable(name = "ehr_id") UUID ehrId, @PathVariable(name = "version_uid") String versionUid) {
 
         UUID ehrStatusId = extractVersionedObjectUidFromVersionUid(versionUid);
@@ -101,7 +102,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 .orElseThrow(
                         () -> new InvalidApiParameterException("VERSION UID parameter does not contain a version"));
 
-        OriginalVersion<EhrStatusDto> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
+        OriginalVersion<EhrStatus> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
         return responseBuilder(HttpStatus.OK, ehrId, originalVersion).body(originalVersion.getData());
     }
 
@@ -109,7 +110,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     @PutMapping(
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<EhrStatusDto> updateEhrStatus(
+    public ResponseEntity<EhrStatus> updateEhrStatus(
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
             @RequestHeader(name = PREFER, required = false) String prefer,
@@ -127,7 +128,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         UUID ehrStatusId = UUID.fromString(statusUid.getObjectId().getValue());
 
         // load status
-        OriginalVersion<EhrStatusDto> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
+        OriginalVersion<EhrStatus> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
@@ -139,7 +140,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
     }
 
     private ResponseEntity.BodyBuilder responseBuilder(
-            HttpStatus status, UUID ehrId, OriginalVersion<EhrStatusDto> originalVersion) {
+            HttpStatus status, UUID ehrId, OriginalVersion<EhrStatus> originalVersion) {
 
         createRestContext(ehrId, originalVersion.getUid());
 
@@ -151,7 +152,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
                 .lastModified(lastModifiedValue(originalVersion.getCommitAudit().getTimeCommitted()));
     }
 
-    private OriginalVersion<EhrStatusDto> ehrStatusVersion(UUID ehrId, UUID ehrStatusId, int version) {
+    private OriginalVersion<EhrStatus> ehrStatusVersion(UUID ehrId, UUID ehrStatusId, int version) {
         return ehrService
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, version)
                 .orElseThrow(() -> new ObjectNotFoundException(

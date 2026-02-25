@@ -67,7 +67,7 @@ public class OpenehrContributionController extends BaseController implements Con
     @ResponseStatus(
             value = HttpStatus.CREATED) // overwrites default 200, fixes the wrong listing of 200 in swagger-ui (EHR-56)
     @Override
-    public ResponseEntity createContribution(
+    public ResponseEntity<Contribution> createContribution(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
             @RequestHeader(value = CONTENT_TYPE) String contentType,

@@ -20,6 +20,7 @@ package org.ehrbase.api.service;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
@@ -85,7 +86,7 @@ public interface EhrService {
      * @return Matching EHR_STATUS or empty
      * @throws ObjectNotFoundException if no EHR is found
      */
-    Optional<OriginalVersion<EhrStatusDto>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
+    Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
 
     /**
      * Search for an EHR_STATUS based on the given subject id and namespace

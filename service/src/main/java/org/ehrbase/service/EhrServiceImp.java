@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.buildObjectVersionId;
-import static org.ehrbase.util.OriginalVersionUtil.originalVersionCopyWithData;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
@@ -167,14 +166,12 @@ public class EhrServiceImp implements EhrService {
     }
 
     @Override
-    public Optional<OriginalVersion<EhrStatusDto>> getEhrStatusAtVersion(
+    public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(
             UUID ehrId, UUID versionedObjectUid, int version) {
         // pre-step: check for valid ehrId
         ensureEhrExist(ehrId);
 
-        return ehrRepository
-                .getOriginalVersionStatus(ehrId, versionedObjectUid, version)
-                .map(ov -> originalVersionCopyWithData(ov, EhrStatusMapper.toDto(ov.getData())));
+        return ehrRepository.getOriginalVersionStatus(ehrId, versionedObjectUid, version);
     }
 
     private void checkEhrExistForParty(DuplicateKeyException e, EhrStatusDto status) throws StateConflictException {

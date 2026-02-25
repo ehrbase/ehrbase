@@ -23,6 +23,7 @@ import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
@@ -106,7 +107,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     @GetMapping(path = "/version")
     @Override
-    public ResponseEntity<OriginalVersion<EhrStatusDto>> retrieveVersionOfEhrStatusByTime(
+    public ResponseEntity<OriginalVersion<EhrStatus>> retrieveVersionOfEhrStatusByTime(
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
 
@@ -132,7 +133,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     @GetMapping(path = "/version/{version_uid}")
     @Override
-    public ResponseEntity<OriginalVersion<EhrStatusDto>> retrieveVersionOfEhrStatusByVersionUid(
+    public ResponseEntity<OriginalVersion<EhrStatus>> retrieveVersionOfEhrStatusByVersionUid(
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "version_uid") String versionUid) {
 
@@ -156,12 +157,12 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
                 versionId -> createRestContext(ehrId, Map.of(), "version", versionId.toString()));
     }
 
-    private ResponseEntity<OriginalVersion<EhrStatusDto>> retrieveVersionOfEhrStatus(
+    private ResponseEntity<OriginalVersion<EhrStatus>> retrieveVersionOfEhrStatus(
             UUID ehrId, UUID ehrStatusId, int version, Consumer<ObjectVersionId> initContext) {
 
         HttpRestContext.register(VERSION, version);
 
-        OriginalVersion<EhrStatusDto> originalVersion = ehrService
+        OriginalVersion<EhrStatus> originalVersion = ehrService
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, version)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         RmConstants.EHR_STATUS, "Couldn't retrieve EhrStatus with given parameters"));
