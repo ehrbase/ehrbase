@@ -17,13 +17,13 @@
  */
 package org.ehrbase.api.service;
 
+import com.nedap.archie.rm.changecontrol.Contribution;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.generic.AuditDetails;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ValidationException;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 
 /**
  * Interface for contribution service roughly based on openEHR SM "I_EHR_CONTRIBUTION Interface",
@@ -92,7 +92,7 @@ public interface ContributionService {
      * @param ehrId          ID of EHR
      * @param contributionId ID of contribution
      */
-    ContributionDto getContribution(UUID ehrId, UUID contributionId);
+    Contribution getContribution(UUID ehrId, UUID contributionId);
 
     /**
      * Commit a CONTRIBUTION containing any number of serialized VERSION<Type> objects.

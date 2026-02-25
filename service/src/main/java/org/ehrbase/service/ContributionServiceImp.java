@@ -18,16 +18,19 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.changecontrol.Contribution;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rminfo.RMTypeInfo;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +46,6 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.repository.AbstractVersionedObjectRepository;
 import org.ehrbase.repository.AuditDetailsTargetType;
@@ -54,7 +56,6 @@ import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.service.contribution.ContributionServiceHelper;
 import org.ehrbase.service.contribution.ContributionWrapper;
 import org.ehrbase.util.UuidGenerator;
-import org.jooq.Record3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -114,11 +115,11 @@ public class ContributionServiceImp implements ContributionService {
      * @throws ObjectNotFoundException if EHR or CONTRIBUTION is not found
      */
     @Override
-    public ContributionDto getContribution(UUID ehrId, UUID contributionId) {
+    public Contribution getContribution(UUID ehrId, UUID contributionId) {
         // also checks for valid ehr and contribution ID
         AuditDetails auditDetails = retrieveAuditDetails(ehrId, contributionId);
-        Map<String, String> objectReferences = retrieveUuidsOfContributionObjects(ehrId, contributionId);
-        return new ContributionDto(contributionId, objectReferences, auditDetails);
+        List<ObjectRef<?>> objectRefs = retrieveContributionVersionRefs(ehrId, contributionId);
+        return new Contribution(new HierObjectId(contributionId.toString()), objectRefs, auditDetails);
     }
 
     @Override
@@ -409,7 +410,7 @@ public class ContributionServiceImp implements ContributionService {
      * @return Map with ID of the object as key and type ("composition", "folder",...) as value
      * @throws IllegalArgumentException on error when retrieving compositions
      */
-    private Map<String, String> retrieveUuidsOfContributionObjects(UUID ehrId, UUID contribution) {
+    private List<ObjectRef<?>> retrieveContributionVersionRefs(UUID ehrId, UUID contribution) {
         return compositionRepository
                 .buildVersionIdsByContributionQuery(SupportedVersionedObject.COMPOSITION.name(), ehrId, contribution)
                 .unionAll(ehrRepository.buildVersionIdsByContributionQuery(
@@ -417,11 +418,10 @@ public class ContributionServiceImp implements ContributionService {
                 .unionAll(ehrFolderRepository.buildVersionIdsByContributionQuery(
                         SupportedVersionedObject.FOLDER.name(), ehrId, contribution))
                 .orderBy(2, 3)
-                .fetchMap(
-                        r -> AbstractVersionedObjectRepository.buildObjectVersionId(
-                                        r.value2(), r.value3(), systemService)
-                                .getValue(),
-                        Record3::value1);
+                .fetch(r -> new ObjectRef<>(
+                        AbstractVersionedObjectRepository.buildObjectVersionId(r.value2(), r.value3(), systemService),
+                        "local",
+                        r.value1()));
     }
 
     /**

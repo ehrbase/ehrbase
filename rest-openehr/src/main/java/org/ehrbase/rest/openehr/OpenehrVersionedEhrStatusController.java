@@ -24,8 +24,6 @@ import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,9 +38,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
@@ -110,7 +106,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     @GetMapping(path = "/version")
     @Override
-    public ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByTime(
+    public ResponseEntity<OriginalVersion<EhrStatusDto>> retrieveVersionOfEhrStatusByTime(
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
 
@@ -136,7 +132,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     @GetMapping(path = "/version/{version_uid}")
     @Override
-    public ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByVersionUid(
+    public ResponseEntity<OriginalVersion<EhrStatusDto>> retrieveVersionOfEhrStatusByVersionUid(
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "version_uid") String versionUid) {
 
@@ -160,7 +156,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
                 versionId -> createRestContext(ehrId, Map.of(), "version", versionId.toString()));
     }
 
-    private ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatus(
+    private ResponseEntity<OriginalVersion<EhrStatusDto>> retrieveVersionOfEhrStatus(
             UUID ehrId, UUID ehrStatusId, int version, Consumer<ObjectVersionId> initContext) {
 
         HttpRestContext.register(VERSION, version);
@@ -170,16 +166,9 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
                 .orElseThrow(() -> new ObjectNotFoundException(
                         RmConstants.EHR_STATUS, "Couldn't retrieve EhrStatus with given parameters"));
 
-        ObjectRef<? extends ObjectId> contribution = originalVersion.getContribution();
-        UUID contributionId = UUID.fromString(contribution.getId().getValue());
+        initContext.accept(originalVersion.getUid());
 
-        ContributionDto contributionDto = contributionService.getContribution(ehrId, contributionId);
-
-        OriginalVersionResponseData<EhrStatusDto> originalVersionResponseData =
-                new OriginalVersionResponseData<>(originalVersion, contributionDto);
-        initContext.accept(originalVersionResponseData.getVersionId());
-
-        return ResponseEntity.ok().body(originalVersionResponseData);
+        return ResponseEntity.ok().body(originalVersion);
     }
 
     private void createRestContext(UUID ehrId, Map<String, String> queryParams, String... pathSegments) {

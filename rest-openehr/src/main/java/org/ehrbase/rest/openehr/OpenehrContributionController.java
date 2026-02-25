@@ -21,23 +21,17 @@ import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.changecontrol.Contribution;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.ContributionService;
-import org.ehrbase.openehr.sdk.response.dto.ContributionResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.ContributionApiSpecification;
-import org.ehrbase.rest.util.InternalResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
@@ -99,18 +93,17 @@ public class OpenehrContributionController extends BaseController implements Con
 
         boolean doReturnRepresentation = RETURN_REPRESENTATION.equals(prefer);
 
-        InternalResponse<ContributionResponseData> respData =
-                buildContributionResponseData(contributionId, ehrId, accept, uri, headerList, doReturnRepresentation);
+        ResponseEntity<Contribution> respData = buildContributionResponseData(
+                contributionId,
+                ehrId,
+                accept,
+                uri,
+                headerList,
+                doReturnRepresentation,
+                doReturnRepresentation ? 201 : 204);
 
         createRestContext(ehrId, contributionId);
-
-        if (doReturnRepresentation) {
-            // 201 with body + headers
-            return ResponseEntity.created(uri).headers(respData.getHeaders()).body(respData.getResponseData());
-        } else {
-            // 204 only with headers
-            return ResponseEntity.noContent().headers(respData.getHeaders()).build();
-        }
+        return respData;
     }
 
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
@@ -131,22 +124,23 @@ public class OpenehrContributionController extends BaseController implements Con
                 LOCATION, ETAG, LAST_MODIFIED); // whatever is required by REST spec - CONTENT_TYPE handled separately
 
         // building full / representation response
-        InternalResponse<ContributionResponseData> respData =
-                buildContributionResponseData(contributionUid, ehrId, accept, uri, headerList, true);
+        ResponseEntity<Contribution> respData =
+                buildContributionResponseData(contributionUid, ehrId, accept, uri, headerList, true, 200);
 
         createRestContext(ehrId, contributionUid);
 
         // returns 200 with body
-        return ResponseEntity.ok().headers(respData.getHeaders()).body(respData.getResponseData());
+        return respData;
     }
 
-    private InternalResponse<ContributionResponseData> buildContributionResponseData(
+    private ResponseEntity<Contribution> buildContributionResponseData(
             UUID contributionId,
             UUID ehrId,
             String accept,
             URI uri,
             List<String> headerList,
-            boolean includeResponseData) {
+            boolean includeResponseData,
+            final int httpStatus) {
 
         // do minimal scope steps
         // create and supplement headers with data depending on which headers are requested
@@ -173,7 +167,7 @@ public class OpenehrContributionController extends BaseController implements Con
         // lambda request
         // if response data objects was created as "representation" do all task from wider scope, too
 
-        final ContributionResponseData responseData;
+        final Contribution responseData;
         if (includeResponseData) {
             final MediaType mediaType = resolveContentType(accept);
             respHeaders.setContentType(mediaType);
@@ -182,22 +176,13 @@ public class OpenehrContributionController extends BaseController implements Con
             // by temporary variable)
 
             // retrieve contribution
-            ContributionDto contribution = contributionService.getContribution(ehrId, contributionId);
-
-            // set all response field according to retrieved contribution
-            responseData = new ContributionResponseData(
-                    new HierObjectId(contributionId.toString()),
-                    contribution.getObjectReferences().entrySet().stream()
-                            .map(e -> new ObjectRef<>(new ObjectVersionId(e.getKey()), "local", e.getValue()))
-                            .collect(Collectors.toList()),
-                    contribution.getAuditDetails());
-
+            responseData = contributionService.getContribution(ehrId, contributionId);
         } else {
             // else continue with returning but without additional data from above, e.g. body
             responseData = null;
         }
 
-        return new InternalResponse<>(responseData, respHeaders);
+        return ResponseEntity.status(httpStatus).headers(respHeaders).body(responseData);
     }
 
     private void createRestContext(UUID ehrId, UUID contributionId) {
