@@ -21,6 +21,7 @@ import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rmobjectvalidator.APathQueryCache;
@@ -37,15 +38,14 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.openehr.sdk.validation.CompositionValidator;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
@@ -190,33 +190,19 @@ public class ValidationServiceImp implements ValidationService {
     }
 
     @Override
-    public void check(EhrStatusDto ehrStatus) {
+    public void check(EhrStatus ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
-        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
-        List<RMObjectValidationMessage> validationIssues = Stream.of(
-                        // RM-DTO required
-                        require(ehrStatus.type(), "/subject", "subject", ehrStatus.subject()),
-                        require(ehrStatus.type(), "/is_queryable", "is_queryable", ehrStatus.isQueryable()),
-                        require(ehrStatus.type(), "/is_modifiable", "is_modifiable", ehrStatus.isModifiable()),
-                        // rm validation
-                        validate(rmObjectValidator, "/uid", ehrStatus.uid()),
-                        validate(rmObjectValidator, "/name", ehrStatus.name()),
-                        validate(rmObjectValidator, "/subject", ehrStatus.subject()),
-                        validate(rmObjectValidator, "/archetype_details", ehrStatus.archetypeDetails()),
-                        validate(rmObjectValidator, "/feeder_audit", ehrStatus.feederAudit()),
-                        validate(rmObjectValidator, "/other_details", ehrStatus.otherDetails()),
-                        // additional checks
-                        matches(
-                                ehrStatus.type(),
-                                "/subject/external_ref/namespace",
-                                "namespace",
-                                NAMESPACE_PATTERN,
-                                Optional.ofNullable(ehrStatus.subject())
-                                        .map(PartyProxy::getExternalRef)
-                                        .map(PartyRef::getNamespace)))
-                .flatMap(Collection::stream)
-                .toList();
+        List<RMObjectValidationMessage> validationIssues =
+                validate(compositionValidator.get().getRmObjectValidator(), "", ehrStatus);
+        validationIssues.addAll(matches(
+                RmConstants.EHR_STATUS,
+                "/subject/external_ref/namespace",
+                "namespace",
+                NAMESPACE_PATTERN,
+                Optional.ofNullable(ehrStatus.getSubject())
+                        .map(PartyProxy::getExternalRef)
+                        .map(PartyRef::getNamespace)));
 
         if (!validationIssues.isEmpty()) {
             throw new ValidationException(
@@ -298,7 +284,7 @@ public class ValidationServiceImp implements ValidationService {
                         msg.getHumanReadableArchetypePath(),
                         msg.getMessage(),
                         msg.getType()))
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private static List<RMObjectValidationMessage> require(String type, String path, String attr, Object value) {

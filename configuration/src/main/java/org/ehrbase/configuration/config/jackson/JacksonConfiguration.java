@@ -22,12 +22,12 @@ import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
-import org.ehrbase.api.dto.EhrStatusDto;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
+import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonDeSerializer;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonSerializer;
-import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,7 +46,7 @@ public class JacksonConfiguration {
                 .serializerByType(RMObject.class, new RmObjectJsonSerializer())
                 .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
                 // DTOs with RMObjects support
-                .deserializers(new DtoDeSerializer<>(EhrStatusDto.class, RmConstants.EHR_STATUS))
+                .deserializerByType(EhrStatus.class, new EhrStatusDeserializer(CanonicalJson.MARSHAL_OM))
                 .modules(new JavaTimeModule());
     }
 

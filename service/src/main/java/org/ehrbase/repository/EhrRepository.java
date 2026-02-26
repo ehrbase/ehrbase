@@ -126,22 +126,22 @@ public class EhrRepository
     }
 
     public Boolean fetchIsModifiable(UUID ehrId) {
-        return fromJoinedVersionData(
-                        context.select(jsonDataField(tables.dataHead(), IS_MODIFIABLE_JSON_PATH)
-                                .cast(Boolean.class)),
-                        true)
-                .where(singleEhrStatusCondition(ehrId, tables.versionHead()))
-                .and(dataRootCondition(tables.dataHead()))
+        Table<EhrStatusDataRecord> dataHead = tables.dataHead();
+        return context.select(jsonDataField(dataHead, IS_MODIFIABLE_JSON_PATH).cast(Boolean.class))
+                .from(dataHead)
+                .where(singleEhrStatusCondition(ehrId, dataHead))
+                .and(dataRootCondition(dataHead))
                 .fetchOptional()
                 .map(Record1::value1)
                 .orElse(null);
     }
 
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-
-        return fromJoinedVersionData(context.select(field(VERSION_PROTOTYPE.EHR_ID)), true)
-                .where(subjectCondition(subjectId, nameSpace, tables.dataHead()))
-                .and(dataRootCondition(tables.dataHead()))
+        Table<EhrStatusDataRecord> dataHead = tables.dataHead();
+        return context.select(field(VERSION_PROTOTYPE.EHR_ID))
+                .from(dataHead)
+                .where(subjectCondition(subjectId, nameSpace, dataHead))
+                .and(dataRootCondition(dataHead))
                 .fetchOptional()
                 .map(Record1::value1);
     }

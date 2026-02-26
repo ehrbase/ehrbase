@@ -19,11 +19,11 @@ package org.ehrbase.rest.openehr.specification;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.ehrbase.api.dto.VersionedEhrStatusDto;
-import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "VERSIONED_EHR_STATUS")
@@ -36,7 +36,7 @@ public interface VersionedEhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get"))
-    ResponseEntity<VersionedEhrStatusDto> retrieveVersionedEhrStatusByEhr(String ehrIdString);
+    ResponseEntity<VersionedEhrStatus> retrieveVersionedEhrStatusByEhr(String ehrIdString);
 
     @Operation(
             summary = "Get versioned EHR_STATUS revision history",
@@ -44,7 +44,7 @@ public interface VersionedEhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-versioned_ehr_status-get-1"))
-    ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(String ehrIdString);
+    ResponseEntity<RevisionHistory> retrieveVersionedEhrStatusRevisionHistoryByEhr(String ehrIdString);
 
     @Operation(
             summary = "Get versioned EHR_STATUS version by time",

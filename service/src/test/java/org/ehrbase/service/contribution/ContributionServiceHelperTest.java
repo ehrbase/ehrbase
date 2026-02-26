@@ -100,9 +100,8 @@ public class ContributionServiceHelperTest {
 
     public static ContributionCreateDto loadContribution(ContributionTestDataCanonicalJson contributionData) {
         try {
-            ContributionWrapper contributionWrapper =
+            ContributionCreateDto contributionCreateDto =
                     ContributionServiceHelper.unmarshalContribution(loadContributionString(contributionData));
-            ContributionCreateDto contributionCreateDto = contributionWrapper.getContributionCreateDto();
             assertNotNull(contributionCreateDto);
             return contributionCreateDto;
         } catch (IOException e) {

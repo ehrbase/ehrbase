@@ -25,6 +25,7 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -34,11 +35,11 @@ import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
 import java.util.UUID;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -114,18 +115,18 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
             @RequestHeader(name = PREFER, required = false) String prefer,
-            @RequestBody EhrStatusDto ehrStatusDto) {
+            @RequestBody EhrStatus ehrStatusDto) {
 
         HttpRestContext.register(EHR_ID, ehrId);
 
         // update EHR_STATUS and check for success
         ObjectVersionId targetObjId = new ObjectVersionId(versionUid);
-        EhrService.EhrResult ehrResult = ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null);
-        ObjectVersionId statusUid = ehrResult.statusVersionId();
+        EhrStatus ehrResult = ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null);
+        UIDBasedId statusUid = ehrResult.getUid();
 
         // update and prepare current version number
-        int version = extractVersionFromVersionUid(statusUid.getValue()).orElseThrow();
-        UUID ehrStatusId = UUID.fromString(statusUid.getObjectId().getValue());
+        int version = LocatableUtils.getUidVersion(statusUid);
+        UUID ehrStatusId = LocatableUtils.getUuid(statusUid);
 
         // load status
         OriginalVersion<EhrStatus> originalVersion = ehrStatusVersion(ehrId, ehrStatusId, version);

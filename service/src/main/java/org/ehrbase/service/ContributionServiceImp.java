@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
@@ -54,7 +52,6 @@ import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.service.contribution.ContributionServiceHelper;
-import org.ehrbase.service.contribution.ContributionWrapper;
 import org.ehrbase.util.UuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -121,20 +118,16 @@ public class ContributionServiceImp implements ContributionService {
         List<ObjectRef<?>> objectRefs = retrieveContributionVersionRefs(ehrId, contributionId);
         return new Contribution(new HierObjectId(contributionId.toString()), objectRefs, auditDetails);
     }
-
+    // FIXME CDR-2253 accept ContributionCreateDto
     @Override
     public UUID commitContribution(UUID ehrId, String content) {
         /*Note: we do not perform is_modifiable checks here since a contribution may contain a modification of the
         is_modifiable flag. The is_modifiable checks are performed per version in the service responsible for handling the
         versions content. Otherwise, resetting is_modifiable would not be possible. */
 
-        // XXX Performance: pre-check could be omitted
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException(RmConstants.EHR, "No EHR found with given ID: " + ehrId.toString());
-        }
+        ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
-        ContributionWrapper contributionWrapper = ContributionServiceHelper.unmarshalContribution(content);
-        ContributionCreateDto contribution = contributionWrapper.getContributionCreateDto();
+        ContributionCreateDto contribution = ContributionServiceHelper.unmarshalContribution(content);
 
         validationService.check(contribution);
 
@@ -153,7 +146,7 @@ public class ContributionServiceImp implements ContributionService {
         // go through those RM objects versions and execute the action of it (as listed in its audit) and connect it to
         // new
         // contribution. Prefer to use the DTOs objects instead of the RMObjects.
-        contributionWrapper.forEachVersion((version, dto) -> {
+        contribution.getVersions().forEach(version -> {
             RMObject versionRmObject = version.getData();
 
             // the version contains the optional "data" attribute (i.e. payload),
@@ -169,23 +162,11 @@ public class ContributionServiceImp implements ContributionService {
                     }
                 }
                 case Folder folder -> processFolderVersion(ehrId, contributionId, version, folder);
-                case EhrStatus __ -> {
-                    // Here we use the EHRStatusDto to be able to apply a better validation
-                    EhrStatusDto ehrStatusDto = Optional.ofNullable(dto)
-                            .filter(EhrStatusDto.class::isInstance)
-                            .map(EhrStatusDto.class::cast)
-                            .orElseThrow(() -> new InternalServerException(
-                                    "Expected DTO to exist for Contribution of EHR_STATUS"));
-                    processEhrStatusVersion(ehrId, contributionId, version, ehrStatusDto);
-                }
-                case null -> {
+                case EhrStatus status -> processEhrStatusVersion(ehrId, contributionId, version, status);
+                case null ->
                     // version doesn't contain "data", so it is only a metadata one to, for
                     // instance, delete a specific object via ID regardless of type
-
-                    // :FIXME according to the spec. a version must contain data
-
                     processMetadataVersion(ehrId, contributionId, version);
-                }
                 default ->
                     throw new ValidationException(ERR_VER_INVALID.formatted(Optional.of(versionRmObject.getClass())
                             .map(ArchieRMInfoLookup.getInstance()::getTypeInfo)
@@ -211,7 +192,7 @@ public class ContributionServiceImp implements ContributionService {
      * @param ehrStatus       The actual EhrStatus payload
      * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
      */
-    private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version<?> version, EhrStatusDto ehrStatus) {
+    private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version<?> version, EhrStatus ehrStatus) {
         // access audit and extract method, e.g. CREATION
         ContributionChangeType changeType =
                 ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());

@@ -28,7 +28,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -50,7 +49,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(schema = @Schema(implementation = EhrStatusDto.class)),
+                                    array = @ArraySchema(schema = @Schema(implementation = EhrStatus.class)),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -79,7 +78,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(schema = @Schema(implementation = EhrStatusDto.class)),
+                                    array = @ArraySchema(schema = @Schema(implementation = EhrStatus.class)),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -101,7 +100,7 @@ public interface EhrStatusApiSpecification {
                             content = {
                                 @Content(
                                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                        array = @ArraySchema(schema = @Schema(implementation = EhrStatusDto.class)),
+                                        array = @ArraySchema(schema = @Schema(implementation = EhrStatus.class)),
                                         examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
             responses = {
@@ -112,7 +111,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(schema = @Schema(implementation = EhrStatusDto.class)),
+                                    array = @ArraySchema(schema = @Schema(implementation = EhrStatus.class)),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -139,5 +138,5 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-put"))
-    ResponseEntity<EhrStatus> updateEhrStatus(UUID ehrId, String versionUid, String prefer, EhrStatusDto ehrStatus);
+    ResponseEntity<EhrStatus> updateEhrStatus(UUID ehrId, String versionUid, String prefer, EhrStatus ehrStatus);
 }

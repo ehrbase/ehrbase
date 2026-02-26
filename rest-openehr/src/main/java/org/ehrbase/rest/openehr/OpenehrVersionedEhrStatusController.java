@@ -22,24 +22,20 @@ import static org.ehrbase.api.rest.HttpRestContext.VERSION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
-import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.dto.VersionedEhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
@@ -76,25 +72,20 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     @GetMapping
     @Override
-    public ResponseEntity<VersionedEhrStatusDto> retrieveVersionedEhrStatusByEhr(
+    public ResponseEntity<VersionedEhrStatus> retrieveVersionedEhrStatusByEhr(
             @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         createRestContext(ehrId, Map.of());
 
-        VersionedObject<EhrStatusDto> versionedEhrStatus = ehrService.getVersionedEhrStatus(ehrId);
-        VersionedEhrStatusDto versionedEhrStatusDto = new VersionedEhrStatusDto(
-                versionedEhrStatus.getUid(),
-                versionedEhrStatus.getOwnerId(),
-                DateTimeFormatter.ISO_DATE_TIME.format(
-                        versionedEhrStatus.getTimeCreated().getValue()));
+        VersionedEhrStatus versionedEhrStatus = ehrService.getVersionedEhrStatus(ehrId);
 
-        return ResponseEntity.ok().body(versionedEhrStatusDto);
+        return ResponseEntity.ok().body(versionedEhrStatus);
     }
 
     @GetMapping(path = "/revision_history")
     @Override
-    public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
+    public ResponseEntity<RevisionHistory> retrieveVersionedEhrStatusRevisionHistoryByEhr(
             @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -102,7 +93,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
         createRestContext(ehrId, Map.of(), REVISION_HISTORY);
 
-        return ResponseEntity.ok().body(new RevisionHistoryResponseData(revisionHistory));
+        return ResponseEntity.ok().body(revisionHistory);
     }
 
     @GetMapping(path = "/version")
