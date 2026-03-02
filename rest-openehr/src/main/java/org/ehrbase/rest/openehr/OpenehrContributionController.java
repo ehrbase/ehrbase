@@ -30,6 +30,7 @@ import java.util.UUID;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.ContributionService;
+import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.ContributionApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +75,7 @@ public class OpenehrContributionController extends BaseController implements Con
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestBody String contribution) {
+            @RequestBody ContributionCreateDto contribution) {
 
         if (!resolveContentType(contentType).isCompatibleWith(MediaType.APPLICATION_JSON)) {
             throw new NotAcceptableException(

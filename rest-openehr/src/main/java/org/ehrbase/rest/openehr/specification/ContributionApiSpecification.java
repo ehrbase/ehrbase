@@ -20,6 +20,7 @@ package org.ehrbase.rest.openehr.specification;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "CONTRIBUTION")
@@ -39,7 +40,7 @@ public interface ContributionApiSpecification {
             String accept,
             String prefer,
             String ehrIdString,
-            String contribution);
+            ContributionCreateDto contribution);
 
     @Operation(
             summary = "Get contribution by id",

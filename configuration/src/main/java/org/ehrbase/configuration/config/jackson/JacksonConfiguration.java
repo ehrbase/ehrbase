@@ -24,6 +24,7 @@ import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
+import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonDeSerializer;
@@ -47,6 +48,7 @@ public class JacksonConfiguration {
                 .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
                 // DTOs with RMObjects support
                 .deserializerByType(EhrStatus.class, new EhrStatusDeserializer(CanonicalJson.MARSHAL_OM))
+                .deserializerByType(ContributionCreateDto.class, new ContributionCreateDtoDeserializer())
                 .modules(new JavaTimeModule());
     }
 

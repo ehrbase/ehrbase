@@ -24,6 +24,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
 /**
  * Interface for contribution service roughly based on openEHR SM "I_EHR_CONTRIBUTION Interface",
@@ -98,12 +99,12 @@ public interface ContributionService {
      * Commit a CONTRIBUTION containing any number of serialized VERSION<Type> objects.
      *
      * @param ehrId   ID of EHR
-     * @param content serialized content, containing version objects and audit object in given format
+     * @param contribution CONTRIBUTION, containing version objects and audit object in given format
      * @return ID of successfully committed contribution
      * @throws IllegalArgumentException when input can't be processed
      * @throws InternalServerException  when DB is inconsistent
      */
-    UUID commitContribution(UUID ehrId, String content);
+    UUID commitContribution(UUID ehrId, ContributionCreateDto contribution);
 
     /**
      * Admin method to delete a Contribution from the DB. See EHRbase Admin API specification for details.

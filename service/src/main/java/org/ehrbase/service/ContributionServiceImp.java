@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.Contribution;
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.directory.Folder;
@@ -35,6 +36,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
@@ -51,7 +53,6 @@ import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
-import org.ehrbase.service.contribution.ContributionServiceHelper;
 import org.ehrbase.util.UuidGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -118,18 +119,16 @@ public class ContributionServiceImp implements ContributionService {
         List<ObjectRef<?>> objectRefs = retrieveContributionVersionRefs(ehrId, contributionId);
         return new Contribution(new HierObjectId(contributionId.toString()), objectRefs, auditDetails);
     }
-    // FIXME CDR-2253 accept ContributionCreateDto
+
     @Override
-    public UUID commitContribution(UUID ehrId, String content) {
-        /*Note: we do not perform is_modifiable checks here since a contribution may contain a modification of the
-        is_modifiable flag. The is_modifiable checks are performed per version in the service responsible for handling the
-        versions content. Otherwise, resetting is_modifiable would not be possible. */
-
-        ehrService.checkEhrExistsAndIsModifiable(ehrId);
-
-        ContributionCreateDto contribution = ContributionServiceHelper.unmarshalContribution(content);
-
+    public UUID commitContribution(UUID ehrId, ContributionCreateDto contribution) {
         validationService.check(contribution);
+
+        if (isModifiableCheckNeeded(contribution)) {
+            ehrService.checkEhrExistsAndIsModifiable(ehrId);
+        } else {
+            ehrService.checkEhrExists(ehrId);
+        }
 
         UUID auditUuid =
                 contributionRepository.createAudit(contribution.getAudit(), AuditDetailsTargetType.CONTRIBUTION);
@@ -179,6 +178,39 @@ public class ContributionServiceImp implements ContributionService {
         return contributionId;
     }
 
+    /**
+     * <p>
+     * A modifiable check is needed, if a non-EHR_STATUS is not preceded by an EHR_STATUS.
+     * A StateConflictException is thrown if the EHR_STATUS has is_modifiable=false.
+     * <p>
+     * Assumptions:
+     * <ul>
+     * <li>The versions are processed in sequence
+     * <li>Only if EHR_STATUS.is_modifiable is set other object types can be modified.
+     *
+     * @param contribution
+     * @return
+     * @throws StateConflictException
+     */
+    static boolean isModifiableCheckNeeded(ContributionCreateDto contribution) throws StateConflictException {
+        boolean modificationCheckNeeded = false;
+        Boolean modificationAllowed = null;
+        for (OriginalVersion<? extends RMObject> version : contribution.getVersions()) {
+            switch (version.getData()) {
+                case EhrStatus ehrStatus -> modificationAllowed = ehrStatus.isModifiable();
+                case null, default -> {
+                    if (modificationAllowed == null) {
+                        modificationCheckNeeded = true;
+                    } else if (Boolean.FALSE.equals(modificationAllowed)) {
+                        throw new StateConflictException(
+                                "CONTRIBUTION contains an EHR_STATUS that does not allow modification");
+                    }
+                }
+            }
+        }
+        return modificationCheckNeeded;
+    }
+
     private static final String ERR_VER_INVALID = "Invalid version object in contribution: %s not supported.";
 
     private static final String ERR_UNSUP_CHANGE_TYPE = "ChangeType[%s] not Supported.";
@@ -194,8 +226,7 @@ public class ContributionServiceImp implements ContributionService {
      */
     private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version<?> version, EhrStatus ehrStatus) {
         // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
         UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.EHR_STATUS);
@@ -230,8 +261,7 @@ public class ContributionServiceImp implements ContributionService {
     private void processCompositionVersion(
             UUID ehrId, UUID contributionId, Version<?> version, Composition composition) {
         // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
@@ -257,8 +287,7 @@ public class ContributionServiceImp implements ContributionService {
 
     private void processFolderVersion(UUID ehrId, UUID contributionId, Version<?> version, Folder folder) {
         // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
@@ -328,8 +357,7 @@ public class ContributionServiceImp implements ContributionService {
      * @param version        The version wrapper object
      */
     private void processMetadataVersion(UUID ehrId, UUID contributionId, Version<?> version) {
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         if (changeType != ContributionChangeType.DELETED) {
             throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));

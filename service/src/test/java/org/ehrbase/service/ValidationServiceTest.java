@@ -17,6 +17,7 @@
  */
 package org.ehrbase.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
 import static org.mockito.Mockito.doReturn;
@@ -44,15 +45,19 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.api.util.ContributionUtils;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
@@ -66,7 +71,6 @@ import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidat
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
-import org.ehrbase.service.contribution.ContributionServiceHelperTest;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -440,7 +444,7 @@ class ValidationServiceTest {
             mode = EnumSource.Mode.INCLUDE,
             names = {"ONE_ENTRY_COMPOSITION", "TWO_ENTRIES_COMPOSITION", "STATUS_COMPOITION_MODIFICATION"})
     void contributionValidFixtures(ContributionTestDataCanonicalJson type) {
-        service().check(ContributionServiceHelperTest.loadContribution(type));
+        service().check(loadContribution(type));
     }
 
     @ParameterizedTest
@@ -450,7 +454,7 @@ class ValidationServiceTest {
             names = {"ONE_ENTRY_COMPOSITION", "TWO_ENTRIES_COMPOSITION", "STATUS_COMPOITION_MODIFICATION"})
     void contributionInvalidFixtures(ContributionTestDataCanonicalJson type) {
 
-        ContributionCreateDto contribution = ContributionServiceHelperTest.loadContribution(type);
+        ContributionCreateDto contribution = loadContribution(type);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(contribution))
@@ -500,5 +504,13 @@ class ValidationServiceTest {
             OPERATIONALTEMPLATE template = document.getTemplate();
             return new OPTParser(template).parse();
         });
+    }
+
+    private static ContributionCreateDto loadContribution(ContributionTestDataCanonicalJson contributionData) {
+        try (InputStream in = contributionData.getStream()) {
+            return ContributionUtils.unmarshalContribution(IOUtils.toString(in, UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e.getMessage(), e);
+        }
     }
 }
