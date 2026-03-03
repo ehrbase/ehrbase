@@ -30,6 +30,12 @@ import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -55,6 +61,7 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.templateprovider.TemplateProvider;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
+import org.ehrbase.util.SemVer;
 import org.ehrbase.util.UuidGenerator;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
@@ -67,6 +74,41 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CompositionServiceImp implements CompositionService {
+
+    private static final Pattern TEMPLATE_VERSION_PATTERN;
+
+    static {
+        UnaryOperator<String> capturing = content -> "(" + content + ")";
+
+        UnaryOperator<String> nonCapturing = content -> "(?:" + content + ")";
+
+        UnaryOperator<String> optionalNonCapturing = content -> nonCapturing.apply(content) + '?';
+
+        String dot = "\\.";
+
+        // lazy capturing so lang and version can be matched
+        String namePart = capturing.apply(".+?");
+
+        String langPart = "[a-zA-Z]{2}";
+        String languagePart = optionalNonCapturing.apply(dot + langPart + optionalNonCapturing.apply("-" + langPart));
+
+        String versionPart = "0|[1-9]\\d*";
+        String versionGroup = capturing.apply(versionPart);
+
+        String fullVersionPart =
+                // major
+                versionGroup
+                        + optionalNonCapturing.apply(dot
+                                // minor
+                                + versionGroup
+                                + optionalNonCapturing.apply(
+                                        // patch
+                                        dot + versionGroup));
+
+        // language is ignored
+        TEMPLATE_VERSION_PATTERN =
+                Pattern.compile(namePart + languagePart + optionalNonCapturing.apply("\\.v" + fullVersionPart));
+    }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -229,26 +271,78 @@ public class CompositionServiceImp implements CompositionService {
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "composition", "No COMPOSITION with given id: %s".formatted(compId)));
 
-        String inputTemplateId = LocatableUtils.getTemplateId(composition);
-        if (!existingTemplateId.equals(inputTemplateId)) {
-            // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
-            if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0])) {
-                throw new InvalidApiParameterException("Can't update composition to have different template.");
-            }
-            // if base matches, check if given template ID is just a new version of the correct template
-            int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
-            int inputTemplateIdVersion =
-                    Integer.parseInt(inputTemplateId.substring(inputTemplateId.lastIndexOf("\\.v") + 1));
-            if (inputTemplateIdVersion < existingTemplateIdVersion) {
-                throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
-            }
-        }
+        ensureTemplateCompatible(LocatableUtils.getTemplateId(composition), existingTemplateId);
 
         composition.setUid(buildObjectVersionId(compId, version + 1, systemService));
 
         compositionRepository.update(ehrId, composition, contributionId, audit);
 
         return compId;
+    }
+
+    /**
+     * check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+     * @param inputTemplateId
+     * @param existingTemplateId
+     */
+    static void ensureTemplateCompatible(String inputTemplateId, String existingTemplateId) {
+        if (existingTemplateId.equals(inputTemplateId)) {
+            return;
+        }
+
+        Pair<String, SemVer> oldVersion = getTemplateSemVer(existingTemplateId);
+        Pair<String, SemVer> newVersion = getTemplateSemVer(inputTemplateId);
+
+        // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+        if (!oldVersion.getKey().equals(newVersion.getKey())) {
+            throw new InvalidApiParameterException("Can't update composition to have different template.");
+        }
+        // if base matches, check if given template ID is just a new version of the correct template
+        if (isOlder(newVersion.getRight(), oldVersion.getRight())) {
+            throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
+        }
+    }
+
+    static boolean isOlder(SemVer version, SemVer baseVersion) {
+        return Stream.<Function<SemVer, Integer>>of(SemVer::major, SemVer::minor, SemVer::patch)
+                .map(f -> {
+                    Integer v = f.apply(version);
+                    Integer b = f.apply(baseVersion);
+
+                    if (b == null) {
+                        return false;
+                    }
+                    if (v == null) {
+                        return true;
+                    }
+                    return Objects.equals(v, b) ? null : v < b;
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(false);
+    }
+
+    private static Optional<String> group(Matcher matcher, int groupNr) {
+        return Optional.of(matcher).filter(m -> m.groupCount() >= groupNr).map(m -> m.group(groupNr));
+    }
+
+    private static Integer integerFromGroup(Matcher matcher, int groupNr) {
+        return group(matcher, groupNr).map(Integer::parseInt).orElse(null);
+    }
+
+    private static Pair<String, SemVer> getTemplateSemVer(String templateId) {
+        Matcher matcher = TEMPLATE_VERSION_PATTERN.matcher(templateId);
+        if (matcher.matches() && matcher.groupCount() > 1) {
+            return Pair.of(
+                    matcher.group(1),
+                    new SemVer(
+                            integerFromGroup(matcher, 2),
+                            integerFromGroup(matcher, 3),
+                            integerFromGroup(matcher, 4),
+                            null));
+        } else {
+            return Pair.of(matcher.matches() ? matcher.group(1) : templateId, SemVer.NO_VERSION);
+        }
     }
 
     @Override

@@ -8,7 +8,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- Updating compositions with newer template versions now supports SemVer version syntax
  ### Fixed 
+- Fixed parsing of template versions when updating compositions
 
 ## [2.28.0]
  ### Added

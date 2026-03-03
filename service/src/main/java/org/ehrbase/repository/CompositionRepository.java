@@ -258,12 +258,17 @@ public class CompositionRepository
     }
 
     public Optional<String> findTemplateId(UUID compId) {
-        return context.select(COMP_VERSION.TEMPLATE_ID)
-                .from(tables.versionHead())
-                .where(COMP_VERSION.VO_ID.eq(compId), COMP_VERSION.SYS_VERSION.eq(1))
-                .unionAll(context.select(COMP_VERSION_HISTORY.TEMPLATE_ID)
-                        .from(tables.versionHistory())
-                        .where(COMP_VERSION_HISTORY.VO_ID.eq(compId), COMP_VERSION_HISTORY.SYS_VERSION.eq(1)))
+        CompVersion vTable = COMP_VERSION.as("v");
+        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
+        return context.select(vTable.TEMPLATE_ID)
+                .from(vTable)
+                .where(vTable.VO_ID.eq(compId))
+                .unionAll(context.select(hTable.TEMPLATE_ID)
+                        .from(hTable)
+                        .where(hTable.VO_ID.eq(compId))
+                        .orderBy(hTable.SYS_VERSION.desc())
+                        .limit(1))
+                .limit(1)
                 .fetchOptional(Record1::value1)
                 .flatMap(knowledgeCache::findTemplateIdByUuid);
     }
