@@ -133,13 +133,14 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
     @Override
     protected void runInitScriptIfRequired() {
         try (var conn = createConnection("")) {
-            Stream.of("ext", "ehr").forEach(schema -> Flyway.configure()
-                    .dataSource(new SingleConnectionDataSource(conn))
-                    .schemas(schema)
-                    .placeholders(Map.of("ehrSchema", schema))
-                    .locations("classpath:db/migration/%s".formatted(schema))
-                    .load()
-                    .migrate());
+            Stream.of("ext", "ehr")
+                    .forEach(schema -> Flyway.configure()
+                            .dataSource(new SingleConnectionDataSource(conn))
+                            .schemas(schema)
+                            .placeholders(Map.of("ehrSchema", schema))
+                            .locations("classpath:db/migration/%s".formatted(schema))
+                            .load()
+                            .migrate());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

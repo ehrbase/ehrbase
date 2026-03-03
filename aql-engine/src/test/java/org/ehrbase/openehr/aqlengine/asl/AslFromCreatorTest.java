@@ -63,8 +63,7 @@ class AslFromCreatorTest {
         @Test
         void simple() {
 
-            AslRootQuery aslQuery = addFromClause(
-                    """
+            AslRootQuery aslQuery = addFromClause("""
                             SELECT f/uid/value
                             FROM FOLDER f
                             """);
@@ -76,8 +75,7 @@ class AslFromCreatorTest {
         @Test
         void containsFolder() {
 
-            AslRootQuery aslQuery = addFromClause(
-                    """
+            AslRootQuery aslQuery = addFromClause("""
                             SELECT f1/uid/value, f2/uid/value
                             FROM FOLDER f1 CONTAINS FOLDER f2
                             """);
@@ -98,8 +96,7 @@ class AslFromCreatorTest {
         @Test
         void containsComposition() {
 
-            AslRootQuery aslQuery = addFromClause(
-                    """
+            AslRootQuery aslQuery = addFromClause("""
                             SELECT c/uid/value
                             FROM FOLDER CONTAINS COMPOSITION c
                             """);
@@ -120,8 +117,7 @@ class AslFromCreatorTest {
         @Test
         void containsFolderContainsComposition() {
 
-            AslRootQuery aslQuery = addFromClause(
-                    """
+            AslRootQuery aslQuery = addFromClause("""
                             SELECT c/uid/value
                             FROM FOLDER CONTAINS FOLDER f2[openEHR-EHR-FOLDER.episode_of_care.v1] CONTAINS COMPOSITION c
                             """);
@@ -158,11 +154,13 @@ class AslFromCreatorTest {
                 assertThat(pair.getValue()).isNotNull().satisfies(join -> {
                     assertThat(join.getJoinType()).isSameAs(JoinType.JOIN);
                     assertThat(join.getLeft())
-                            .isInstanceOfSatisfying(AslStructureQuery.class, left -> assertThat(left.getType())
-                                    .isSameAs(leftType));
+                            .isInstanceOfSatisfying(
+                                    AslStructureQuery.class,
+                                    left -> assertThat(left.getType()).isSameAs(leftType));
                     assertThat(join.getRight())
-                            .isInstanceOfSatisfying(AslStructureQuery.class, right -> assertThat(right.getType())
-                                    .isSameAs(rightType));
+                            .isInstanceOfSatisfying(
+                                    AslStructureQuery.class,
+                                    right -> assertThat(right.getType()).isSameAs(rightType));
                 });
                 assertThat(pair.getKey()).isInstanceOfSatisfying(AslStructureQuery.class, sq -> {
 

@@ -21,8 +21,7 @@ public class ItemSupport {
     private static final String ITEM_ID = "_ITEM_ID_";
     private static final String ITEM_NS = "_ITEM_NS_";
 
-    private static final String ITEM_TEMPLATE =
-            """
+    private static final String ITEM_TEMPLATE = """
     {
       "id": {
         "_type": "HIER_OBJECT_ID",

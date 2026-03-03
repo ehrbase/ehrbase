@@ -165,7 +165,7 @@ public class OpenehrContributionController extends BaseController implements Con
                     respHeaders.setLastModified(123124442);
                     break;
                 default:
-                    // Ignore header
+                // Ignore header
             }
         }
 

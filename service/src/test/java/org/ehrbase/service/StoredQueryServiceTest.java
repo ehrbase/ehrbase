@@ -108,8 +108,10 @@ public class StoredQueryServiceTest {
         when(mockStoredQueryRepository.retrieveQualified(any()))
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
-        StateConflictException reason = assertThrows(StateConflictException.class, () -> service()
-                .createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
+        StateConflictException reason = assertThrows(
+                StateConflictException.class,
+                () -> service()
+                        .createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
         assertEquals("Version already exists", reason.getMessage());
     }
 
@@ -122,8 +124,10 @@ public class StoredQueryServiceTest {
         when(mockStoredQueryRepository.retrieveQualified(any()))
                 .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
 
-        IllegalStateException reason = assertThrows(IllegalStateException.class, () -> service()
-                .createStoredQuery("test::name", "0.3.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
+        IllegalStateException reason = assertThrows(
+                IllegalStateException.class,
+                () -> service()
+                        .createStoredQuery("test::name", "0.3.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE));
         assertEquals("The database contains stored queries with partial versions", reason.getMessage());
     }
 

@@ -56,23 +56,20 @@ public class AqlSqlLayerTest {
     @Disabled
     @Test
     void printAslGraph() {
-        AslRootQuery aslQuery = buildSqlQuery(
-                """
+        AslRootQuery aslQuery = buildSqlQuery("""
         SELECT
         c/feeder_audit,
         c/uid/value,
         c/context/other_context[at0004]/items[at0014]/value
         FROM EHR e CONTAINS COMPOSITION c
         WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
-        """,
-                false);
+        """, false);
         System.out.println(AslGraph.createAslGraph(aslQuery));
     }
 
     @Test
     void testDataQueryPlacedLast() {
-        AslRootQuery aslQuery = buildSqlQuery(
-                """
+        AslRootQuery aslQuery = buildSqlQuery("""
             SELECT
             c/content,
             c/content[at0001],
@@ -81,8 +78,7 @@ public class AqlSqlLayerTest {
             c/context/other_context[at0004]/items[at0014]/value
             FROM EHR e CONTAINS COMPOSITION c
             WHERE e/ehr_id/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142f'
-        """,
-                false);
+        """, false);
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -112,13 +108,11 @@ public class AqlSqlLayerTest {
     @Test
     void clusterDataSingleSelection() {
 
-        AslRootQuery aslQuery = buildSqlQuery(
-                """
+        AslRootQuery aslQuery = buildSqlQuery("""
         SELECT
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]
-        """,
-                false);
+        """, false);
         List<AslQuery> queries =
                 aslQuery.getChildren().stream().map(Pair::getLeft).toList();
 
@@ -132,19 +126,16 @@ public class AqlSqlLayerTest {
 
     @Test
     void testPathNodeSkipping() {
-        AslRootQuery aslQuery = buildSqlQuery(
-                """
+        AslRootQuery aslQuery = buildSqlQuery("""
         SELECT
             o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
             o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
             o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
             o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
         FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
-        """,
-                true);
+        """, true);
 
-        String expected =
-                """
+        String expected = """
                 AslRootQuery
                   SELECT
                     p_eq_0.p_items__2_data -> value
@@ -402,16 +393,13 @@ public class AqlSqlLayerTest {
 
     @Test
     void testSimpleNodePredicateContainment() {
-        AslRootQuery aslQuery = buildSqlQuery(
-                """
+        AslRootQuery aslQuery = buildSqlQuery("""
         SELECT
             e/ehr_id/value
         FROM EHR e CONTAINS OBSERVATION [openEHR-EHR-OBSERVATION.o1o1o1.v1] CONTAINS CLUSTER[at0001] CONTAINS ELEMENT[at0002]
-        """,
-                false);
+        """, false);
 
-        String expected =
-                """
+        String expected = """
                 AslRootQuery
                   SELECT
                     sEHR_e_0.sEHR_e_0_id /* ehr_id/value */
@@ -484,8 +472,7 @@ public class AqlSqlLayerTest {
 
     @Test
     void testNodePredicateContainment() {
-        AslRootQuery aslQuery = buildSqlQuery(
-                """
+        AslRootQuery aslQuery = buildSqlQuery("""
         SELECT
             e/ehr_id/value
         FROM EHR e CONTAINS
@@ -506,11 +493,9 @@ public class AqlSqlLayerTest {
                 )
             )
         )
-        """,
-                false);
+        """, false);
 
-        String expected =
-                """
+        String expected = """
                 AslRootQuery
                   SELECT
                     sEHR_e_0.sEHR_e_0_id /* ehr_id/value */

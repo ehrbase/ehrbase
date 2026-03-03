@@ -301,8 +301,9 @@ public class PathAnalysis {
         private static Map<String, Map<String, AttInfo>> calculateAttributeInfos(
                 Map<String, Map<String, Set<String>>> typedAttributes) {
             return typedAttributes.entrySet().stream()
-                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().entrySet().stream()
-                            .collect(Collectors.toMap(Map.Entry::getKey, f -> {
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            e -> e.getValue().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, f -> {
                                 RMAttributeInfo attributeInfo = RM_INFOS.getAttributeInfo(f.getKey(), e.getKey());
                                 return new AttInfo(
                                         attributeInfo.isMultipleValued(), attributeInfo.isNullable(), f.getValue());
