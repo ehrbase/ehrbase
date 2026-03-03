@@ -34,6 +34,7 @@ import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.UnsupportedMediaTypeException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.openehr.sdk.serialisation.exception.UnmarshalException;
+import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -76,6 +77,7 @@ public class DefaultExceptionHandler {
         GeneralRequestProcessingException.class,
         InvalidApiParameterException.class,
         ValidationException.class,
+        ConstraintViolationException.class,
         UnmarshalException.class,
         AqlFeatureNotImplementedException.class,
         IllegalAqlException.class,
