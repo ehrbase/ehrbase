@@ -78,9 +78,7 @@ class AslCleanupPostProcessorTest {
         new AslCleanupPostProcessor().afterBuildAsl(result.aslQuery(), result.aqlQuery(), result.queryWrapper(), null);
         String modifiedAslGraph = AslGraph.createAslGraph(result.aslQuery());
 
-        assertThat(modifiedAslGraph)
-                .isEqualToIgnoringWhitespace(
-                        """
+        assertThat(modifiedAslGraph).isEqualToIgnoringWhitespace("""
         AslRootQuery
           SELECT
             sCO_c_0.?? -- COMPLEX VO_ID uid/value
@@ -96,16 +94,13 @@ class AslCleanupPostProcessorTest {
     @Test
     @Disabled
     void nestedSingleNodePathSubqueryCleanup() {
-        AslResult result =
-                parseAql("""
+        AslResult result = parseAql("""
             SELECT c/feeder_audit/original_content FROM COMPOSITION c
         """);
         new AslCleanupPostProcessor().afterBuildAsl(result.aslQuery(), result.aqlQuery(), result.queryWrapper(), null);
         String modifiedAslGraph = AslGraph.createAslGraph(result.aslQuery());
 
-        assertThat(modifiedAslGraph)
-                .isEqualToIgnoringWhitespace(
-                        """
+        assertThat(modifiedAslGraph).isEqualToIgnoringWhitespace("""
         AslRootQuery
           SELECT
             p_feeder_audit__0.p_feeder_audit__0_data -> original_content
@@ -134,8 +129,7 @@ class AslCleanupPostProcessorTest {
 
     @Test
     void cleanupRegression() {
-        AslResult result = parseAql(
-                """
+        AslResult result = parseAql("""
             SELECT c/uid/value,
                 o/data[at0001]/events[at0002]/data[at0003, 'name1']/items[at0004]/value/magnitude,
                 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/value/magnitude,
@@ -154,9 +148,7 @@ class AslCleanupPostProcessorTest {
         new AslCleanupPostProcessor().afterBuildAsl(result.aslQuery(), result.aqlQuery(), result.queryWrapper(), null);
         String modifiedAslGraph = AslGraph.createAslGraph(result.aslQuery());
 
-        assertThat(modifiedAslGraph)
-                .isEqualToIgnoringWhitespace(
-                        """
+        assertThat(modifiedAslGraph).isEqualToIgnoringWhitespace("""
         AslRootQuery
           SELECT
             sCO_c_0.?? -- COMPLEX VO_ID uid/value

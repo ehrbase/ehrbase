@@ -327,8 +327,7 @@ class ValidationServiceTest {
         EhrStatus ehrStatus = ehrStatus(new PartySelf(new PartyRef()));
         assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        """
+                .hasMessage("""
                     Message at /namespace (/subject/external_ref/namespace):  Attribute namespace of class PARTY_REF does not match existence 1..1
                     Message at /id (/subject/external_ref/id):  Attribute id of class PARTY_REF does not match existence 1..1
                     Message at /type (/subject/external_ref/type):  Attribute type of class PARTY_REF does not match existence 1..1""");
@@ -341,8 +340,7 @@ class ValidationServiceTest {
                 ehrStatus(new PartySelf(new PartyRef(new HierObjectId("ext::42"), "not-[]-allowed", "PARTY")));
         assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        """
+                .hasMessage("""
                         Message at /subject/external_ref (/subject/external_ref):  Invariant Namespace_valid failed on type PARTY_REF
                         Message at /subject/external_ref/namespace (/subject/external_ref/namespace):  Invariant namespace of class EHR_STATUS does not match pattern [[a-zA-Z][a-zA-Z0-9-_:/&+?]*]""");
     }
@@ -353,8 +351,7 @@ class ValidationServiceTest {
         EhrStatus ehrStatus = ehrStatus(new Archetyped(new ArchetypeID(), null));
         assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        """
+                .hasMessage("""
                     Message at /rm_version (/archetype_details/rm_version):  Attribute rm_version of class ARCHETYPED does not match existence 1..1
                     Message at /value (/archetype_details/archetype_id/value):  Attribute value of class ARCHETYPE_ID does not match existence 1..1""");
     }
@@ -365,8 +362,7 @@ class ValidationServiceTest {
         EhrStatus ehrStatus = ehrStatus(new FeederAudit());
         assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        """
+                .hasMessage("""
                     Message at /originating_system_audit (/feeder_audit/originating_system_audit):  Attribute originating_system_audit of class FEEDER_AUDIT does not match existence 1..1""");
     }
 
@@ -376,8 +372,7 @@ class ValidationServiceTest {
         EhrStatus ehrStatus = ehrStatus(new ItemList());
         assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        """
+                .hasMessage("""
                     Message at /archetype_node_id (/other_details/archetype_node_id):  Attribute archetype_node_id of class ITEM_LIST does not match existence 1..1
                     Message at /name (/other_details/name):  Attribute name of class ITEM_LIST does not match existence 1..1""");
     }

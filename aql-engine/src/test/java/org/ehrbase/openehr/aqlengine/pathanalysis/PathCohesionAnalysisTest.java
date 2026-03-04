@@ -48,9 +48,7 @@ class PathCohesionAnalysisTest {
     @Test
     void multiContains() {
 
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
                 SELECT c/uid/value, ev/name/value
                 FROM EHR e contains COMPOSITION c CONTAINS ( (OBSERVATION o CONTAINS CLUSTER cl) OR EVALUATION ev )
                 WHERE cl/name/value = 'Values'
@@ -79,9 +77,7 @@ class PathCohesionAnalysisTest {
 
     @Test
     void simpleWithPredicates() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
 
         SELECT
         c/content[at0001]/data/events[at0002, 'Irrelevant']/items[name/value='All Items']/items[openEHR-EHR-CLUSTER.myCluster.v1]/items[openEHR-EHR-ELEMENT.myElement.v1, 'Data']/value
@@ -90,9 +86,7 @@ class PathCohesionAnalysisTest {
 
         PathCohesionTreeNode n = map.get("c");
 
-        assertTreeMatches(
-                n,
-                """
+        assertTreeMatches(n, """
         COMPOSITION
           content[at0001]
             data
@@ -144,18 +138,14 @@ class PathCohesionAnalysisTest {
 
     @Test
     void simpleAttributes() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items[at0004]/name/value AS SystolicName,
           t/items[at0004]/value/magnitude AS SystolicValue
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items[at0004]
             name
@@ -166,9 +156,7 @@ class PathCohesionAnalysisTest {
 
     @Test
     void simpleNodeAttributes() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items[at0004]/name/value AS SystolicName,
           t/items[at0004]/value/magnitude AS SystolicValue,
@@ -178,9 +166,7 @@ class PathCohesionAnalysisTest {
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items[at0004]
             name
@@ -197,9 +183,7 @@ class PathCohesionAnalysisTest {
 
     @Test
     void baseAttributes() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items/name/value AS Name,
           t/items/value/magnitude AS Value,
@@ -209,9 +193,7 @@ class PathCohesionAnalysisTest {
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items
             name
@@ -223,9 +205,7 @@ class PathCohesionAnalysisTest {
 
     @Test
     void archetypeAttributes() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items[openEHR-EHR-ELEMENT.blood_pressure.v2]/name/value AS Name,
           t/items[openEHR-EHR-ELEMENT.blood_pressure.v2, 'Systolic']/value/magnitude AS SystolicValue,
@@ -235,9 +215,7 @@ class PathCohesionAnalysisTest {
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items[at0005]
             name
@@ -254,9 +232,7 @@ class PathCohesionAnalysisTest {
 
     @Test
     void nameAttributes() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items[name/value='Systolic']/name/value AS Name,
           t/items[name/value='Systolic']/value/magnitude AS SystolicValue,
@@ -266,9 +242,7 @@ class PathCohesionAnalysisTest {
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items[name/value='Diastolic']
             name
@@ -285,9 +259,7 @@ class PathCohesionAnalysisTest {
 
     @Test
     void mixedAttributes() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items[openEHR-EHR-ELEMENT.blood_pressure.v2]/name/value AS Name,
           t/items[openEHR-EHR-ELEMENT.blood_pressure.v2, 'Systolic']/value/magnitude AS SystolicValue,
@@ -297,9 +269,7 @@ class PathCohesionAnalysisTest {
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items
             name
@@ -311,18 +281,14 @@ class PathCohesionAnalysisTest {
 
     @Test
     void irrelevantPredicates() {
-        var map = byIdentifier(
-                analyzePathCohesion(
-                        """
+        var map = byIdentifier(analyzePathCohesion("""
         SELECT
           t/items[archetype_node_id=at0004 and value/magnitude > 3 and name/value='Systolic']/name/value AS SystolicName,
           t/items[at0004]/value/magnitude AS SystolicValue
         FROM OBSERVATION[openEHR-EHR-OBSERVATION.sample_blood_pressure.v1]
         CONTAINS ITEM_TREE t"""));
 
-        assertTreeMatches(
-                map.get("t"),
-                """
+        assertTreeMatches(map.get("t"), """
         ITEM_TREE
           items[at0004]
             name

@@ -103,8 +103,9 @@ public class ItemTagRepository {
         // retain order of itemTags parameter
         Iterator<EhrItemTagRecord> it = newTags.iterator();
         return itemTags.stream()
-                .map(t -> Optional.of(t).map(ItemTagDto::getId).orElseGet(() -> it.next()
-                        .getId()))
+                .map(t -> Optional.of(t)
+                        .map(ItemTagDto::getId)
+                        .orElseGet(() -> it.next().getId()))
                 .toList();
     }
 

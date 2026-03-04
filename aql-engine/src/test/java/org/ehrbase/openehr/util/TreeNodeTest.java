@@ -55,9 +55,7 @@ class TreeNodeTest {
         MyNode n3 = root.addChild(3);
         MyNode n3_1 = n3.addChild(3_1);
 
-        assertTreeMatches(
-                root,
-                """
+        assertTreeMatches(root, """
         0
           1
             11
@@ -71,8 +69,7 @@ class TreeNodeTest {
 
     @Test
     void testMoveChild() {
-        MyNode root = parseTree(
-                """
+        MyNode root = parseTree("""
                 0
                   1
                     11
@@ -92,9 +89,7 @@ class TreeNodeTest {
 
         n3.addChild(n12);
 
-        assertTreeMatches(
-                root,
-                """
+        assertTreeMatches(root, """
         0
           1
             11
@@ -108,8 +103,7 @@ class TreeNodeTest {
 
     @Test
     void testCreateTree() {
-        var tree =
-                """
+        var tree = """
         0
           1
             11

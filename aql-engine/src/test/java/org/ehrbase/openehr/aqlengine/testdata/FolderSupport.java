@@ -34,8 +34,7 @@ public class FolderSupport {
     private static final String SUB_FOLDER = "_SUB_FOLDER_";
     private static final String FOLDER_ITEM = "_FOLDER_ITEM_";
 
-    private static final String FOLDER_TEMPLATE =
-            """
+    private static final String FOLDER_TEMPLATE = """
 	{
 	  "_type": "FOLDER",
 	  "uid": {
