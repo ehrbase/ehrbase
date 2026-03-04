@@ -90,6 +90,7 @@ public class CompositionServiceImp implements CompositionService {
         String namePart = capturing.apply(".+?");
 
         String langPart = "[a-zA-Z]{2}";
+        // language is ignored for comparisons
         String languagePart = optionalNonCapturing.apply(dot + langPart + optionalNonCapturing.apply("-" + langPart));
 
         String versionPart = "0|[1-9]\\d*";
@@ -105,9 +106,11 @@ public class CompositionServiceImp implements CompositionService {
                                         // patch
                                         dot + versionGroup));
 
-        // language is ignored
-        TEMPLATE_VERSION_PATTERN =
-                Pattern.compile(namePart + languagePart + optionalNonCapturing.apply("\\.v" + fullVersionPart));
+        // several separators are recognized
+        String versionSeparator = "[._ ][vV]";
+
+        TEMPLATE_VERSION_PATTERN = Pattern.compile(
+                namePart + languagePart + optionalNonCapturing.apply(versionSeparator + fullVersionPart));
     }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

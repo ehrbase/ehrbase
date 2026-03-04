@@ -44,6 +44,9 @@ class CompositionServiceImpTest {
             a.v1,a,true
             a,a.v1,false
             a.v1,a.v1,true
+            a.v1,a_v1,true
+            a.v1,a_V1,true
+            a v1,a V1,true
             a.v1.0,a.v1,true
             a.v0,a.v1,false
             a.en.v1,a.de-ch,true
