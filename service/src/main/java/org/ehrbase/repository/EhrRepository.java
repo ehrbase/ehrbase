@@ -39,6 +39,7 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
+import org.ehrbase.jooq.pg.tables.EhrStatusData;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
@@ -137,8 +138,8 @@ public class EhrRepository
     }
 
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-        Table<EhrStatusDataRecord> dataHead = tables.dataHead();
-        return context.select(field(VERSION_PROTOTYPE.EHR_ID))
+        EhrStatusData dataHead = EHR_STATUS_DATA.as("d");
+        return context.select(dataHead.EHR_ID)
                 .from(dataHead)
                 .where(subjectCondition(subjectId, nameSpace, dataHead))
                 .and(dataRootCondition(dataHead))
