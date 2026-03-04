@@ -46,9 +46,9 @@ import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
-import org.ehrbase.openehr.sdk.validation.CompositionValidator;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
+import org.ehrbase.openehr.sdk.validation.LocatableValidator;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
@@ -74,7 +74,7 @@ public class ValidationServiceImp implements ValidationService {
 
     private final TerminologyService terminologyService;
 
-    private final ThreadLocal<CompositionValidator> compositionValidator;
+    private final ThreadLocal<LocatableValidator> compositionValidator;
 
     private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
 
@@ -108,20 +108,20 @@ public class ValidationServiceImp implements ValidationService {
                 objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
     }
 
-    private static CompositionValidator createCompositionValidator(
+    private static LocatableValidator createCompositionValidator(
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
             APathQueryCache delegator,
             boolean checkForChildrenNotInTemplate) {
-        CompositionValidator validator =
-                new CompositionValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
+        LocatableValidator validator =
+                new LocatableValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
 
         setSharedAPathQueryCache(validator, delegator);
         return validator;
     }
 
-    private static void setSharedAPathQueryCache(CompositionValidator validator, APathQueryCache delegator) {
+    private static void setSharedAPathQueryCache(LocatableValidator validator, APathQueryCache delegator) {
         if (delegator == null) {
             return;
         }
