@@ -37,6 +37,8 @@ import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.tables.CompVersion;
+import org.ehrbase.jooq.pg.tables.CompVersionHistory;
 import org.ehrbase.jooq.pg.tables.records.CompDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompDataRecord;
 import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
@@ -128,15 +130,16 @@ public class CompositionRepository
             return false;
         }
 
-        return context.select(COMP_VERSION.VO_ID)
-                .from(COMP_VERSION)
-                .where(COMP_VERSION.TEMPLATE_ID.eq(templateUuid.get()), COMP_VERSION.SYS_VERSION.eq(1))
+        CompVersion vTable = COMP_VERSION.as("v");
+        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
+
+        return context.select(vTable.VO_ID)
+                .from(vTable)
+                .where(vTable.TEMPLATE_ID.eq(templateUuid.get()))
                 .limit(1)
-                .unionAll(context.select(COMP_VERSION_HISTORY.VO_ID)
-                        .from(COMP_VERSION_HISTORY)
-                        .where(
-                                COMP_VERSION_HISTORY.TEMPLATE_ID.eq(templateUuid.get()),
-                                COMP_VERSION_HISTORY.SYS_VERSION.eq(1))
+                .unionAll(context.select(hTable.VO_ID)
+                        .from(hTable)
+                        .where(hTable.TEMPLATE_ID.eq(templateUuid.get()))
                         .limit(1))
                 .limit(1)
                 .fetchOptional()
