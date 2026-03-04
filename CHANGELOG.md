@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- update to java 25 [#1595](https://github.com/ehrbase/ehrbase/pull/1595)
  ### Fixed 
 
 ## [2.28.0]
