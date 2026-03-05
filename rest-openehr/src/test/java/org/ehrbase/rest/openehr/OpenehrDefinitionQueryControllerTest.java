@@ -162,8 +162,9 @@ public class OpenehrDefinitionQueryControllerTest {
                 controller().getStoredQueryList(accept, "some-query");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto)
-                .isEmpty());
+        assertThat(response.getBody())
+                .isNotNull()
+                .satisfies(dto -> assertThat(dto).isEmpty());
     }
 
     @ParameterizedTest
@@ -178,8 +179,9 @@ public class OpenehrDefinitionQueryControllerTest {
                 controller().getStoredQueryList(accept, "test-query");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull().satisfies(dto -> assertThat(dto)
-                .hasSize(1));
+        assertThat(response.getBody())
+                .isNotNull()
+                .satisfies(dto -> assertThat(dto).hasSize(1));
     }
 
     @ParameterizedTest
