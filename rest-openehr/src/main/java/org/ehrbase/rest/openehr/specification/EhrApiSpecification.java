@@ -42,7 +42,7 @@ public interface EhrApiSpecification {
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatus.class)))
+                                    schema = @Schema(implementation = EhrStatus.class))
                     }),
             responses = {
                     @ApiResponse(
@@ -51,7 +51,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = Ehr.class)))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "400",
@@ -78,7 +78,7 @@ public interface EhrApiSpecification {
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatus.class)))
+                                    schema = @Schema(implementation = EhrStatus.class))
                     }),
             responses = {
                     @ApiResponse(
@@ -87,7 +87,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = Ehr.class)))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "400",
@@ -117,7 +117,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = Ehr.class)))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "404",
@@ -138,7 +138,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = Ehr.class)))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "404",

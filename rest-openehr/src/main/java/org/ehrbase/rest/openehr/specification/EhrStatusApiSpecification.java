@@ -48,7 +48,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatus.class)),
+                                    schema = @Schema(implementation = EhrStatus.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -77,7 +77,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatus.class)),
+                                    schema = @Schema(implementation = EhrStatus.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -99,7 +99,7 @@ public interface EhrStatusApiSpecification {
                             content = {
                                 @Content(
                                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                        schema = @Schema(implementation = EhrStatus.class)),
+                                        schema = @Schema(implementation = EhrStatus.class),
                                         examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
             responses = {
@@ -110,7 +110,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatus.class)),
+                                    schema = @Schema(implementation = EhrStatus.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
