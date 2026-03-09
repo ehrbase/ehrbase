@@ -8,7 +8,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
- ### Fixed 
+- Updating compositions with newer template versions now supports SemVer version syntax [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
+ ### Fixed
+- Fixed parsing of template versions when updating compositions [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
+- When deleting templates, all composition versions are considered for graceful error handling [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
 - Refactor getStoredQueryList to comply with openEHR REST API specs ([#1456](https://github.com/ehrbase/ehrbase/pull/1456))
 - DIRECTORY endpoint responses now include all LOCATABLE attributes [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
 
