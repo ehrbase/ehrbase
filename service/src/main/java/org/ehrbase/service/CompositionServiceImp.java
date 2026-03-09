@@ -19,23 +19,23 @@ package org.ehrbase.service;
 
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.buildObjectVersionId;
 import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractUid;
-import static org.ehrbase.repository.AbstractVersionedObjectRepository.extractVersion;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.Attestation;
-import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.experimental.ItemTagDto.ItemTagRMType;
 import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
@@ -49,7 +49,7 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
@@ -61,6 +61,7 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.templateprovider.TemplateProvider;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
+import org.ehrbase.util.SemVer;
 import org.ehrbase.util.UuidGenerator;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
@@ -73,6 +74,44 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CompositionServiceImp implements CompositionService {
+
+    private static final Pattern TEMPLATE_VERSION_PATTERN;
+
+    static {
+        UnaryOperator<String> capturing = content -> "(" + content + ")";
+
+        UnaryOperator<String> nonCapturing = content -> "(?:" + content + ")";
+
+        UnaryOperator<String> optionalNonCapturing = content -> nonCapturing.apply(content) + '?';
+
+        String dot = "\\.";
+
+        // lazy capturing so lang and version can be matched
+        String namePart = capturing.apply(".+?");
+
+        String langPart = "[a-zA-Z]{2}";
+        // language is ignored for comparisons
+        String languagePart = optionalNonCapturing.apply(dot + langPart + optionalNonCapturing.apply("-" + langPart));
+
+        String versionPart = "0|[1-9]\\d*";
+        String versionGroup = capturing.apply(versionPart);
+
+        String fullVersionPart =
+                // major
+                versionGroup
+                        + optionalNonCapturing.apply(dot
+                                // minor
+                                + versionGroup
+                                + optionalNonCapturing.apply(
+                                        // patch
+                                        dot + versionGroup));
+
+        // several separators are recognized
+        String versionSeparator = "[._ ][vV]";
+
+        TEMPLATE_VERSION_PATTERN = Pattern.compile(
+                namePart + languagePart + optionalNonCapturing.apply(versionSeparator + fullVersionPart));
+    }
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -227,35 +266,86 @@ public class CompositionServiceImp implements CompositionService {
             throw new InternalServerException(e);
         }
 
-        UUID compId = UUID.fromString(compositionId.getObjectId().getValue());
-        int version = Integer.parseInt(compositionId.getVersionTreeId().getValue());
+        UUID compId = LocatableUtils.getUuid(compositionId);
+        int version = LocatableUtils.getUidVersion(compositionId);
 
         String existingTemplateId = compositionRepository
                 .findTemplateId(compId)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "composition", "No COMPOSITION with given id: %s".formatted(compId)));
 
-        String inputTemplateId =
-                composition.getArchetypeDetails().getTemplateId().getValue();
-        if (!existingTemplateId.equals(inputTemplateId)) {
-            // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
-            if (!existingTemplateId.split("\\.")[0].equals(inputTemplateId.split("\\.")[0])) {
-                throw new InvalidApiParameterException("Can't update composition to have different template.");
-            }
-            // if base matches, check if given template ID is just a new version of the correct template
-            int existingTemplateIdVersion = Integer.parseInt(existingTemplateId.split("\\.v")[1]);
-            int inputTemplateIdVersion =
-                    Integer.parseInt(inputTemplateId.substring(inputTemplateId.lastIndexOf("\\.v") + 1));
-            if (inputTemplateIdVersion < existingTemplateIdVersion) {
-                throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
-            }
-        }
+        ensureTemplateCompatible(LocatableUtils.getTemplateId(composition), existingTemplateId);
 
         composition.setUid(buildObjectVersionId(compId, version + 1, systemService));
 
         compositionRepository.update(ehrId, composition, contributionId, audit);
 
         return compId;
+    }
+
+    /**
+     * check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+     * @param inputTemplateId
+     * @param existingTemplateId
+     */
+    static void ensureTemplateCompatible(String inputTemplateId, String existingTemplateId) {
+        if (existingTemplateId.equals(inputTemplateId)) {
+            return;
+        }
+
+        Pair<String, SemVer> oldVersion = getTemplateSemVer(existingTemplateId);
+        Pair<String, SemVer> newVersion = getTemplateSemVer(inputTemplateId);
+
+        // check if base template ID doesn't match  (template ID schema: "$NAME.$LANG.v$VER")
+        if (!oldVersion.getKey().equals(newVersion.getKey())) {
+            throw new InvalidApiParameterException("Can't update composition to have different template.");
+        }
+        // if base matches, check if given template ID is just a new version of the correct template
+        if (isOlder(newVersion.getRight(), oldVersion.getRight())) {
+            throw new InvalidApiParameterException("Can't update composition with wrong template version bump.");
+        }
+    }
+
+    static boolean isOlder(SemVer version, SemVer baseVersion) {
+        return Stream.<Function<SemVer, Integer>>of(SemVer::major, SemVer::minor, SemVer::patch)
+                .map(f -> {
+                    Integer v = f.apply(version);
+                    Integer b = f.apply(baseVersion);
+
+                    if (b == null) {
+                        return false;
+                    }
+                    if (v == null) {
+                        return true;
+                    }
+                    return Objects.equals(v, b) ? null : v < b;
+                })
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(false);
+    }
+
+    private static Optional<String> group(Matcher matcher, int groupNr) {
+        return Optional.of(matcher).filter(m -> m.groupCount() >= groupNr).map(m -> m.group(groupNr));
+    }
+
+    private static Integer integerFromGroup(Matcher matcher, int groupNr) {
+        return group(matcher, groupNr).map(Integer::parseInt).orElse(null);
+    }
+
+    private static Pair<String, SemVer> getTemplateSemVer(String templateId) {
+        Matcher matcher = TEMPLATE_VERSION_PATTERN.matcher(templateId);
+        if (matcher.matches() && matcher.groupCount() > 1) {
+            return Pair.of(
+                    matcher.group(1),
+                    new SemVer(
+                            integerFromGroup(matcher, 2),
+                            integerFromGroup(matcher, 3),
+                            integerFromGroup(matcher, 4),
+                            null));
+        } else {
+            return Pair.of(matcher.matches() ? matcher.group(1) : templateId, SemVer.NO_VERSION);
+        }
     }
 
     @Override
@@ -283,8 +373,8 @@ public class CompositionServiceImp implements CompositionService {
 
         compositionRepository.delete(
                 ehrId,
-                UUID.fromString(compositionId.getObjectId().getValue()),
-                extractVersion(compositionId),
+                LocatableUtils.getUuid(compositionId),
+                LocatableUtils.getUidVersion(compositionId),
                 contributionId,
                 audit);
     }
@@ -319,50 +409,50 @@ public class CompositionServiceImp implements CompositionService {
      * and the desired target serialized string format. Will parse the composition dto into target
      * format either with a custom lambda expression for desired target format
      *
-     * @param composition Composition dto from database
+     * @param composition Composition from database
      * @param format      Target format
      * @return Structured string with string of data and content format
      */
     @Override
-    public StructuredString serialize(CompositionDto composition, CompositionFormat format) {
-        final StructuredString compositionString;
+    public StructuredString serialize(Composition composition, CompositionFormat format) {
+
+        final String marshalled;
+        final StructuredStringFormat stringFormat;
         switch (format) {
             case XML:
-                compositionString = new StructuredString(
-                        new CanonicalXML().marshal(composition.getComposition(), false), StructuredStringFormat.XML);
+                marshalled = CanonicalXML.DEFAULT_INSTANCE.marshal(composition, false);
+                stringFormat = StructuredStringFormat.XML;
                 break;
             case JSON:
-                compositionString = new StructuredString(
-                        new CanonicalJson().marshal(composition.getComposition()), StructuredStringFormat.JSON);
+                marshalled = CanonicalJson.DEFAULT_INSTANCE.marshal(composition);
+                stringFormat = StructuredStringFormat.JSON;
                 break;
             case FLAT:
-                compositionString = new StructuredString(
-                        new FlatJasonProvider(createTemplateProvider())
-                                .buildFlatJson(FlatFormat.SIM_SDT, composition.getTemplateId())
-                                .marshal(composition.getComposition()),
-                        StructuredStringFormat.JSON);
+                marshalled = new FlatJasonProvider(createTemplateProvider())
+                        .buildFlatJson(FlatFormat.SIM_SDT, LocatableUtils.getTemplateId(composition))
+                        .marshal(composition);
+                stringFormat = StructuredStringFormat.JSON;
                 break;
             case STRUCTURED:
-                compositionString = new StructuredString(
-                        new FlatJasonProvider(createTemplateProvider())
-                                .buildFlatJson(FlatFormat.STRUCTURED, composition.getTemplateId())
-                                .marshal(composition.getComposition()),
-                        StructuredStringFormat.JSON);
+                marshalled = new FlatJasonProvider(createTemplateProvider())
+                        .buildFlatJson(FlatFormat.STRUCTURED, LocatableUtils.getTemplateId(composition))
+                        .marshal(composition);
+                stringFormat = StructuredStringFormat.JSON;
                 break;
             default:
                 throw new UnexpectedSwitchCaseException(format);
         }
-        return compositionString;
+        return new StructuredString(marshalled, stringFormat);
     }
 
     public Composition buildComposition(String content, CompositionFormat format, String templateId) {
         final Composition composition;
         switch (format) {
             case XML:
-                composition = new CanonicalXML().unmarshal(content, Composition.class);
+                composition = CanonicalXML.DEFAULT_INSTANCE.unmarshal(content, Composition.class);
                 break;
             case JSON:
-                composition = new CanonicalJson().unmarshal(content, Composition.class);
+                composition = CanonicalJson.DEFAULT_INSTANCE.unmarshal(content, Composition.class);
                 break;
             case FLAT:
                 composition = new FlatJasonProvider(createTemplateProvider())
@@ -462,41 +552,13 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID composition) {
-        // get number of versions
-        int versions = getLastVersionNumber(ehrUid, composition);
-        // fetch each version and add to revision history
-        RevisionHistory revisionHistory = new RevisionHistory();
-        for (int i = 1; i <= versions; i++) {
-            revisionHistory.addItem(revisionHistoryItemFromComposition(
-                    getOriginalVersionComposition(ehrUid, composition, i).orElseThrow()));
-        }
 
+        RevisionHistory revisionHistory = compositionRepository.getRevisionHistory(ehrUid, composition);
         if (revisionHistory.getItems().isEmpty()) {
-            throw new ObjectNotFoundException("VERSIONED_COMPOSITION", null); // never should be empty; not valid
+            throw new ObjectNotFoundException(
+                    "VERSIONED_COMPOSITION", "No VERSIONED_COMPOSITION with given id: %s".formatted(composition));
         }
         return revisionHistory;
-    }
-
-    private RevisionHistoryItem revisionHistoryItemFromComposition(OriginalVersion<Composition> composition) {
-
-        ObjectVersionId objectVersionId = composition.getUid();
-
-        // Note: is List but only has more than one item when there are contributions regarding this
-        // object of change type attestation
-        List<AuditDetails> auditDetailsList = new ArrayList<>();
-        // retrieving the audits
-        auditDetailsList.add(composition.getCommitAudit());
-
-        // add retrieval of attestations, if there are any
-        if (composition.getAttestations() != null) {
-            for (Attestation a : composition.getAttestations()) {
-                AuditDetails newAudit = new AuditDetails(
-                        a.getSystemId(), a.getCommitter(), a.getTimeCommitted(), a.getChangeType(), a.getDescription());
-                auditDetailsList.add(newAudit);
-            }
-        }
-
-        return new RevisionHistoryItem(objectVersionId, auditDetailsList);
     }
 
     @Override

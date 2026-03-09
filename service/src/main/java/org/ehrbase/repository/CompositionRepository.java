@@ -22,12 +22,11 @@ import static org.ehrbase.jooq.pg.Tables.COMP_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION_HISTORY;
 
-import com.nedap.archie.rm.archetyped.Archetyped;
-import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.VersionedComposition;
+import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import java.time.OffsetDateTime;
@@ -36,7 +35,10 @@ import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
+import org.ehrbase.jooq.pg.tables.CompVersion;
+import org.ehrbase.jooq.pg.tables.CompVersionHistory;
 import org.ehrbase.jooq.pg.tables.records.CompDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.CompDataRecord;
 import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
@@ -90,9 +92,7 @@ public class CompositionRepository
     @Transactional
     public void commit(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
         UUID templateId = Optional.of(composition)
-                .map(Composition::getArchetypeDetails)
-                .map(Archetyped::getTemplateId)
-                .map(TemplateId::getValue)
+                .map(LocatableUtils::getTemplateId)
                 .flatMap(knowledgeCache::findUuidByTemplateId)
                 .orElseThrow(
                         () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
@@ -130,15 +130,16 @@ public class CompositionRepository
             return false;
         }
 
-        return context.select(COMP_VERSION.VO_ID)
-                .from(COMP_VERSION)
-                .where(COMP_VERSION.TEMPLATE_ID.eq(templateUuid.get()), COMP_VERSION.SYS_VERSION.eq(1))
+        CompVersion vTable = COMP_VERSION.as("v");
+        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
+
+        return context.select(vTable.VO_ID)
+                .from(vTable)
+                .where(vTable.TEMPLATE_ID.eq(templateUuid.get()))
                 .limit(1)
-                .unionAll(context.select(COMP_VERSION_HISTORY.VO_ID)
-                        .from(COMP_VERSION_HISTORY)
-                        .where(
-                                COMP_VERSION_HISTORY.TEMPLATE_ID.eq(templateUuid.get()),
-                                COMP_VERSION_HISTORY.SYS_VERSION.eq(1))
+                .unionAll(context.select(hTable.VO_ID)
+                        .from(hTable)
+                        .where(hTable.TEMPLATE_ID.eq(templateUuid.get()))
                         .limit(1))
                 .limit(1)
                 .fetchOptional()
@@ -148,11 +149,10 @@ public class CompositionRepository
     @Transactional
     public void update(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
 
-        UUID rootId = extractUid(composition.getUid());
+        UUID rootId = LocatableUtils.getUuid(composition);
+
         UUID templateId = Optional.of(composition)
-                .map(Composition::getArchetypeDetails)
-                .map(Archetyped::getTemplateId)
-                .map(TemplateId::getValue)
+                .map(LocatableUtils::getTemplateId)
                 .flatMap(knowledgeCache::findUuidByTemplateId)
                 .orElseThrow(
                         () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
@@ -172,6 +172,12 @@ public class CompositionRepository
                 },
                 (n, r) -> {},
                 "No COMPOSITION with given id: %s".formatted(rootId));
+    }
+
+    public RevisionHistory getRevisionHistory(UUID ehrId, UUID compositionId) {
+        return getRevisionHistory(
+                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHead()),
+                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHistory()));
     }
 
     public boolean exists(UUID compId) {
@@ -255,12 +261,17 @@ public class CompositionRepository
     }
 
     public Optional<String> findTemplateId(UUID compId) {
-        return context.select(COMP_VERSION.TEMPLATE_ID)
-                .from(tables.versionHead())
-                .where(COMP_VERSION.VO_ID.eq(compId), COMP_VERSION.SYS_VERSION.eq(1))
-                .unionAll(context.select(COMP_VERSION_HISTORY.TEMPLATE_ID)
-                        .from(tables.versionHistory())
-                        .where(COMP_VERSION_HISTORY.VO_ID.eq(compId), COMP_VERSION_HISTORY.SYS_VERSION.eq(1)))
+        CompVersion vTable = COMP_VERSION.as("v");
+        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
+        return context.select(vTable.TEMPLATE_ID)
+                .from(vTable)
+                .where(vTable.VO_ID.eq(compId))
+                .unionAll(context.select(hTable.TEMPLATE_ID)
+                        .from(hTable)
+                        .where(hTable.VO_ID.eq(compId))
+                        .orderBy(hTable.SYS_VERSION.desc())
+                        .limit(1))
+                .limit(1)
                 .fetchOptional(Record1::value1)
                 .flatMap(knowledgeCache::findTemplateIdByUuid);
     }
@@ -292,7 +303,7 @@ public class CompositionRepository
 
         return findVersionByTime(
                         COMP_VERSION.VO_ID.eq(compositionId), COMP_VERSION_HISTORY.VO_ID.eq(compositionId), time)
-                .map(AbstractVersionedObjectRepository::extractVersion);
+                .map(LocatableUtils::getUidVersion);
     }
 
     @Transactional

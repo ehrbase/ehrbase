@@ -40,6 +40,7 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
 import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
@@ -173,8 +174,8 @@ public class OpenehrVersionedCompositionController extends BaseController
         UUID versionedObjectId;
         int version;
         try {
-            versionedObjectId = UUID.fromString(compositionVersionId.getRoot().getValue());
-            version = Integer.parseInt(compositionVersionId.getVersionTreeId().getValue());
+            versionedObjectId = LocatableUtils.getUuid(compositionVersionId);
+            version = LocatableUtils.getUidVersion(compositionVersionId);
             if (version <= 0) {
                 throw new InvalidApiParameterException(
                         "VERSION UID parameter has wrong format: Version needs to be greater 0");

@@ -31,7 +31,6 @@ import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.TemplateResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.rest.BaseController;
@@ -184,13 +183,12 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         CompositionRepresentation representation = extractCompositionRepresentation(accept, format);
         Composition composition = templateService.buildExample(templateId);
-        CompositionDto compositionDto = new CompositionDto(composition, templateId, null, null);
 
         return ResponseEntity.ok()
                 .location(createLocationUri(DEFINITION, TEMPLATE, ADL_1_4, templateId, "example"))
                 .contentType(representation.mediaType)
                 .body(compositionService
-                        .serialize(compositionDto, representation.format)
+                        .serialize(composition, representation.format)
                         .getValue());
     }
 

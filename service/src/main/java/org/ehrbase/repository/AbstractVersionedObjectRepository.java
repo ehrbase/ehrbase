@@ -17,11 +17,15 @@
  */
 package org.ehrbase.repository;
 
+import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
+
 import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -42,6 +46,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.Ehr;
@@ -61,6 +66,7 @@ import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertQuery;
 import org.jooq.JSONB;
+import org.jooq.JoinType;
 import org.jooq.Record;
 import org.jooq.Record2;
 import org.jooq.Record3;
@@ -312,6 +318,42 @@ public abstract class AbstractVersionedObjectRepository<
         firstRecord.insert();
     }
 
+    protected RevisionHistory getRevisionHistory(Condition condition, Condition historyCondition) {
+
+        String systemId = systemService.getSystemId();
+        Table<VR> vt = tables.versionHead();
+        SelectConditionStep<Record> versionSq = context.select(
+                        vt.fields(VERSION_PROTOTYPE.VO_ID, VERSION_PROTOTYPE.SYS_VERSION, VERSION_PROTOTYPE.AUDIT_ID))
+                .from(vt)
+                .where(condition);
+        Table<VH> ht = tables.versionHistory();
+        SelectConditionStep<Record> versionHistorySq = context.select(ht.fields(
+                        VERSION_HISTORY_PROTOTYPE.VO_ID,
+                        VERSION_HISTORY_PROTOTYPE.SYS_VERSION,
+                        VERSION_PROTOTYPE.AUDIT_ID))
+                .from(ht)
+                .where(historyCondition);
+        SelectOrderByStep<Record> union = context.selectFrom(versionSq).unionAll(versionHistorySq);
+        List<RevisionHistoryItem> revisionHistoryItems = context.select(
+                        union.field(VERSION_PROTOTYPE.VO_ID), union.field(VERSION_PROTOTYPE.SYS_VERSION), AUDIT_DETAILS)
+                .from(union)
+                .join(AUDIT_DETAILS, JoinType.LEFT_OUTER_JOIN)
+                .on(union.field(VERSION_PROTOTYPE.AUDIT_ID).eq(AUDIT_DETAILS.ID))
+                .orderBy(union.field(VERSION_PROTOTYPE.SYS_VERSION))
+                .fetch(r -> {
+                    ObjectVersionId vid = new ObjectVersionId(
+                            r.value1().toString(), systemId, r.value2().toString());
+                    // Note: is List but only has more than one item when there are contributions regarding this
+                    // object of change type attestation (currently not supported)
+                    List<AuditDetails> auditList = new ArrayList<>();
+                    AuditDetails auditDetails = contributionRepository.mapToAuditDetails(r.value3());
+                    auditList.add(auditDetails);
+                    return new RevisionHistoryItem(vid, auditList);
+                });
+
+        return new RevisionHistory(revisionHistoryItems);
+    }
+
     protected Optional<OriginalVersion<O>> getOriginalVersion(
             Condition condition, Condition historyCondition, int version) {
 
@@ -365,13 +407,8 @@ public abstract class AbstractVersionedObjectRepository<
 
     protected abstract Class<O> getLocatableClass();
 
-    public static int extractVersion(UIDBasedId uid) {
-        return Integer.parseInt(((ObjectVersionId) uid).getVersionTreeId().getValue());
-    }
-
     public static UUID extractUid(UIDBasedId uid) {
-
-        return UUID.fromString(uid.getRoot().getValue());
+        return LocatableUtils.getUuid(uid);
     }
 
     public static String extractSystemId(UIDBasedId uid) {
@@ -732,7 +769,7 @@ public abstract class AbstractVersionedObjectRepository<
             throw new PreconditionFailedException(NOT_MATCH_SYSTEM_ID);
         }
         // versions not consecutive
-        if ((headVersion + 1) != extractVersion(uid)) {
+        if ((headVersion + 1) != LocatableUtils.getUidVersion(uid)) {
             throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
         }
     }

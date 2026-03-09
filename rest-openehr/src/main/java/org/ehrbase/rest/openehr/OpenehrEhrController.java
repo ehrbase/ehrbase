@@ -163,9 +163,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
                 new HierObjectId(systemService.getSystemId()),
                 new HierObjectId(ehrId.toString()),
                 ehrResult.status(),
-                ehrService.getCreationTime(ehrId),
-                null,
-                null);
+                ehrService.getCreationTime(ehrId));
     }
 
     private ResponseEntity.BodyBuilder responseBuilder(HttpStatus status, UUID ehrId) {
