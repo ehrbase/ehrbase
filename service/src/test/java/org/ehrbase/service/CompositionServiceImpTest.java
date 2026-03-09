@@ -30,9 +30,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 class CompositionServiceImpTest {
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             a,a,true
             a,b,false
             a.v1,b.v1,false
