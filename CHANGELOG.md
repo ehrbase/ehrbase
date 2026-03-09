@@ -8,6 +8,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+ ### Fixed 
+
+## [2.29.0]
+ ### Added
+ ### Changed 
 - Updating compositions with newer template versions now supports SemVer version syntax [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
  ### Fixed
 - Fixed parsing of template versions when updating compositions [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
@@ -270,4 +275,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.26.0]: https://github.com/ehrbase/ehrbase/compare/v2.25.0...v2.26.0
 [2.27.0]: https://github.com/ehrbase/ehrbase/compare/v2.26.0...v2.27.0
 [2.28.0]: https://github.com/ehrbase/ehrbase/compare/v2.27.0...v2.28.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.28.0...HEAD
+[2.29.0]: https://github.com/ehrbase/ehrbase/compare/v2.28.0...v2.29.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.29.0...HEAD
