@@ -112,8 +112,9 @@ class ItemTagControllerTest {
     @Test
     void upsertItemTagsEmptyError() {
 
-        UnprocessableEntityException exception =
-                assertThrowsExactly(UnprocessableEntityException.class, () -> controller()
+        UnprocessableEntityException exception = assertThrowsExactly(
+                UnprocessableEntityException.class,
+                () -> controller()
                         .upsertItemTags(
                                 null,
                                 SAMPLE_EHR_ID,
@@ -125,13 +126,10 @@ class ItemTagControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
                 EHR_STATUS||87ef3397-8939-4c18-9bb3-d5d9a80d740d
                 COMPOSITION|return=minimal|98c09fbf-54ca-496f-9aa1-d9778cc487a8
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void upsertItemTagsPreferMinimal(String type, String prefer, String targetId) {
 
         ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.valueOf(type), targetId);
@@ -142,13 +140,10 @@ class ItemTagControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
                 EHR_STATUS|87ef3397-8939-4c18-9bb3-d5d9a80d740d
                 COMPOSITION|98c09fbf-54ca-496f-9aa1-d9778cc487a8
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void upsertItemTagsPreferRepresentation(String type, String targetId) {
 
         ItemTagDto tag = itemTagDto(ItemTagDto.ItemTagRMType.valueOf(type), targetId);
@@ -236,15 +231,12 @@ class ItemTagControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
                 EHR_STATUS||
                 EHR_STATUS||1::key,2::key
                 COMPOSITION|0df4ff20-be70-4416-ae12-c7681459f46e,02fbaf93-b2f1-4880-920c-e6716ca54e03|
                 COMPOSITION|6f0eec75-e547-4fc1-ada1-ab872456e000|2::key
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void getItemTags(String rawType, String rawIds, String rawKeys) {
 
         String targetId = "c143d292-fb07-41f4-8715-ff88f11240d4";
@@ -300,8 +292,9 @@ class ItemTagControllerTest {
     @Test
     void deleteItemTagsEmptyError() {
 
-        UnprocessableEntityException exception =
-                assertThrowsExactly(UnprocessableEntityException.class, () -> controller()
+        UnprocessableEntityException exception = assertThrowsExactly(
+                UnprocessableEntityException.class,
+                () -> controller()
                         .deleteTags(
                                 SAMPLE_EHR_ID,
                                 "a377d88c-3374-4cea-8149-697b7837de17",

@@ -417,9 +417,7 @@ class DbToRmFormatTest {
     @Test
     void reconstructRmObjectDvMultimediaType() {
 
-        DvMultimedia rmObject = DbToRmFormat.reconstructRmObject(
-                DvMultimedia.class,
-                """
+        DvMultimedia rmObject = DbToRmFormat.reconstructRmObject(DvMultimedia.class, """
                 {"T": "mu", "d": "VGVzdERhdGE=", "mt": {"T": "C", "cd": "application/pdf", "te": {"T": "T", "V": "IANA_media-types"}}, "si": 8}
                 """);
         assertThat(rmObject.getMediaType())

@@ -33,8 +33,7 @@ class RmDbJsonTest {
     @Test
     void readTreeByteArrayBase64() throws JsonProcessingException {
 
-        JsonNode jsonNode =
-                RmDbJson.MARSHAL_OM.readTree("""
+        JsonNode jsonNode = RmDbJson.MARSHAL_OM.readTree("""
                 {"data":"U2hhbGwgQmUgQmFzZTY0IGVuY29kZWQ="}""");
         assertThat(jsonNode.get("data").asText()).isEqualTo("U2hhbGwgQmUgQmFzZTY0IGVuY29kZWQ=");
         ByteArrayTest byteArrayTest = RmDbJson.MARSHAL_OM.convertValue(jsonNode, ByteArrayTest.class);
@@ -54,8 +53,7 @@ class RmDbJsonTest {
     @Test
     void readTreeDvMultimediaType() throws JsonProcessingException {
 
-        JsonNode jsonNode = RmDbJson.MARSHAL_OM.readTree(
-                """
+        JsonNode jsonNode = RmDbJson.MARSHAL_OM.readTree("""
                 {"_type":"DV_MULTIMEDIA","data":"VGVzdERhdGE=","media_type":{"_type":"CODE_PHRASE","terminology_id":{"_type":"TERMINOLOGY_ID","value":"IANA_media-type"},"code_string":"application/pdf"},"size":8}""");
         assertThat(jsonNode.get("data").asText()).isEqualTo("VGVzdERhdGE=");
         DvMultimedia dvMultimedia = RmDbJson.MARSHAL_OM.convertValue(jsonNode, DvMultimedia.class);
@@ -96,9 +94,7 @@ class RmDbJsonTest {
 
         JsonNode jsonNode = RmDbJson.MARSHAL_OM.valueToTree(multimedia);
         assertThat(jsonNode.get("data").asText()).isEqualTo("VGVzdERhdGE=");
-        assertThat(jsonNode)
-                .hasToString(
-                        """
+        assertThat(jsonNode).hasToString("""
                 {"_type":"DV_MULTIMEDIA","data":"VGVzdERhdGE=","media_type":{"_type":"CODE_PHRASE","terminology_id":{"_type":"TERMINOLOGY_ID","value":"IANA_media-type"},"code_string":"application/pdf"},"size":8}""");
     }
 }

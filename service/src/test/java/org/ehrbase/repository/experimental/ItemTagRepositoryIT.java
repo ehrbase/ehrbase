@@ -262,13 +262,10 @@ class ItemTagRepositoryIT {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|ee77096d-8aae-41ae-8c80-1c14e8e66792
             COMPOSITION|a8019d32-af8b-49ec-a8b8-9df87acb857c
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void adminDelete(String type, String id) {
 
         UUID targetId = UUID.fromString(id);

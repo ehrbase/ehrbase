@@ -304,8 +304,9 @@ public class AqlSqlQueryBuilder {
                     case AslColumnField src ->
                         Stream.of(FieldUtils.field(target, src, true).as(fieldName));
                     case AslComplexExtractedColumnField src ->
-                        src.getExtractedColumn().getColumns().stream().map(fn -> FieldUtils.field(target, src, fn, true)
-                                .as(src.aliasedName(fn)));
+                        src.getExtractedColumn().getColumns().stream()
+                                .map(fn ->
+                                        FieldUtils.field(target, src, fn, true).as(src.aliasedName(fn)));
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
                     case AslAggregatingField __ ->
                         throw new IllegalArgumentException("Filtering queries cannot be based on AslAggregatingField");

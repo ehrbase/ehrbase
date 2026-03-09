@@ -88,8 +88,7 @@ class AqlSqlQueryBuilderTest {
     @Disabled
     @Test
     void printSqlQuery() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
             SELECT
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
@@ -134,21 +133,17 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
     }
 
     @ParameterizedTest
-    @ValueSource(
-            strings = {
-                """
+    @ValueSource(strings = {"""
                     SELECT o/data/events/data/items/value/magnitude
                     FROM OBSERVATION o [openEHR-EHR-OBSERVATION.conformance_observation.v0]
                     WHERE o/data[at0001]/events[at0002]/data[at0003]/items[at0008]/value = 82.0
-                    """,
-                """
+                    """, """
                     SELECT e/ehr_id/value, cv0/commit_audit/time_committed/value, c0
                     FROM EHR e
                     CONTAINS FOLDER f0[name/value = '1439656']
                     CONTAINS VERSION cv0[LATEST_VERSION]
                     CONTAINS COMPOSITION c0
-                    """
-            })
+                    """})
     void canBuildSqlQuery(String aql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
@@ -163,8 +158,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
 
     @Test
     void queryOnData() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
         SELECT
         c/content,
         c/content[at0001],
@@ -181,8 +175,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
 
     @Test
     void queryOnFolder() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
         SELECT
         f/uid/value
         FROM EHR
@@ -207,8 +200,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
 
     @Test
     void queryOnFolderWithComposition() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
             SELECT
               c/uid/value
             FROM FOLDER CONTAINS COMPOSITION c
@@ -238,8 +230,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
 
     @Test
     void clusterWithDataMultiplicitySelectSingle() {
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
         SELECT
             cluster/items[at0001]/value/data
         FROM COMPOSITION CONTAINS CLUSTER cluster[openEHR-EHR-CLUSTER.media_file.v1]

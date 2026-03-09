@@ -28,17 +28,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 class AqlFromEhrOptimisationPostProcessorTest {
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             SELECT e FROM EHR e |
             SELECT e/ehr_id/value FROM EHR e CONTAINS COMPOSITION c |
             SELECT c FROM EHR e[ehr_id/value = '5dd64358-76b4-4ffe-8d05-554406d9d023'] CONTAINS COMPOSITION c |
             SELECT s_el FROM EHR e CONTAINS (COMPOSITION c AND EHR_STATUS CONTAINS ELEMENT s_el) |
             SELECT c/uid/value FROM EHR e CONTAINS COMPOSITION c WHERE e/ehr_id/value = '5dd64358-76b4-4ffe-8d05-554406d9d023' |
             SELECT c FROM EHR e CONTAINS COMPOSITION c WHERE c/uid/value = '5dd64358-76b4-4ffe-8d05-554406d9d023' | SELECT c FROM COMPOSITION c WHERE c/uid/value = '5dd64358-76b4-4ffe-8d05-554406d9d023'
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void removeRedundantFromEhr(String originalAql, String optimizedAql) {
         AqlQuery query = AqlQueryParser.parse(originalAql);
         AqlFromEhrOptimisationPostProcessor cut = new AqlFromEhrOptimisationPostProcessor();

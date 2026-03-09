@@ -47,8 +47,7 @@ import org.springframework.http.ResponseEntity;
 class OpenehrTemplateControllerTest {
 
     private static final String CONTEXT_PATH = "https://template.test/ehrbase/rest";
-    private static final String SAMPLE_OPT =
-            """
+    private static final String SAMPLE_OPT = """
     <?xml version="1.0" encoding="utf-8"?>
     <template xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.openehr.org/v1">
         <test></test>

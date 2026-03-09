@@ -34,8 +34,7 @@ public class CompositionCleanupTest {
                         "\"items\" : [ \"ELEMENT[at0004,'DV_TEXT']\" ]");
     }
 
-    static final String COMP =
-            """
+    static final String COMP = """
     {
   "_type" : "COMPOSITION",
   "name" : {

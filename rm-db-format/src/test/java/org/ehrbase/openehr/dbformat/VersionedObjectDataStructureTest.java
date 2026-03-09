@@ -55,8 +55,7 @@ class VersionedObjectDataStructureTest {
             mode = Mode.EXCLUDE,
             names = {"EVENT_CONTEXT", "FEEDER_AUDIT", "FEEDER_AUDIT_DETAILS", "INSTRUCTION_DETAILS"})
     void testFeederAuditPreservedForElementOnly(StructureRmType type) throws JsonProcessingException {
-        String feederAudit =
-                """
+        String feederAudit = """
                 {
                     "_type": "FEEDER_AUDIT",
                     "originating_system_item_ids": [
@@ -68,8 +67,7 @@ class VersionedObjectDataStructureTest {
                     ]
                 }
                 """;
-        String toParse =
-                """
+        String toParse = """
                 {
                     "_type": "%s",
                     "name": {
@@ -79,8 +77,7 @@ class VersionedObjectDataStructureTest {
                     "feeder_audit": %s,
                     "archetype_node_id": "at0005"
                 }
-                """
-                        .formatted(type, feederAudit);
+                """.formatted(type, feederAudit);
 
         List<StructureNode> roots = VersionedObjectDataStructure.createDataStructure(
                 CanonicalJson.MARSHAL_OM.readValue(toParse, RMObject.class));
@@ -105,16 +102,15 @@ class VersionedObjectDataStructureTest {
 
         List<StructureNode> roots =
                 VersionedObjectDataStructure.createDataStructure(new Element("at0001", new DvText("Test"), multimedia));
-        assertThat(roots).singleElement().satisfies(node -> assertThat(
-                        node.getJsonNode().get("value"))
-                .isInstanceOf(ObjectNode.class)
-                .satisfies(value -> {
-                    ObjectNode jsonNode = (ObjectNode) value;
-                    assertThat(jsonNode.get("data").asText()).isEqualTo("VGVzdERhdGE=");
-                    assertThat(jsonNode)
-                            .hasToString(
-                                    """
+        assertThat(roots)
+                .singleElement()
+                .satisfies(node -> assertThat(node.getJsonNode().get("value"))
+                        .isInstanceOf(ObjectNode.class)
+                        .satisfies(value -> {
+                            ObjectNode jsonNode = (ObjectNode) value;
+                            assertThat(jsonNode.get("data").asText()).isEqualTo("VGVzdERhdGE=");
+                            assertThat(jsonNode).hasToString("""
                     {"_type":"DV_MULTIMEDIA","data":"VGVzdERhdGE=","media_type":{"_type":"CODE_PHRASE","terminology_id":{"_type":"TERMINOLOGY_ID","value":"IANA_media-type"},"code_string":"application/pdf"},"size":8}""");
-                }));
+                        }));
     }
 }

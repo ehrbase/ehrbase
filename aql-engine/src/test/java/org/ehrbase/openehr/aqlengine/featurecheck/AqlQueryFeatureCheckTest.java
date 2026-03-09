@@ -196,29 +196,22 @@ class AqlQueryFeatureCheckTest {
     }
 
     @ParameterizedTest
-    @ValueSource(
-            strings = {
-                "SELECT f FROM FOLDER f",
-                """
+    @ValueSource(strings = {"SELECT f FROM FOLDER f", """
                       SELECT f/uid/value, f/name/value, f/archetype_node_id
                       FROM FOLDER f[openEHR-EHR-FOLDER.generic.v1]
-                    """,
-                """
+                    """, """
                       SELECT f2/uid/value, f2/name/value
                       FROM FOLDER f1[openEHR-EHR-FOLDER.generic.v1,'root']
                       CONTAINS FOLDER f2[openEHR-EHR-FOLDER.generic.v1,'Encounter']
-                    """,
-                """
+                    """, """
                       SELECT e/ehr_id/value, f/uid/value
                       FROM EHR e
                       CONTAINS FOLDER f[openEHR-EHR-FOLDER.generic.v1,'Encounter']
-                    """,
-                """
+                    """, """
                       SELECT c/uid/value, f/name/value
                       FROM FOLDER f
                       CONTAINS COMPOSITION c
-                    """
-            })
+                    """})
     void ensureQuerySupportedAqlOnFolderEnabled(String aql) {
         assertDoesNotThrow(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql));
     }
@@ -315,18 +308,14 @@ class AqlQueryFeatureCheckTest {
     }
 
     @ParameterizedTest
-    @ValueSource(
-            strings = {
-                """
+    @ValueSource(strings = {"""
                    SELECT c/content/content/name/value
                    FROM COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT c
                    FROM COMPOSITION c
                    WHERE c/content/content/name/value = 'invalid'
-                """
-            })
+                """})
     void ensureInvalidPathRejected(String aql) {
 
         assertThatThrownBy(() -> runEnsureQuerySupported(aql))
@@ -494,25 +483,19 @@ class AqlQueryFeatureCheckTest {
     }
 
     @ParameterizedTest
-    @ValueSource(
-            strings = {
-                """
+    @ValueSource(strings = {"""
                    SELECT cv/commit_audit/time_committed/value
                    FROM VERSION cv[LATEST_VERSION]
-                """,
-                """
+                """, """
                    SELECT el/name/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS ELEMENT el
-                """,
-                """
+                """, """
                    SELECT c/name/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS VERSION cv2[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT c/name/value
                    FROM COMPOSITION c CONTAINS VERSION cv[LATEST_VERSION]
-                """
-            })
+                """})
     void checkIllegalVersion(String aql) {
 
         assertThatThrownBy(() -> runEnsureQuerySupported(aql))
@@ -522,57 +505,43 @@ class AqlQueryFeatureCheckTest {
     }
 
     @ParameterizedTest
-    @ValueSource(
-            strings = {
-                """
+    @ValueSource(strings = {"""
                    SELECT c/uid/value
                    FROM VERSION cv[ALL_VERSIONS] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT c/uid/value
                    FROM VERSION cv[commit_audit/time_committed > '2021-12-13'] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT f/uid/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS FOLDER f
-                """,
-                """
+                """, """
                    SELECT c1/name/value, c2/name/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c1 OR COMPOSITION c2
-                """,
-                """
+                """, """
                    SELECT c1/name/value, c2/name/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c1 AND COMPOSITION c2
-                """,
-                """
+                """, """
                    SELECT cv/preceding_version_uid
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT cv/other_input_version_uids
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT cv/data
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT cv/attestations
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT cv/lifecycle_state
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT cv/signature
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """,
-                """
+                """, """
                    SELECT cv
                    FROM VERSION cv[LATEST_VERSION] CONTAINS COMPOSITION c
-                """
-            })
+                """})
     void ensureVersionNotSupported(String aql) {
 
         assertThatThrownBy(() -> runEnsureQuerySupported(aql))
@@ -583,9 +552,7 @@ class AqlQueryFeatureCheckTest {
     @Test
     void ensureVersionSupportedAqlOnFolderEnabled() {
 
-        assertDoesNotThrow(
-                () -> runEnsureQuerySupportedAqlOnFolderEnabled(
-                        """
+        assertDoesNotThrow(() -> runEnsureQuerySupportedAqlOnFolderEnabled("""
                    SELECT f/uid/value
                    FROM VERSION cv[LATEST_VERSION] CONTAINS FOLDER f
                 """));
