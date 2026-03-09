@@ -8,10 +8,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
-- Updating compositions with newer template versions now supports SemVer version syntax
+- Updating compositions with newer template versions now supports SemVer version syntax [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
  ### Fixed
-- Fixed parsing of template versions when updating compositions
-- When deleting templates, all composition versions are considered for graceful error handling 
+- Fixed parsing of template versions when updating compositions [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
+- When deleting templates, all composition versions are considered for graceful error handling [#1597](https://github.com/ehrbase/ehrbase/pull/1597)
 
 ## [2.28.0]
  ### Added
