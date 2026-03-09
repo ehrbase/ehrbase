@@ -88,8 +88,7 @@ public class CliDataBaseCommand extends CliCommand {
 
     @Override
     protected void printUsage() {
-        println(
-                """
+        println("""
                 Database related operation like connection verification or migration.
 
                 Arguments:

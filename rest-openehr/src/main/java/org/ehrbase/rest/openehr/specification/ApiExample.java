@@ -24,8 +24,7 @@ public class ApiExample {
 
     private ApiExample() {}
 
-    static final String EHR_STATUS_JSON =
-            """
+    static final String EHR_STATUS_JSON = """
         {
             "archetype_node_id": "openEHR-EHR-EHR_STATUS.generic.v1",
             "name": {

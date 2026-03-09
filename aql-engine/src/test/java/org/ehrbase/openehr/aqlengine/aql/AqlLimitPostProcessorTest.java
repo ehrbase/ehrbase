@@ -33,9 +33,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 class AqlLimitPostProcessorTest {
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
                 5||10||REJECT||||Query contains a LIMIT clause, fetch and offset parameters must not be used (with fetch precedence REJECT)
                 5|20||40|REJECT||||Query parameter for offset provided, but no fetch parameter
                 5|20||40|MIN_FETCH||||Query parameter for offset provided, but no fetch parameter
@@ -46,8 +44,7 @@ class AqlLimitPostProcessorTest {
                 ||20||REJECT|||19|Fetch parameter 20 exceeds maximum fetch 19
                 ||20||MIN_FETCH|||19|Fetch parameter 20 exceeds maximum fetch 19
                 20|5|30||MIN_FETCH||||Query contains a OFFSET clause, fetch parameter must not be used (with fetch precedence MIN_FETCH)
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void queryOffsetLimitRejected(
             String aqlLimit,
             String aqlOffset,
@@ -73,9 +70,7 @@ class AqlLimitPostProcessorTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
                 ||||REJECT|||
                 5||||REJECT|||
                 5|15|||REJECT|||
@@ -86,8 +81,7 @@ class AqlLimitPostProcessorTest {
                 ||20|50|REJECT|20|20|20
                 30||20|50|MIN_FETCH|30|30|20
                 10||20|50|MIN_FETCH|30|30|20
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void queryOffsetLimitAccepted(
             String aqlLimit,
             String aqlOffset,

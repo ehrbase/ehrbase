@@ -162,22 +162,26 @@ public class OpenehrQueryControllerTest {
     @Test
     void executeAddHocQueryUsingPOSTWithFetchInvalid() {
 
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
-                        .executeAdHocQuery(
-                                sampleAqlQuery("invalid", null),
-                                MediaType.APPLICATION_JSON_VALUE,
-                                MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+        String message = assertThrowsExactly(
+                        InvalidApiParameterException.class,
+                        () -> controller()
+                                .executeAdHocQuery(
+                                        sampleAqlQuery("invalid", null),
+                                        MediaType.APPLICATION_JSON_VALUE,
+                                        MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .getMessage();
         assertEquals("invalid 'fetch' value 'invalid'", message);
     }
 
     @Test
     void executeAddHocQueryUsingPOSTWithOffsetInvalid() {
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controller()
-                        .executeAdHocQuery(
-                                sampleAqlQuery(null, "invalid"),
-                                MediaType.APPLICATION_JSON_VALUE,
-                                MediaType.APPLICATION_FORM_URLENCODED_VALUE))
+        String message = assertThrowsExactly(
+                        InvalidApiParameterException.class,
+                        () -> controller()
+                                .executeAdHocQuery(
+                                        sampleAqlQuery(null, "invalid"),
+                                        MediaType.APPLICATION_JSON_VALUE,
+                                        MediaType.APPLICATION_FORM_URLENCODED_VALUE))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
     }
@@ -237,13 +241,15 @@ public class OpenehrQueryControllerTest {
     @Test
     void executeStoredQueryUsingPOSTWithFetchInvalid() {
 
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
-                        .executeStoredQuery(
-                                "my_qualified_query",
-                                "1.0.0",
-                                MediaType.APPLICATION_JSON_VALUE,
-                                MediaType.APPLICATION_JSON_VALUE,
-                                sampleAqlJson("invalid", null)))
+        String message = assertThrowsExactly(
+                        InvalidApiParameterException.class,
+                        () -> controllerStoredQuery()
+                                .executeStoredQuery(
+                                        "my_qualified_query",
+                                        "1.0.0",
+                                        MediaType.APPLICATION_JSON_VALUE,
+                                        MediaType.APPLICATION_JSON_VALUE,
+                                        sampleAqlJson("invalid", null)))
                 .getMessage();
         assertEquals("invalid 'fetch' value 'invalid'", message);
     }
@@ -251,13 +257,15 @@ public class OpenehrQueryControllerTest {
     @Test
     void executeStoredQueryUsingPOSTWithOffsetInvalid() {
 
-        String message = assertThrowsExactly(InvalidApiParameterException.class, () -> controllerStoredQuery()
-                        .executeStoredQuery(
-                                "my_qualified_query",
-                                "1.0.0",
-                                MediaType.APPLICATION_JSON_VALUE,
-                                MediaType.APPLICATION_JSON_VALUE,
-                                sampleAqlJson(null, "invalid")))
+        String message = assertThrowsExactly(
+                        InvalidApiParameterException.class,
+                        () -> controllerStoredQuery()
+                                .executeStoredQuery(
+                                        "my_qualified_query",
+                                        "1.0.0",
+                                        MediaType.APPLICATION_JSON_VALUE,
+                                        MediaType.APPLICATION_JSON_VALUE,
+                                        sampleAqlJson(null, "invalid")))
                 .getMessage();
         assertEquals("invalid 'offset' value 'invalid'", message);
     }

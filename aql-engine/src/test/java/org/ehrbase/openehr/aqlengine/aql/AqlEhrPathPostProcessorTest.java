@@ -26,13 +26,10 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class AqlEhrPathPostProcessorTest {
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             SELECT e/ehr_status AS s FROM EHR e=>SELECT s AS s FROM EHR e CONTAINS EHR_STATUS s
             SELECT s/uid/value, e/ehr_status/subject/external_ref/id FROM EHR e CONTAINS COMPOSITION s WHERE e/ehr_status/is_modifiable = true=>SELECT s/uid/value, s1/subject/external_ref/id FROM EHR e CONTAINS (EHR_STATUS s1 AND COMPOSITION s) WHERE s1/is_modifiable = true
-            """,
-            delimiterString = "=>")
+            """, delimiterString = "=>")
     void resolveEhrStatus(String srcAql, String expectedAql) {
 
         AqlQuery aqlQuery = AqlQueryParser.parse(srcAql);

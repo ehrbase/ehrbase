@@ -38,15 +38,28 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "EHR_STATUS")
 public record EhrStatusDto(
         @JsonProperty(value = "uid") @XmlElement UIDBasedId uid,
+
         @JsonProperty(value = "archetype_node_id", required = true) @XmlAttribute(name = "archetype_node_id")
-                String archetypeNodeId,
+        String archetypeNodeId,
+
         @JsonProperty(value = "name") @XmlElement DvText name,
-        @JsonProperty(value = "archetype_details") @XmlElement(name = "archetype_details") Archetyped archetypeDetails,
-        @JsonProperty(value = "feeder_audit") @XmlElement(name = "feeder_audit") FeederAudit feederAudit,
+
+        @JsonProperty(value = "archetype_details") @XmlElement(name = "archetype_details")
+        Archetyped archetypeDetails,
+
+        @JsonProperty(value = "feeder_audit") @XmlElement(name = "feeder_audit")
+        FeederAudit feederAudit,
+
         @JsonProperty(value = "subject") @XmlElement PartySelf subject,
-        @JsonProperty(value = "is_queryable") @XmlElement(name = "is_queryable") Boolean isQueryable,
-        @JsonProperty(value = "is_modifiable") @XmlElement(name = "is_modifiable") Boolean isModifiable,
-        @JsonProperty(value = "other_details") @XmlElement(name = "other_details") ItemStructure otherDetails) {
+
+        @JsonProperty(value = "is_queryable") @XmlElement(name = "is_queryable")
+        Boolean isQueryable,
+
+        @JsonProperty(value = "is_modifiable") @XmlElement(name = "is_modifiable")
+        Boolean isModifiable,
+
+        @JsonProperty(value = "other_details") @XmlElement(name = "other_details")
+        ItemStructure otherDetails) {
 
     @JsonProperty(value = "_type", required = true)
     @XmlElement(name = "_type")

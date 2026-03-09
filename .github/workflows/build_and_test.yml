@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 env:
-  JAVA_VERSION: 21
+  JAVA_VERSION: 25
   JAVA_DISTRIBUTION: 'temurin'
   UPLOAD_PERF_HTML_REPORTS: true
 
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup - Java 21
+      - name: Setup - Java
         uses: actions/setup-java@v5
         with:
           java-version: ${{ env.JAVA_VERSION }}
