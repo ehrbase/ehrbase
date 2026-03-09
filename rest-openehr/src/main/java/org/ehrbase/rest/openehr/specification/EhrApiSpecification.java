@@ -20,7 +20,6 @@ package org.ehrbase.rest.openehr.specification;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,7 +43,7 @@ public interface EhrApiSpecification {
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(schema = @Schema(implementation = EhrDto.class)),
+                                    schema = @Schema(implementation = EhrDto.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                     }),
             responses = {
@@ -54,7 +53,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            array = @ArraySchema(schema = @Schema(implementation = EhrDto.class)),
+                                            schema = @Schema(implementation = EhrDto.class),
                                             examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
                     @ApiResponse(
@@ -82,7 +81,7 @@ public interface EhrApiSpecification {
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    array = @ArraySchema(schema = @Schema(implementation = EhrDto.class)),
+                                    schema = @Schema(implementation = EhrDto.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                     }),
             responses = {
@@ -92,7 +91,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            array = @ArraySchema(schema = @Schema(implementation = EhrDto.class)),
+                                            schema = @Schema(implementation = EhrDto.class),
                                             examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
                     @ApiResponse(
@@ -123,7 +122,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            array = @ArraySchema(schema = @Schema(implementation = EhrDto.class)),
+                                            schema = @Schema(implementation = EhrDto.class),
                                             examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
                     @ApiResponse(
@@ -145,7 +144,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            array = @ArraySchema(schema = @Schema(implementation = EhrDto.class)),
+                                            schema = @Schema(implementation = EhrDto.class),
                                             examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
                     @ApiResponse(
