@@ -18,22 +18,25 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.RMObject;
+import com.nedap.archie.rm.changecontrol.Contribution;
+import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.changecontrol.Version;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rminfo.RMTypeInfo;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.StringUtils;
-import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
@@ -43,7 +46,6 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.repository.AbstractVersionedObjectRepository;
 import org.ehrbase.repository.AuditDetailsTargetType;
@@ -51,10 +53,7 @@ import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
-import org.ehrbase.service.contribution.ContributionServiceHelper;
-import org.ehrbase.service.contribution.ContributionWrapper;
 import org.ehrbase.util.UuidGenerator;
-import org.jooq.Record3;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -114,28 +113,22 @@ public class ContributionServiceImp implements ContributionService {
      * @throws ObjectNotFoundException if EHR or CONTRIBUTION is not found
      */
     @Override
-    public ContributionDto getContribution(UUID ehrId, UUID contributionId) {
+    public Contribution getContribution(UUID ehrId, UUID contributionId) {
         // also checks for valid ehr and contribution ID
         AuditDetails auditDetails = retrieveAuditDetails(ehrId, contributionId);
-        Map<String, String> objectReferences = retrieveUuidsOfContributionObjects(ehrId, contributionId);
-        return new ContributionDto(contributionId, objectReferences, auditDetails);
+        List<ObjectRef<?>> objectRefs = retrieveContributionVersionRefs(ehrId, contributionId);
+        return new Contribution(new HierObjectId(contributionId.toString()), objectRefs, auditDetails);
     }
 
     @Override
-    public UUID commitContribution(UUID ehrId, String content) {
-        /*Note: we do not perform is_modifiable checks here since a contribution may contain a modification of the
-        is_modifiable flag. The is_modifiable checks are performed per version in the service responsible for handling the
-        versions content. Otherwise, resetting is_modifiable would not be possible. */
-
-        // XXX Performance: pre-check could be omitted
-        if (!ehrService.hasEhr(ehrId)) {
-            throw new ObjectNotFoundException(RmConstants.EHR, "No EHR found with given ID: " + ehrId.toString());
-        }
-
-        ContributionWrapper contributionWrapper = ContributionServiceHelper.unmarshalContribution(content);
-        ContributionCreateDto contribution = contributionWrapper.getContributionCreateDto();
-
+    public UUID commitContribution(UUID ehrId, ContributionCreateDto contribution) {
         validationService.check(contribution);
+
+        if (isModifiableCheckNeeded(contribution)) {
+            ehrService.checkEhrExistsAndIsModifiable(ehrId);
+        } else {
+            ehrService.checkEhrExists(ehrId);
+        }
 
         UUID auditUuid =
                 contributionRepository.createAudit(contribution.getAudit(), AuditDetailsTargetType.CONTRIBUTION);
@@ -152,7 +145,7 @@ public class ContributionServiceImp implements ContributionService {
         // go through those RM objects versions and execute the action of it (as listed in its audit) and connect it to
         // new
         // contribution. Prefer to use the DTOs objects instead of the RMObjects.
-        contributionWrapper.forEachVersion((version, dto) -> {
+        contribution.getVersions().forEach(version -> {
             RMObject versionRmObject = version.getData();
 
             // the version contains the optional "data" attribute (i.e. payload),
@@ -168,23 +161,11 @@ public class ContributionServiceImp implements ContributionService {
                     }
                 }
                 case Folder folder -> processFolderVersion(ehrId, contributionId, version, folder);
-                case EhrStatus __ -> {
-                    // Here we use the EHRStatusDto to be able to apply a better validation
-                    EhrStatusDto ehrStatusDto = Optional.ofNullable(dto)
-                            .filter(EhrStatusDto.class::isInstance)
-                            .map(EhrStatusDto.class::cast)
-                            .orElseThrow(() -> new InternalServerException(
-                                    "Expected DTO to exist for Contribution of EHR_STATUS"));
-                    processEhrStatusVersion(ehrId, contributionId, version, ehrStatusDto);
-                }
-                case null -> {
+                case EhrStatus status -> processEhrStatusVersion(ehrId, contributionId, version, status);
+                case null ->
                     // version doesn't contain "data", so it is only a metadata one to, for
                     // instance, delete a specific object via ID regardless of type
-
-                    // :FIXME according to the spec. a version must contain data
-
                     processMetadataVersion(ehrId, contributionId, version);
-                }
                 default ->
                     throw new ValidationException(ERR_VER_INVALID.formatted(Optional.of(versionRmObject.getClass())
                             .map(ArchieRMInfoLookup.getInstance()::getTypeInfo)
@@ -195,6 +176,39 @@ public class ContributionServiceImp implements ContributionService {
         });
 
         return contributionId;
+    }
+
+    /**
+     * <p>
+     * A modifiable check is needed, if a non-EHR_STATUS is not preceded by an EHR_STATUS.
+     * A StateConflictException is thrown if the EHR_STATUS has is_modifiable=false.
+     * <p>
+     * Assumptions:
+     * <ul>
+     * <li>The versions are processed in sequence
+     * <li>Only if EHR_STATUS.is_modifiable is set other object types can be modified.
+     *
+     * @param contribution
+     * @return
+     * @throws StateConflictException
+     */
+    static boolean isModifiableCheckNeeded(ContributionCreateDto contribution) throws StateConflictException {
+        boolean modificationCheckNeeded = false;
+        Boolean modificationAllowed = null;
+        for (OriginalVersion<? extends RMObject> version : contribution.getVersions()) {
+            switch (version.getData()) {
+                case EhrStatus ehrStatus -> modificationAllowed = ehrStatus.isModifiable();
+                case null, default -> {
+                    if (modificationAllowed == null) {
+                        modificationCheckNeeded = true;
+                    } else if (Boolean.FALSE.equals(modificationAllowed)) {
+                        throw new StateConflictException(
+                                "CONTRIBUTION contains an EHR_STATUS that does not allow modification");
+                    }
+                }
+            }
+        }
+        return modificationCheckNeeded;
     }
 
     private static final String ERR_VER_INVALID = "Invalid version object in contribution: %s not supported.";
@@ -210,10 +224,9 @@ public class ContributionServiceImp implements ContributionService {
      * @param ehrStatus       The actual EhrStatus payload
      * @throws IllegalArgumentException when input is missing precedingVersionUid in case of modification
      */
-    private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version<?> version, EhrStatusDto ehrStatus) {
+    private void processEhrStatusVersion(UUID ehrId, UUID contributionId, Version<?> version, EhrStatus ehrStatus) {
         // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
         UUID audit = contributionRepository.createAudit(version.getCommitAudit(), AuditDetailsTargetType.EHR_STATUS);
@@ -248,8 +261,7 @@ public class ContributionServiceImp implements ContributionService {
     private void processCompositionVersion(
             UUID ehrId, UUID contributionId, Version<?> version, Composition composition) {
         // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
@@ -275,8 +287,7 @@ public class ContributionServiceImp implements ContributionService {
 
     private void processFolderVersion(UUID ehrId, UUID contributionId, Version<?> version, Folder folder) {
         // access audit and extract method, e.g. CREATION
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         checkContributionRules(version, changeType); // evaluate and check contribution rules
 
@@ -346,8 +357,7 @@ public class ContributionServiceImp implements ContributionService {
      * @param version        The version wrapper object
      */
     private void processMetadataVersion(UUID ehrId, UUID contributionId, Version<?> version) {
-        ContributionChangeType changeType =
-                ContributionService.ContributionChangeType.fromAuditDetails(version.getCommitAudit());
+        ContributionChangeType changeType = ContributionChangeType.fromAuditDetails(version.getCommitAudit());
 
         if (changeType != ContributionChangeType.DELETED) {
             throw new ValidationException(ERR_UNSUP_CHANGE_TYPE.formatted(changeType));
@@ -409,7 +419,7 @@ public class ContributionServiceImp implements ContributionService {
      * @return Map with ID of the object as key and type ("composition", "folder",...) as value
      * @throws IllegalArgumentException on error when retrieving compositions
      */
-    private Map<String, String> retrieveUuidsOfContributionObjects(UUID ehrId, UUID contribution) {
+    private List<ObjectRef<?>> retrieveContributionVersionRefs(UUID ehrId, UUID contribution) {
         return compositionRepository
                 .buildVersionIdsByContributionQuery(SupportedVersionedObject.COMPOSITION.name(), ehrId, contribution)
                 .unionAll(ehrRepository.buildVersionIdsByContributionQuery(
@@ -417,11 +427,10 @@ public class ContributionServiceImp implements ContributionService {
                 .unionAll(ehrFolderRepository.buildVersionIdsByContributionQuery(
                         SupportedVersionedObject.FOLDER.name(), ehrId, contribution))
                 .orderBy(2, 3)
-                .fetchMap(
-                        r -> AbstractVersionedObjectRepository.buildObjectVersionId(
-                                        r.value2(), r.value3(), systemService)
-                                .getValue(),
-                        Record3::value1);
+                .fetch(r -> new ObjectRef<>(
+                        AbstractVersionedObjectRepository.buildObjectVersionId(r.value2(), r.value3(), systemService),
+                        "local",
+                        r.value1()));
     }
 
     /**

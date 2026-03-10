@@ -38,6 +38,7 @@ import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
+import org.ehrbase.jooq.pg.tables.EhrStatusData;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionHistoryRecord;
@@ -119,26 +120,22 @@ public class EhrRepository
     }
 
     public Boolean fetchIsModifiable(UUID ehrId) {
-        VersionDataJoin versionDataJoin = fromJoinedVersionData(true);
-        Table<?> version = versionDataJoin.versionTable();
-        Table<?> data = versionDataJoin.dataTable();
-        return context.select(jsonDataField(data, IS_MODIFIABLE_JSON_PATH).cast(Boolean.class))
-                .from(versionDataJoin.joined())
-                .where(singleEhrStatusCondition(ehrId, version))
-                .and(dataRootCondition(data))
+        Table<EhrStatusDataRecord> dataHead = tables.dataHead();
+        return context.select(jsonDataField(dataHead, IS_MODIFIABLE_JSON_PATH).cast(Boolean.class))
+                .from(dataHead)
+                .where(singleEhrStatusCondition(ehrId, dataHead))
+                .and(dataRootCondition(dataHead))
                 .fetchOptional()
                 .map(Record1::value1)
                 .orElse(null);
     }
 
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-
-        VersionDataJoin versionDataJoin = fromJoinedVersionData(true);
-        Table<?> data = versionDataJoin.dataTable();
-        return context.select(versionDataJoin.versionTable().field(VERSION_PROTOTYPE.EHR_ID))
-                .from(versionDataJoin.joined())
-                .where(subjectCondition(subjectId, nameSpace, data))
-                .and(dataRootCondition(data))
+        EhrStatusData dataHead = EHR_STATUS_DATA.as("d");
+        return context.select(dataHead.EHR_ID)
+                .from(dataHead)
+                .where(subjectCondition(subjectId, nameSpace, dataHead))
+                .and(dataRootCondition(dataHead))
                 .fetchOptional()
                 .map(Record1::value1);
     }

@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.openehr.specification;
 
+import com.nedap.archie.rm.ehr.EhrStatus;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,7 +27,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -48,7 +48,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatusDto.class),
+                                    schema = @Schema(implementation = EhrStatus.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -66,7 +66,7 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get"))
-    ResponseEntity<EhrStatusDto> getEhrStatusVersionByTime(UUID ehrId, String versionAtTime);
+    ResponseEntity<EhrStatus> getEhrStatusVersionByTime(UUID ehrId, String versionAtTime);
 
     @Operation(
             summary = "Get EHR_STATUS by version id",
@@ -77,7 +77,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatusDto.class),
+                                    schema = @Schema(implementation = EhrStatus.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -90,7 +90,7 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-get-1"))
-    ResponseEntity<EhrStatusDto> getEhrStatusByVersionId(UUID ehrId, String versionUid);
+    ResponseEntity<EhrStatus> getEhrStatusByVersionId(UUID ehrId, String versionUid);
 
     @Operation(
             summary = "Update EHR_STATUS",
@@ -99,7 +99,7 @@ public interface EhrStatusApiSpecification {
                             content = {
                                 @Content(
                                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                        schema = @Schema(implementation = EhrStatusDto.class),
+                                        schema = @Schema(implementation = EhrStatus.class),
                                         examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                             }),
             responses = {
@@ -110,7 +110,7 @@ public interface EhrStatusApiSpecification {
                         content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrStatusDto.class),
+                                    schema = @Schema(implementation = EhrStatus.class),
                                     examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
                         }),
                 @ApiResponse(
@@ -137,5 +137,5 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-put"))
-    ResponseEntity<EhrStatusDto> updateEhrStatus(UUID ehrId, String versionUid, String prefer, EhrStatusDto ehrStatus);
+    ResponseEntity<EhrStatus> updateEhrStatus(UUID ehrId, String versionUid, String prefer, EhrStatus ehrStatus);
 }

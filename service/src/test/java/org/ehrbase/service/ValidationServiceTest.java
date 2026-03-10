@@ -17,8 +17,9 @@
  */
 package org.ehrbase.service;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.ehrbase.test.fixtures.EhrStatusDtoFixture.ehrStatusDto;
+import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -33,6 +34,7 @@ import com.nedap.archie.rm.datastructures.ItemList;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.ArchetypeID;
@@ -43,16 +45,19 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.api.util.ContributionUtils;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
@@ -66,7 +71,6 @@ import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidat
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
-import org.ehrbase.service.contribution.ContributionServiceHelperTest;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -290,38 +294,18 @@ class ValidationServiceTest {
     @Test
     void checkEhrStatusInvalidSubjectMissing() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto((PartySelf) null);
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus((PartySelf) null);
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage(
                         "Message at /subject (/subject):  Attribute subject of class EHR_STATUS does not match existence 1..1");
     }
 
     @Test
-    void checkEhrStatusInvalidIsQueryableMissing() {
-
-        EhrStatusDto ehrStatusDto = ehrStatusDto(null, false);
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
-                .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        "Message at /is_queryable (/is_queryable):  Attribute is_queryable of class EHR_STATUS does not match existence 1..1");
-    }
-
-    @Test
-    void checkEhrStatusInvalidIsModifiableMissing() {
-
-        EhrStatusDto ehrStatusDto = ehrStatusDto(false, null);
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
-                .isInstanceOf(ValidationException.class)
-                .hasMessage(
-                        "Message at /is_modifiable (/is_modifiable):  Attribute is_modifiable of class EHR_STATUS does not match existence 1..1");
-    }
-
-    @Test
     void checkEhrStatusInvalidUID() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new HierObjectId());
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus(new HierObjectId());
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage(
                         "Message at /value (/uid/value):  Attribute value of class HIER_OBJECT_ID does not match existence 1..1");
@@ -330,8 +314,8 @@ class ValidationServiceTest {
     @Test
     void checkEhrStatusInvalidName() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new DvText());
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus(new DvText());
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage(
                         "Message at /value (/name/value):  Attribute value of class DV_TEXT does not match existence 1..1");
@@ -340,8 +324,8 @@ class ValidationServiceTest {
     @Test
     void checkEhrStatusInvalidSubjectPartyRef() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new PartySelf(new PartyRef()));
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus(new PartySelf(new PartyRef()));
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage("""
                     Message at /namespace (/subject/external_ref/namespace):  Attribute namespace of class PARTY_REF does not match existence 1..1
@@ -352,9 +336,9 @@ class ValidationServiceTest {
     @Test
     void checkEhrStatusInvalidSubjectPartyRefNaespace() {
 
-        EhrStatusDto ehrStatusDto =
-                ehrStatusDto(new PartySelf(new PartyRef(new HierObjectId("ext::42"), "not-[]-allowed", "PARTY")));
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus =
+                ehrStatus(new PartySelf(new PartyRef(new HierObjectId("ext::42"), "not-[]-allowed", "PARTY")));
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage("""
                         Message at /subject/external_ref (/subject/external_ref):  Invariant Namespace_valid failed on type PARTY_REF
@@ -364,19 +348,19 @@ class ValidationServiceTest {
     @Test
     void checkEhrStatusInvalidArchetypeDetails() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new Archetyped());
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus(new Archetyped(new ArchetypeID(), null));
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage("""
                     Message at /rm_version (/archetype_details/rm_version):  Attribute rm_version of class ARCHETYPED does not match existence 1..1
-                    Message at /archetype_id (/archetype_details/archetype_id):  Attribute archetype_id of class ARCHETYPED does not match existence 1..1""");
+                    Message at /value (/archetype_details/archetype_id/value):  Attribute value of class ARCHETYPE_ID does not match existence 1..1""");
     }
 
     @Test
     void checkEhrStatusInvalidFeederAudit() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new FeederAudit());
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus(new FeederAudit());
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage("""
                     Message at /originating_system_audit (/feeder_audit/originating_system_audit):  Attribute originating_system_audit of class FEEDER_AUDIT does not match existence 1..1""");
@@ -385,8 +369,8 @@ class ValidationServiceTest {
     @Test
     void checkEhrStatusInvalidOtherDetails() {
 
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new ItemList());
-        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatusDto))
+        EhrStatus ehrStatus = ehrStatus(new ItemList());
+        assertThatThrownBy(() -> runCheckEhrStatus(ehrStatus))
                 .isInstanceOf(ValidationException.class)
                 .hasMessage("""
                     Message at /archetype_node_id (/other_details/archetype_node_id):  Attribute archetype_node_id of class ITEM_LIST does not match existence 1..1
@@ -397,12 +381,12 @@ class ValidationServiceTest {
     @EnumSource(value = EhrTestDataCanonicalJson.class)
     void checkEhrStatusValidFixtures(EhrTestDataCanonicalJson ehrData) {
 
-        EhrStatusDto ehrStatus = loadEhrStatus(ehrData);
+        EhrStatus ehrStatus = loadEhrStatus(ehrData);
         service().check(ehrStatus);
     }
 
-    private void runCheckEhrStatus(EhrStatusDto ehrStatusDto) {
-        service().check(ehrStatusDto);
+    private void runCheckEhrStatus(EhrStatus ehrStatus) {
+        service().check(ehrStatus);
     }
 
     @Test
@@ -455,7 +439,7 @@ class ValidationServiceTest {
             mode = EnumSource.Mode.INCLUDE,
             names = {"ONE_ENTRY_COMPOSITION", "TWO_ENTRIES_COMPOSITION", "STATUS_COMPOITION_MODIFICATION"})
     void contributionValidFixtures(ContributionTestDataCanonicalJson type) {
-        service().check(ContributionServiceHelperTest.loadContribution(type));
+        service().check(loadContribution(type));
     }
 
     @ParameterizedTest
@@ -465,7 +449,7 @@ class ValidationServiceTest {
             names = {"ONE_ENTRY_COMPOSITION", "TWO_ENTRIES_COMPOSITION", "STATUS_COMPOITION_MODIFICATION"})
     void contributionInvalidFixtures(ContributionTestDataCanonicalJson type) {
 
-        ContributionCreateDto contribution = ContributionServiceHelperTest.loadContribution(type);
+        ContributionCreateDto contribution = loadContribution(type);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(contribution))
@@ -494,9 +478,9 @@ class ValidationServiceTest {
         }
     }
 
-    private static EhrStatusDto loadEhrStatus(EhrTestDataCanonicalJson data) {
+    private static EhrStatus loadEhrStatus(EhrTestDataCanonicalJson data) {
         try (var in = data.getStream()) {
-            return CanonicalJson.MARSHAL_OM.readValue(in, EhrStatusDto.class);
+            return CanonicalJson.MARSHAL_OM.readValue(in, EhrStatus.class);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -515,5 +499,13 @@ class ValidationServiceTest {
             OPERATIONALTEMPLATE template = document.getTemplate();
             return new OPTParser(template).parse();
         });
+    }
+
+    private static ContributionCreateDto loadContribution(ContributionTestDataCanonicalJson contributionData) {
+        try (InputStream in = contributionData.getStream()) {
+            return ContributionUtils.unmarshalContribution(IOUtils.toString(in, UTF_8));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e.getMessage(), e);
+        }
     }
 }

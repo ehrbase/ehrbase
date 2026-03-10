@@ -26,6 +26,7 @@ import static org.mockito.Mockito.spy;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -34,7 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
@@ -74,11 +74,14 @@ class OpenehrEhrStatusControllerTest {
         return spyController;
     }
 
-    private EhrStatusDto ehrStatusDto(ObjectVersionId versionId, Boolean isQueryable, Boolean isModifiable) {
-        return new EhrStatusDto(
+    static EhrStatus ehrStatus(ObjectVersionId versionId, boolean isQueryable, boolean isModifiable) {
+        return new EhrStatus(
                 versionId,
                 "openEHR-EHR-EHR_STATUS.generic.v1",
                 new DvText("EHR Status"),
+                null,
+                null,
+                null,
                 null,
                 null,
                 new PartySelf(),
@@ -87,24 +90,27 @@ class OpenehrEhrStatusControllerTest {
                 null);
     }
 
-    private OriginalVersion<EhrStatusDto> originalVersion(
+    private OriginalVersion<EhrStatus> originalVersion(
             ObjectVersionId nextVersionId,
             ObjectVersionId currentVersionId,
             OffsetDateTime lastModified,
-            EhrStatusDto ehrStatus) {
-        OriginalVersion<EhrStatusDto> objectOriginalVersion = new OriginalVersion<>();
+            EhrStatus ehrStatus) {
+        OriginalVersion<EhrStatus> objectOriginalVersion = new OriginalVersion<>();
         objectOriginalVersion.setUid(nextVersionId);
         objectOriginalVersion.setPrecedingVersionUid(currentVersionId);
-        objectOriginalVersion.setData(new EhrStatusDto(
+        objectOriginalVersion.setData(new EhrStatus(
                 nextVersionId,
-                ehrStatus.archetypeNodeId(),
-                ehrStatus.name(),
-                ehrStatus.archetypeDetails(),
-                ehrStatus.feederAudit(),
-                ehrStatus.subject(),
+                ehrStatus.getArchetypeNodeId(),
+                ehrStatus.getName(),
+                ehrStatus.getArchetypeDetails(),
+                ehrStatus.getFeederAudit(),
+                ehrStatus.getLinks(),
+                null,
+                null,
+                ehrStatus.getSubject(),
                 ehrStatus.isQueryable(),
                 ehrStatus.isModifiable(),
-                ehrStatus.otherDetails()));
+                ehrStatus.getOtherDetails()));
 
         AuditDetails auditDetails = new AuditDetails();
         auditDetails.setTimeCommitted(new DvDateTime(lastModified));
@@ -129,7 +135,7 @@ class OpenehrEhrStatusControllerTest {
 
         OpenehrEhrStatusController controller = controller();
         runTestWithMockResult((ehrId, ehrStatusDto) -> {
-            doReturn(ehrStatusDto.uid()).when(mockEhrService).getLatestVersionUidOfStatus(ehrId);
+            doReturn(ehrStatusDto.getUid()).when(mockEhrService).getLatestVersionUidOfStatus(ehrId);
             return controller.getEhrStatusVersionByTime(ehrId, null);
         });
     }
@@ -138,8 +144,8 @@ class OpenehrEhrStatusControllerTest {
     void getEhrStatusVersionByTimeByTimestamp() {
 
         OpenehrEhrStatusController controller = controller();
-        runTestWithMockResult((ehrId, ehrStatusDto) -> {
-            doReturn(ehrStatusDto.uid())
+        runTestWithMockResult((ehrId, ehrStatus) -> {
+            doReturn(ehrStatus.getUid())
                     .when(mockEhrService)
                     .getEhrStatusVersionByTimestamp(ehrId, OffsetDateTime.parse("2024-07-16T08:30:00Z"));
             return controller.getEhrStatusVersionByTime(ehrId, "2024-07-16T08:30:00Z");
@@ -165,12 +171,12 @@ class OpenehrEhrStatusControllerTest {
         ObjectVersionId versionId = new ObjectVersionId(ehrStatusId.toString(), "some-system", "42");
         OffsetDateTime lastModified = OffsetDateTime.parse("2024-07-16T13:15:00Z");
 
-        EhrStatusDto ehrStatus = ehrStatusDto(versionId, true, false);
+        EhrStatus ehrStatus = ehrStatus(versionId, true, false);
 
         doReturn(Optional.of(originalVersion(versionId, null, lastModified, ehrStatus)))
                 .when(mockEhrService)
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 42);
-        ResponseEntity<EhrStatusDto> response = controller().getEhrStatusByVersionId(ehrId, versionId.getValue());
+        ResponseEntity<EhrStatus> response = controller().getEhrStatusByVersionId(ehrId, versionId.getValue());
 
         assertEhrStatusResponseData(response, ehrStatus, ehrId, versionId, "Tue, 16 Jul 2024 13:15:00 GMT");
     }
@@ -185,16 +191,14 @@ class OpenehrEhrStatusControllerTest {
         ObjectVersionId nextVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "3");
         OffsetDateTime lastModified = OffsetDateTime.parse("2024-07-16T12:00:00Z");
 
-        EhrStatusDto ehrStatus = ehrStatusDto(currentVersionId, true, true);
+        EhrStatus ehrStatus = ehrStatus(nextVersionId, true, false);
 
-        doReturn(new EhrService.EhrResult(ehrId, nextVersionId, ehrStatus))
-                .when(mockEhrService)
-                .updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
+        doReturn(ehrStatus).when(mockEhrService).updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
         doReturn(Optional.of(originalVersion(nextVersionId, currentVersionId, lastModified, ehrStatus)))
                 .when(mockEhrService)
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
 
-        ResponseEntity<EhrStatusDto> response =
+        ResponseEntity<EhrStatus> response =
                 controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, ehrStatus);
 
         var body = response.getBody();
@@ -206,26 +210,26 @@ class OpenehrEhrStatusControllerTest {
         }
     }
 
-    private void runTestWithMockResult(BiFunction<UUID, EhrStatusDto, ResponseEntity<EhrStatusDto>> consumer) {
+    private void runTestWithMockResult(BiFunction<UUID, EhrStatus, ResponseEntity<EhrStatus>> consumer) {
 
         UUID ehrId = UUID.fromString("7c927831-726e-4ad7-8b62-b078d80eb59a");
         UUID ehrStatusId = UUID.fromString("8c2152e8-10f7-4b9f-bc28-27421b8937e7");
         ObjectVersionId versionId = new ObjectVersionId(ehrStatusId.toString(), "some-system", "12");
         OffsetDateTime lastModified = OffsetDateTime.parse("2024-07-16T13:20:00Z");
 
-        EhrStatusDto ehrStatus = ehrStatusDto(versionId, false, false);
+        EhrStatus ehrStatus = ehrStatus(versionId, false, false);
 
         doReturn(Optional.of(originalVersion(versionId, null, lastModified, ehrStatus)))
                 .when(mockEhrService)
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 12);
 
-        ResponseEntity<EhrStatusDto> response = consumer.apply(ehrId, ehrStatus);
+        ResponseEntity<EhrStatus> response = consumer.apply(ehrId, ehrStatus);
         assertEhrStatusResponseData(response, ehrStatus, ehrId, versionId, "Tue, 16 Jul 2024 13:20:00 GMT");
     }
 
     private static void assertEhrStatusResponseData(
-            ResponseEntity<EhrStatusDto> response,
-            EhrStatusDto expectedEhrStatusDto,
+            ResponseEntity<EhrStatus> response,
+            EhrStatus expectedEhrStatusDto,
             UUID ehrId,
             ObjectVersionId versionId,
             String lastModified) {
@@ -236,7 +240,7 @@ class OpenehrEhrStatusControllerTest {
 
     private static void assertResponse(
             HttpStatus status,
-            ResponseEntity<EhrStatusDto> response,
+            ResponseEntity<EhrStatus> response,
             UUID ehrId,
             ObjectVersionId versionId,
             String lastModified) {
@@ -252,15 +256,15 @@ class OpenehrEhrStatusControllerTest {
     }
 
     private static void assertEhrStatusResponseDataBody(
-            ResponseEntity<EhrStatusDto> response, EhrStatusDto expectedEhrStatusDto, ObjectVersionId versionId) {
+            ResponseEntity<EhrStatus> response, EhrStatus expectedEhrStatusDto, ObjectVersionId versionId) {
 
         var body = response.getBody();
         assertThat(body).isNotNull();
-        assertThat(body.uid()).describedAs("Must have next version ID").isEqualTo(versionId);
-        assertThat(body.archetypeNodeId())
+        assertThat(body.getUid()).describedAs("Must have next version ID").isEqualTo(versionId);
+        assertThat(body.getArchetypeNodeId())
                 .describedAs("Must be default archetype for EHR_STATUS")
                 .isEqualTo("openEHR-EHR-EHR_STATUS.generic.v1");
-        assertThat(body.name()).describedAs("Must have default name").isEqualTo(new DvText("EHR Status"));
+        assertThat(body.getName()).describedAs("Must have default name").isEqualTo(new DvText("EHR Status"));
         assertThat(body.isQueryable()).describedAs("Invalid Queryable").isEqualTo(expectedEhrStatusDto.isQueryable());
         assertThat(body.isModifiable())
                 .describedAs("Invalid Modifiable")

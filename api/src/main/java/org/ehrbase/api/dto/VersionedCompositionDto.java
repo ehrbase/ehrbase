@@ -26,6 +26,7 @@ import com.nedap.archie.rm.support.identification.ObjectRef;
 
 /**
  * Response data of a <code>VERSIONED_COMPOSITION</code>.
+ * Exists because com.nedap.archie.rm.ehr.VersionedComposition is missing the type annotation.
  */
 @JsonRootName(value = "VERSIONED_COMPOSITION")
 @JacksonXmlRootElement(localName = "versioned_composition")

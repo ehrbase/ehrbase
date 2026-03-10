@@ -17,17 +17,16 @@
  */
 package org.ehrbase.rest.openehr.specification;
 
+import com.nedap.archie.rm.ehr.Ehr;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.ehrbase.api.dto.EhrDto;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -43,8 +42,7 @@ public interface EhrApiSpecification {
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrDto.class),
-                                    examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
+                                    schema = @Schema(implementation = EhrStatus.class))
                     }),
             responses = {
                     @ApiResponse(
@@ -53,8 +51,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = EhrDto.class),
-                                            examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "400",
@@ -68,11 +65,11 @@ public interface EhrApiSpecification {
             externalDocs = @ExternalDocumentation(
                     url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#tag/EHR/operation/ehr_create"
             ))
-    ResponseEntity<EhrDto> createEhr(
+    ResponseEntity<Ehr> createEhr(
             String openehrVersion,
             String openehrAuditDetails,
             String prefer,
-            @Parameter(hidden = true, allowEmptyValue = true) EhrStatusDto ehrStatusDto);
+            @Parameter(hidden = true, allowEmptyValue = true) EhrStatus ehrStatusDto);
 
     @Operation(
             summary = "Create EHR with id",
@@ -81,8 +78,7 @@ public interface EhrApiSpecification {
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                    schema = @Schema(implementation = EhrDto.class),
-                                    examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
+                                    schema = @Schema(implementation = EhrStatus.class))
                     }),
             responses = {
                     @ApiResponse(
@@ -91,8 +87,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = EhrDto.class),
-                                            examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "400",
@@ -106,12 +101,12 @@ public interface EhrApiSpecification {
             externalDocs = @ExternalDocumentation(
                     url = "https://specifications.openehr.org/releases/ITS-REST/1.0.3/ehr.html#tag/EHR/operation/ehr_get_by_id"
             ))
-    ResponseEntity<EhrDto> createEhrWithId(
+    ResponseEntity<Ehr> createEhrWithId(
             String openehrVersion,
             String openehrAuditDetails,
             String prefer,
             String ehrIdString,
-            EhrStatusDto ehrStatusDto);
+            EhrStatus ehrStatusDto);
 
     @Operation(
             summary = "Get EHR by id",
@@ -122,8 +117,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = EhrDto.class),
-                                            examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "404",
@@ -133,7 +127,7 @@ public interface EhrApiSpecification {
             externalDocs = @ExternalDocumentation(
                     url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#tag/EHR/operation/ehr_get_by_id"
             ))
-    ResponseEntity<EhrDto> getEhrById(String ehrIdString);
+    ResponseEntity<Ehr> getEhrById(String ehrIdString);
 
     @Operation(
             summary = "Get EHR summary by subject id and namespace",
@@ -144,8 +138,7 @@ public interface EhrApiSpecification {
                             content = {
                                     @Content(
                                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                                            schema = @Schema(implementation = EhrDto.class),
-                                            examples = @ExampleObject(ApiExample.EHR_STATUS_JSON))
+                                            schema = @Schema(implementation = Ehr.class))
                             }),
                     @ApiResponse(
                             responseCode = "404",
@@ -157,7 +150,7 @@ public interface EhrApiSpecification {
             @ExternalDocumentation(
                     url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#tag/EHR/operation/ehr_get_by_subject"
             ))
-    ResponseEntity<EhrDto> getEhrBySubject(String subjectId, String subjectNamespace);
+    ResponseEntity<Ehr> getEhrBySubject(String subjectId, String subjectNamespace);
 
     // @format:on
 }
