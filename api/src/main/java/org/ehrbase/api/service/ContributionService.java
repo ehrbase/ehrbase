@@ -72,7 +72,7 @@ public interface ContributionService {
             int code;
             try {
                 code = Integer.parseInt(codeString);
-            } catch (NumberFormatException e) {
+            } catch (NumberFormatException _) {
                 throw new ValidationException("Unknown change type code %s".formatted(codeString));
             }
 

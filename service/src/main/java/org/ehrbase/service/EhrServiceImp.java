@@ -233,7 +233,7 @@ public class EhrServiceImp implements EhrService {
     private static boolean isIsRollbackOnly() {
         try {
             return TransactionAspectSupport.currentTransactionStatus().isRollbackOnly();
-        } catch (NoTransactionException e) {
+        } catch (NoTransactionException _) {
             return false;
         }
     }

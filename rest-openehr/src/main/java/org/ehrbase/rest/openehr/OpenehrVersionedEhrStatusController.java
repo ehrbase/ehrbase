@@ -34,7 +34,6 @@ import java.util.function.Consumer;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
@@ -61,13 +60,10 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     private static final String REVISION_HISTORY = "revision_history";
 
-    private final ContributionService contributionService;
-
     private final EhrService ehrService;
 
-    public OpenehrVersionedEhrStatusController(EhrService ehrService, ContributionService contributionService) {
+    public OpenehrVersionedEhrStatusController(EhrService ehrService) {
         this.ehrService = Objects.requireNonNull(ehrService);
-        this.contributionService = Objects.requireNonNull(contributionService);
     }
 
     @GetMapping

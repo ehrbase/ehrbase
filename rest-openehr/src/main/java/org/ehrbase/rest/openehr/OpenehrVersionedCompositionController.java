@@ -37,7 +37,6 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.CompositionService;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
@@ -70,19 +69,14 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     private final EhrService ehrService;
     private final CompositionService compositionService;
-    private final ContributionService contributionService;
 
     private final SystemService systemService;
 
     @Autowired
     public OpenehrVersionedCompositionController(
-            EhrService ehrService,
-            CompositionService compositionService,
-            ContributionService contributionService,
-            SystemService systemService) {
+            EhrService ehrService, CompositionService compositionService, SystemService systemService) {
         this.ehrService = Objects.requireNonNull(ehrService);
         this.compositionService = Objects.requireNonNull(compositionService);
-        this.contributionService = Objects.requireNonNull(contributionService);
         this.systemService = systemService;
     }
 

@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import com.nedap.archie.rm.changecontrol.Contribution;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -41,7 +40,6 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,12 +55,10 @@ class OpenehrVersionedEhrStatusControllerTest {
 
     private final EhrService mockEhrService = mock();
 
-    private final ContributionService mockContributionService = mock();
-
     private final EhrStatus mockEhrStatus = mock();
 
     private final OpenehrVersionedEhrStatusController spyController =
-            spy(new OpenehrVersionedEhrStatusController(mockEhrService, mockContributionService));
+            spy(new OpenehrVersionedEhrStatusController(mockEhrService));
 
     @BeforeEach
     void setUp() {
@@ -211,12 +207,6 @@ class OpenehrVersionedEhrStatusControllerTest {
                         ehrId,
                         UUID.fromString(objectVersionId.getObjectId().getValue()),
                         Integer.parseInt(objectVersionId.getVersionTreeId().getValue()));
-
-        Contribution contribution = new Contribution(
-                (HierObjectId) originalVersion.getContribution().getId(), List.of(), null);
-        doReturn(contribution)
-                .when(mockContributionService)
-                .getContribution(ehrId, UUID.fromString(contribution.getUid().getValue()));
 
         ResponseEntity<OriginalVersion<EhrStatus>> response = invocation.apply(ehrId, originalVersion);
 
