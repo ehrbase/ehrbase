@@ -21,8 +21,8 @@ import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rmobjectvalidator.APathQueryCache;
@@ -210,7 +210,7 @@ public class ValidationServiceImp implements ValidationService {
 
         // second, additional specific checks and other mandatory attributes
         List<RMObjectValidationMessage> validationIssues =
-                validate(compositionValidator.get().getRmObjectValidator(), "", ehrStatus);
+                validate(locatableValidator.get().getRmObjectValidator(), "", ehrStatus);
         validationIssues.addAll(matches(
                 RmConstants.EHR_STATUS,
                 "/subject/external_ref/namespace",

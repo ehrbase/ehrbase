@@ -18,8 +18,8 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
 /**
