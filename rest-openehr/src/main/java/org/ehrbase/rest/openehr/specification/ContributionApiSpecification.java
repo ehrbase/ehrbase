@@ -17,6 +17,7 @@
  */
 package org.ehrbase.rest.openehr.specification;
 
+import com.nedap.archie.rm.changecontrol.Contribution;
 import io.swagger.v3.oas.annotations.ExternalDocumentation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,7 +34,7 @@ public interface ContributionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#contribution-contribution-post"))
-    ResponseEntity createContribution(
+    ResponseEntity<Contribution> createContribution(
             String openehrVersion,
             String openehrAuditDetails,
             String contentType,
@@ -48,7 +49,7 @@ public interface ContributionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#contribution-contribution-get"))
-    ResponseEntity getContribution(
+    ResponseEntity<Contribution> getContribution(
             String openehrVersion,
             String openehrAuditDetails,
             String accept,

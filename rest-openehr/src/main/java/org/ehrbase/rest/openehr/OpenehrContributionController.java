@@ -109,7 +109,7 @@ public class OpenehrContributionController extends BaseController implements Con
 
     @GetMapping(value = "/{ehr_id}/contribution/{contribution_uid}")
     @Override
-    public ResponseEntity getContribution(
+    public ResponseEntity<Contribution> getContribution(
             @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
             @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,

@@ -287,19 +287,6 @@ public class ValidationServiceImp implements ValidationService {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private static List<RMObjectValidationMessage> require(String type, String path, String attr, Object value) {
-        if (value == null) {
-            return List.of(new RMObjectValidationMessage(
-                    path,
-                    null,
-                    null,
-                    path,
-                    "Attribute %s of class %s does not match existence 1..1".formatted(attr, type),
-                    RMObjectValidationMessageType.REQUIRED));
-        }
-        return List.of();
-    }
-
     private static List<RMObjectValidationMessage> matches(
             String type, String path, String attr, Pattern pattern, Optional<String> value) {
         boolean matches = value.map(v -> pattern.matcher(v).matches()).orElse(true);
