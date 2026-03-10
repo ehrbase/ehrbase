@@ -376,7 +376,7 @@ public abstract class AbstractVersionedObjectRepository<
                         .get(VERSION_HISTORY_PROTOTYPE.CONTRIBUTION_ID)
                         .toString()),
                 "openehr",
-                "contribution");
+                "CONTRIBUTION");
 
         ObjectVersionId precedingVersionId = null;
         // check if there is a preceding version and set it, if available

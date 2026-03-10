@@ -15,11 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.service.contribution;
+package org.ehrbase.api.util;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
@@ -35,7 +34,7 @@ import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.test_data.contribution.ContributionTestDataCanonicalJson;
 import org.junit.jupiter.api.Test;
 
-public class ContributionServiceHelperTest {
+class ContributionUtilsTest {
 
     @Test
     void unmarshalContributionOneComposition() {
@@ -80,6 +79,7 @@ public class ContributionServiceHelperTest {
                 }));
     }
 
+    @SafeVarargs
     private static void assertVersions(
             ContributionCreateDto contribution, Consumer<OriginalVersion<?>>... versionAssertions) {
         List<OriginalVersion<? extends RMObject>> versions = contribution.getVersions();
@@ -98,23 +98,11 @@ public class ContributionServiceHelperTest {
         dataAssertions.accept((D) data);
     }
 
-    public static ContributionCreateDto loadContribution(ContributionTestDataCanonicalJson contributionData) {
-        try {
-            ContributionWrapper contributionWrapper =
-                    ContributionServiceHelper.unmarshalContribution(loadContributionString(contributionData));
-            ContributionCreateDto contributionCreateDto = contributionWrapper.getContributionCreateDto();
-            assertNotNull(contributionCreateDto);
-            return contributionCreateDto;
+    private static ContributionCreateDto loadContribution(ContributionTestDataCanonicalJson contributionData) {
+        try (InputStream in = contributionData.getStream()) {
+            return ContributionUtils.unmarshalContribution(IOUtils.toString(in, UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e.getMessage(), e);
-        }
-    }
-
-    private static String loadContributionString(ContributionTestDataCanonicalJson contributionData)
-            throws IOException {
-        try (InputStream in = contributionData.getStream()) {
-            assertNotNull(in);
-            return IOUtils.toString(in, UTF_8);
         }
     }
 }

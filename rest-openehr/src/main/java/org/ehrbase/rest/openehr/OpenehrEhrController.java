@@ -20,16 +20,18 @@ package org.ehrbase.rest.openehr;
 import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
+import com.nedap.archie.rm.ehr.Ehr;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.HierObjectId;
+import com.nedap.archie.rm.support.identification.ObjectRef;
 import java.net.URI;
 import java.util.Objects;
 import java.util.UUID;
-import org.ehrbase.api.dto.EhrDto;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrApiSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,13 +71,13 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
-    public ResponseEntity<EhrDto> createEhr(
+    public ResponseEntity<Ehr> createEhr(
             @RequestHeader(value = BaseController.OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = BaseController.OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false, defaultValue = RETURN_MINIMAL) String prefer,
-            @RequestBody(required = false) EhrStatusDto ehrStatus) {
+            @RequestBody(required = false) EhrStatus ehrStatus) {
 
-        UUID ehrId = ehrService.create(null, ehrStatus).ehrId();
+        UUID ehrId = ehrService.create(null, ehrStatus);
 
         HttpRestContext.register(EHR_ID, ehrId);
 
@@ -84,8 +86,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            EhrDto ehrResponseData = ehrResponseData(ehrId);
-            return bodyBuilder.body(ehrResponseData);
+            return bodyBuilder.body(ehrResponseData(ehrId));
         } else {
             return bodyBuilder.build();
         }
@@ -96,16 +97,16 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
             consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
-    public ResponseEntity<EhrDto> createEhrWithId(
+    public ResponseEntity<Ehr> createEhrWithId(
             @RequestHeader(value = BaseController.OPENEHR_VERSION, required = false) String openehrVersion,
             @RequestHeader(value = BaseController.OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
-            @RequestBody(required = false) EhrStatusDto ehrStatus) {
+            @RequestBody(required = false) EhrStatus ehrStatus) {
 
         // can't use getEhrUuid(..) because here another exception needs to be thrown (-> 400, not 404 in response)
         UUID newEhrId = parseUUID(ehrIdString, "EHR ID format not a UUID");
-        UUID ehrId = ehrService.create(newEhrId, ehrStatus).ehrId();
+        UUID ehrId = ehrService.create(newEhrId, ehrStatus);
         createRestContext(ehrId);
 
         // initialize HTTP 201 Created body builder
@@ -113,8 +114,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            EhrDto ehrResponseData = ehrResponseData(ehrId);
-            return bodyBuilder.body(ehrResponseData);
+            return bodyBuilder.body(ehrResponseData(ehrId));
         } else {
             return bodyBuilder.build();
         }
@@ -123,13 +123,13 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     @GetMapping(
             path = "/{ehr_id}",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<EhrDto> getEhrById(@PathVariable(value = "ehr_id") String ehrIdString) {
+    public ResponseEntity<Ehr> getEhrById(@PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         createRestContext(ehrId);
 
         // load the EHR response
-        EhrDto ehrResponseData = ehrResponseData(ehrId);
+        Ehr ehrResponseData = ehrResponseData(ehrId);
 
         // Return HTTP 200 OK body builder
         return responseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData);
@@ -141,7 +141,7 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
     @GetMapping(
             params = {"subject_id", "subject_namespace"},
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<EhrDto> getEhrBySubject(
+    public ResponseEntity<Ehr> getEhrBySubject(
             @RequestParam(value = "subject_id") String subjectId,
             @RequestParam(value = "subject_namespace") String subjectNamespace) {
 
@@ -151,19 +151,23 @@ public class OpenehrEhrController extends BaseController implements EhrApiSpecif
         createRestContext(ehrId);
 
         // Return HTTP 200 OK body builder
-        EhrDto ehrResponseData = ehrResponseData(ehrId);
+        Ehr ehrResponseData = ehrResponseData(ehrId);
         return responseBuilder(HttpStatus.OK, ehrId).body(ehrResponseData);
     }
 
-    private EhrDto ehrResponseData(UUID ehrId) {
+    private Ehr ehrResponseData(UUID ehrId) {
 
-        EhrService.EhrResult ehrResult = ehrService.getEhrStatus(ehrId);
+        EhrStatus ehrResult = ehrService.getEhrStatus(ehrId);
         // populate maximum response data
-        return new EhrDto(
+        return new Ehr(
                 new HierObjectId(systemService.getSystemId()),
                 new HierObjectId(ehrId.toString()),
-                ehrResult.status(),
-                ehrService.getCreationTime(ehrId));
+                ehrService.getCreationTime(ehrId),
+                null,
+                new ObjectRef<>(ehrResult.getUid(), "local", RmConstants.EHR_STATUS),
+                null,
+                null,
+                null);
     }
 
     private ResponseEntity.BodyBuilder responseBuilder(HttpStatus status, UUID ehrId) {

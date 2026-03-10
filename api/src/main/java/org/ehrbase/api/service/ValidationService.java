@@ -18,7 +18,7 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.ehrbase.api.dto.EhrStatusDto;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
 /**
@@ -46,7 +46,7 @@ public interface ValidationService {
      * @param ehrStatus to validate
      * @throws IllegalArgumentException in case the given <code>ehrStatus</code> is invalid.
      */
-    void check(EhrStatusDto ehrStatus);
+    void check(EhrStatus ehrStatus);
 
     /**
      * Initially check if <code>contribution</code> is valid for further processing.

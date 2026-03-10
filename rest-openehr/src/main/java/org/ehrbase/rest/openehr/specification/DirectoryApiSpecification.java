@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
-import org.ehrbase.openehr.sdk.response.dto.DirectoryResponseData;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -45,7 +44,7 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "400"),
                 @ApiResponse(responseCode = "404")
             })
-    ResponseEntity<DirectoryResponseData> createDirectory(
+    ResponseEntity<Folder> createDirectory(
             UUID ehrId,
             String openEhrVersion,
             String openEhrAuditDetails,
@@ -67,7 +66,7 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "404"),
                 @ApiResponse(responseCode = "412")
             })
-    ResponseEntity<DirectoryResponseData> updateDirectory(
+    ResponseEntity<Folder> updateDirectory(
             UUID ehrId,
             ObjectVersionId folderId,
             String contentType,
@@ -89,7 +88,7 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "404"),
                 @ApiResponse(responseCode = "412")
             })
-    ResponseEntity<DirectoryResponseData> deleteDirectory(
+    ResponseEntity<Folder> deleteDirectory(
             UUID ehrId, String openEhrVersion, String openEhrAuditDetails, String accept, ObjectVersionId folderId);
 
     @Operation(
@@ -99,8 +98,7 @@ public interface DirectoryApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#directory-directory-get"),
             responses = {@ApiResponse(responseCode = "200"), @ApiResponse(responseCode = "404")})
-    ResponseEntity<DirectoryResponseData> getFolderInDirectory(
-            UUID ehrId, ObjectVersionId versionUid, String path, String accept);
+    ResponseEntity<Folder> getFolderInDirectory(UUID ehrId, ObjectVersionId versionUid, String path, String accept);
 
     @Operation(
             summary = "Get folder in directory version at time",
@@ -113,6 +111,6 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "204"),
                 @ApiResponse(responseCode = "404")
             })
-    ResponseEntity<DirectoryResponseData> getFolderInDirectoryVersionAtTime(
+    ResponseEntity<Folder> getFolderInDirectoryVersionAtTime(
             UUID ehrId, String versionAtTime, String path, String accept);
 }

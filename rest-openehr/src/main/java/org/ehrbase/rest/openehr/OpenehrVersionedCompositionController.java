@@ -37,13 +37,9 @@ import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
 import org.ehrbase.api.service.CompositionService;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
-import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
-import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedCompositionApiSpecification;
@@ -73,19 +69,14 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     private final EhrService ehrService;
     private final CompositionService compositionService;
-    private final ContributionService contributionService;
 
     private final SystemService systemService;
 
     @Autowired
     public OpenehrVersionedCompositionController(
-            EhrService ehrService,
-            CompositionService compositionService,
-            ContributionService contributionService,
-            SystemService systemService) {
+            EhrService ehrService, CompositionService compositionService, SystemService systemService) {
         this.ehrService = Objects.requireNonNull(ehrService);
         this.compositionService = Objects.requireNonNull(compositionService);
-        this.contributionService = Objects.requireNonNull(contributionService);
         this.systemService = systemService;
     }
 
@@ -125,7 +116,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     @GetMapping(path = "/{versioned_object_uid}/revision_history")
     @Override
-    public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedCompositionRevisionHistoryByEhr(
+    public ResponseEntity<RevisionHistory> retrieveVersionedCompositionRevisionHistoryByEhr(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid) {
@@ -142,20 +133,18 @@ public class OpenehrVersionedCompositionController extends BaseController
             throw e;
         }
 
-        RevisionHistoryResponseData response = new RevisionHistoryResponseData(revisionHistory);
-
         String auditLocation = getLocationUrl(versionedCompoUid, ehrId, 0, "revision_history");
         createRestContext(ehrId, versionedCompoUid, auditLocation);
 
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        return ResponseEntity.ok().headers(respHeaders).body(response);
+        return ResponseEntity.ok().headers(respHeaders).body(revisionHistory);
     }
 
     @GetMapping(path = "/{versioned_object_uid}/version/{version_uid}")
     @Override
-    public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByVersionUid(
+    public ResponseEntity<OriginalVersion<Composition>> retrieveVersionOfCompositionByVersionUid(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
@@ -200,7 +189,7 @@ public class OpenehrVersionedCompositionController extends BaseController
 
     @GetMapping(path = "/{versioned_object_uid}/version")
     @Override
-    public ResponseEntity<OriginalVersionResponseData<Composition>> retrieveVersionOfCompositionByTime(
+    public ResponseEntity<OriginalVersion<Composition>> retrieveVersionOfCompositionByTime(
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
@@ -239,7 +228,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         }
     }
 
-    private ResponseEntity<OriginalVersionResponseData<Composition>> getOriginalVersionResponseDataResponseEntity(
+    private ResponseEntity<OriginalVersion<Composition>> getOriginalVersionResponseDataResponseEntity(
             String accept, UUID ehrId, UUID versionedObjectId, int version) {
 
         OriginalVersion<Composition> compositionOriginalVersion = compositionService
@@ -249,18 +238,10 @@ public class OpenehrVersionedCompositionController extends BaseController
                         "No VERSIONED_COMPOSITION with given id: %s and version: %d"
                                 .formatted(versionedObjectId, version)));
 
-        UUID contributionId = UUID.fromString(
-                compositionOriginalVersion.getContribution().getId().getValue());
-
-        ContributionDto contributionDto = contributionService.getContribution(ehrId, contributionId);
-
-        OriginalVersionResponseData<Composition> originalVersionResponseData =
-                new OriginalVersionResponseData<>(compositionOriginalVersion, contributionDto);
-
         HttpHeaders respHeaders = new HttpHeaders();
         respHeaders.setContentType(resolveContentType(accept));
 
-        return ResponseEntity.ok().headers(respHeaders).body(originalVersionResponseData);
+        return ResponseEntity.ok().headers(respHeaders).body(compositionOriginalVersion);
     }
 
     private void createRestContext(UUID ehrId, UUID versionedCompoUid, String auditLocation) {
