@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2026 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *

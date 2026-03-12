@@ -25,11 +25,8 @@ import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 /**
  * ValidationService
  * <p>
- * performs a composition validation based on the constraints defined in a 1.4 operational template
- * The service is a wrapper of Validator and use a cache to optimize validation since the
- * construction of the constraints is somewhat resource intensive. The validation constraints are
- * maintained into a standard java cache. The service uses KnowledgeCache to retrieve operational
- * templates.
+ * Performs RM Object validation,
+ * Composition validation is based on the constraints defined in a 1.4 operational template.
  */
 public interface ValidationService {
 
