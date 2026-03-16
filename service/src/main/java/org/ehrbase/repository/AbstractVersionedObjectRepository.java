@@ -42,14 +42,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.PrimitiveIterator.OfInt;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.input.CharSequenceReader;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
@@ -101,6 +100,8 @@ public abstract class AbstractVersionedObjectRepository<
     protected record VersionDataJoin(Table<?> versionTable, Table<?> dataTable, Table<?> joined) {}
 
     public record AdditionalDataQuerySelectFields(Field<?>[] selectFields, Field<?>[] groupByFields) {}
+
+    public record AdditionalCopyToHistoryFields(Stream<Field<?>> headFields, Stream<Field<?>> historyFields) {}
 
     public static final String NOT_MATCH_UID = "If-Match version_uid does not match uid";
     public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
@@ -534,13 +535,15 @@ public abstract class AbstractVersionedObjectRepository<
         }
 
         List<Field<?>> selectFields;
-        List<Field<?>> groupByFields = Collections.emptyList();
+        List<Field<?>> groupByFields;
         AdditionalDataQuerySelectFields additionalFields =
                 getAdditionalDataQuerySelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
             selectFields = List.of(voIdField, sysVersionField, stringAggregationField);
             if (head) {
                 groupByFields = List.of(voIdField, sysVersionField);
+            } else {
+                groupByFields = null;
             }
         } else {
             Field<?>[] additionalSelectFields = additionalFields.selectFields();
@@ -555,27 +558,31 @@ public abstract class AbstractVersionedObjectRepository<
                 groupByFields.add(voIdField);
                 groupByFields.add(sysVersionField);
                 Collections.addAll(groupByFields, additionalGroupByFields);
+            } else {
+                groupByFields = null;
             }
         }
 
         SelectConditionStep<Record> query = context.select(selectFields)
                 .from(versionDataJoin.joined())
                 .where(condition.apply(versionDataJoin.joined()));
-        return (groupByFields.isEmpty() ? query : query.groupBy(groupByFields)).getQuery();
+        return (CollectionUtils.isEmpty(groupByFields) ? query : query.groupBy(groupByFields)).getQuery();
     }
 
-    protected Field<String> historyDataField(final Table<?> dataTable) {
-        return historyDataGoneCase(dataTable).else_(dataTable.field(HISTORY_PROTOTYPE.OV_DATA));
+    protected Field<String> historyDataField(final Table<?> historyTable) {
+        return historyDataGoneCase(historyTable).else_(historyTable.field(HISTORY_PROTOTYPE.OV_DATA));
     }
 
-    public static CaseConditionStep<String> historyDataGoneCase(final Table<?> dataTable) {
+    public static CaseConditionStep<String> historyDataGoneCase(final Table<?> historyTable) {
         return DSL.case_()
                 .when(
-                        dataTable
+                        historyTable
                                 .field(HISTORY_PROTOTYPE.OV_REF)
                                 .isNull()
-                                .and(dataTable.field(HISTORY_PROTOTYPE.OV_DATA).isNull())
-                                .and(DSL.not(dataTable.field(HISTORY_PROTOTYPE.SYS_DELETED))),
+                                .and(historyTable
+                                        .field(HISTORY_PROTOTYPE.OV_DATA)
+                                        .isNull())
+                                .and(DSL.not(historyTable.field(HISTORY_PROTOTYPE.SYS_DELETED))),
                         DSL.inline(GONE_MARKER));
     }
 
@@ -646,24 +653,24 @@ public abstract class AbstractVersionedObjectRepository<
 
     /**
      *
-     * @param jsonbRecord {vo_id, sys_version, jsonData}
+     * @param dataRecord {vo_id, sys_version, aggregated json data as string}
      * @param locatableClass
      * @return
      * @param <L>
      */
     protected <L extends Locatable> Optional<L> toRootLocatable(
-            Record /*<UUID, Integer, String, …>*/ jsonbRecord, Class<L> locatableClass) {
-        if (jsonbRecord == null || jsonbRecord.get(2) == null) {
+            Record /*<UUID, Integer, String, …>*/ dataRecord, Class<L> locatableClass) {
+        if (dataRecord == null || dataRecord.get(2) == null) {
             return Optional.empty();
         }
-        UUID id = jsonbRecord.get(0, UUID.class);
-        Integer version = jsonbRecord.get(1, Integer.class);
-        if (GONE_MARKER.equals(jsonbRecord.get(2))) {
+        UUID id = dataRecord.get(0, UUID.class);
+        Integer version = dataRecord.get(1, Integer.class);
+        if (GONE_MARKER.equals(dataRecord.get(2))) {
             throw new ResourceGoneException(
                     "Data for %s (id: %s, version: %s) gone".formatted(targetType, id, version));
         }
-        String dbFormat = jsonbRecord.get(2, String.class);
-        ObjectNode reconstructed = reconstruct(dbFormat, (p, idx) -> parseJsonData(p, jsonbRecord, idx));
+        String dbFormat = dataRecord.get(2, String.class);
+        ObjectNode reconstructed = reconstruct(dbFormat, (p, idx) -> parseJsonData(p, dataRecord, idx));
         DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
         final Locatable rmObject;
         try {
@@ -678,12 +685,12 @@ public abstract class AbstractVersionedObjectRepository<
     public static ObjectNode reconstruct(
             final String dbFormat,
             BiFunction<Pair<CharSequence, CharSequence>, Integer, Pair<CharSequence, ObjectNode>> parseFunc) {
-        OfInt idx = IntStream.iterate(0, i -> i + 1).iterator();
-        Pair<CharSequence, ObjectNode>[] parsed = Arrays.stream(DbToRmFormat.parseDbObjectAggregateString(dbFormat))
-                .sequential()
-                .map(p -> parseFunc.apply(p, idx.next()))
-                .toArray(Pair[]::new);
-        return DbToRmFormat.reconstructRmObjectTree(parsed, Pair::getLeft, Pair::getRight);
+        Pair<CharSequence, CharSequence>[] rawRows = DbToRmFormat.parseDbObjectAggregateString(dbFormat);
+        Pair<CharSequence, ObjectNode>[] parsedRows = new Pair[rawRows.length];
+        for (int i = 0; i < rawRows.length; i++) {
+            parsedRows[i] = parseFunc.apply(rawRows[i], i);
+        }
+        return DbToRmFormat.reconstructRmObjectTree(parsedRows, Pair::getLeft, Pair::getRight);
     }
 
     protected Pair<CharSequence, ObjectNode> parseJsonData(Pair<CharSequence, CharSequence> p, Record rec, int idx) {
@@ -699,9 +706,9 @@ public abstract class AbstractVersionedObjectRepository<
         }
     }
 
-    protected Pair<Stream<Field<?>>, Stream<Field<?>>> additionalCopyToHistoryFields(
+    protected AdditionalCopyToHistoryFields additionalCopyToHistoryFields(
             final Table<VR> versionHead, final Table<DR> dataHead, OffsetDateTime now) {
-        return Pair.of(
+        return new AdditionalCopyToHistoryFields(
                 Stream.of(DSL.inline(now), DSL.inline(false), DSL.castNull(Integer.class), stringAggregation(dataHead)),
                 Stream.of(
                         HISTORY_PROTOTYPE.SYS_PERIOD_UPPER,
@@ -715,14 +722,13 @@ public abstract class AbstractVersionedObjectRepository<
         VersionDataJoin versionDataJoin = fromJoinedVersionData(true);
         Table<DR> dataHead = (Table<DR>) versionDataJoin.dataTable();
         Table<VR> versionHead = (Table<VR>) versionDataJoin.versionTable();
-        Pair<Stream<Field<?>>, Stream<Field<?>>> additionalFields =
-                additionalCopyToHistoryFields(versionHead, dataHead, now);
+        AdditionalCopyToHistoryFields additionalFields = additionalCopyToHistoryFields(versionHead, dataHead, now);
         Field<?>[] fields = Streams.concat(
                         // version fields which are also present in version_history
                         Arrays.stream(tables.history().fields())
                                 .map(versionHead::field)
                                 .filter(Objects::nonNull),
-                        additionalFields.getLeft())
+                        additionalFields.headFields())
                 .toArray(Field<?>[]::new);
 
         Condition pkeyConstraint = DSL.and(getVersionDataJoinFields().stream()
@@ -736,7 +742,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .where(pkeyConstraint)
                 .groupBy(versionHead.fields(versionHead.getPrimaryKey().getFieldsArray()));
 
-        Field<?>[] historyFields = Streams.concat(Arrays.stream(versionHead.fields()), additionalFields.getRight())
+        Field<?>[] historyFields = Streams.concat(Arrays.stream(versionHead.fields()), additionalFields.historyFields())
                 .map(tables.history()::field)
                 .filter(Objects::nonNull)
                 .toArray(Field<?>[]::new);
@@ -806,7 +812,7 @@ public abstract class AbstractVersionedObjectRepository<
                 .fetchInto(tables.history());
     }
 
-    protected Field<String> jsonDataField(Table<?> table, String... path) {
+    protected Field<String> jsonDataField(Table<DR> table, String... path) {
         return AdditionalSQLFunctions.jsonbAttributePathText(table.field(DATA_PROTOTYPE.DATA), path);
     }
 

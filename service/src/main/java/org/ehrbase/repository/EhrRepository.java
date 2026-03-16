@@ -141,7 +141,7 @@ public class EhrRepository
                 .map(Record1::value1);
     }
 
-    Condition subjectCondition(String subjectId, String nameSpace, Table<?> dataTable) {
+    Condition subjectCondition(String subjectId, String nameSpace, Table<EhrStatusDataRecord> dataTable) {
         return dataRootCondition(dataTable)
                 .and(jsonDataField(dataTable, SUBJECT_ID_JSON_PATH).eq(subjectId))
                 .and(jsonDataField(dataTable, SUBJECT_NAMESPACE_JSON_PATH).eq(nameSpace));

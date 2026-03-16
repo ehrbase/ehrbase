@@ -110,15 +110,15 @@ public class EhrFolderRepository
     }
 
     @Override
-    protected Pair<Stream<Field<?>>, Stream<Field<?>>> additionalCopyToHistoryFields(
+    protected AdditionalCopyToHistoryFields additionalCopyToHistoryFields(
             final Table<EhrFolderVersionRecord> versionHead,
             final Table<EhrFolderDataRecord> dataHead,
             final OffsetDateTime now) {
-        Pair<Stream<Field<?>>, Stream<Field<?>>> base = super.additionalCopyToHistoryFields(versionHead, dataHead, now);
+        AdditionalCopyToHistoryFields base = super.additionalCopyToHistoryFields(versionHead, dataHead, now);
         Field<?> uuidArrayField = itemUuidFieldAggregation(versionHead);
-        return Pair.of(
-                Streams.concat(base.getLeft(), Stream.of(uuidArrayField)),
-                Streams.concat(base.getRight(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
+        return new AdditionalCopyToHistoryFields(
+                Streams.concat(base.headFields(), Stream.of(uuidArrayField)),
+                Streams.concat(base.historyFields(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
     }
 
     /**
