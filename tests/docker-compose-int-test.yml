@@ -16,7 +16,7 @@ services:
       SERVER_NODENAME: "local.ehrbase.org"
       # allows to perform health checks
       MANAGEMENT_ENDPOINTS_WEB_ACCESS: "PUBLIC"
-      MANAGEMENT_ENDPOINT_INFO_ENABLED: "true"
+      MANAGEMENT_ENDPOINT_INFO_ACCESS: "read_only"
       # Admin API is needed fir robot
       ADMINAPI_ACTIVE: "true"
       ADMINAPI_ALLOWDELETEALL: "true"
