@@ -32,6 +32,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
@@ -48,7 +49,6 @@ import org.jooq.DSLContext;
 import org.jooq.Record1;
 import org.jooq.Table;
 import org.jooq.TableField;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -115,7 +115,7 @@ public class CompositionRepository
 
         delete(
                 ehrId,
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
+                singleCompositionInEhrCondition(ehrId, compId),
                 version,
                 contributionId,
                 auditId,
@@ -160,8 +160,8 @@ public class CompositionRepository
         update(
                 ehrId,
                 composition,
-                singleCompositionInEhrCondition(ehrId, rootId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, rootId, tables.history()),
+                singleCompositionInEhrCondition(ehrId, rootId),
+                singleCompositionInEhrCondition(ehrId, rootId),
                 contributionId,
                 auditId,
                 r -> {
@@ -174,8 +174,8 @@ public class CompositionRepository
 
     public RevisionHistory getRevisionHistory(UUID ehrId, UUID compositionId) {
         return getRevisionHistory(
-                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compositionId, tables.history()));
+                singleCompositionInEhrCondition(ehrId, compositionId),
+                singleCompositionInEhrCondition(ehrId, compositionId));
     }
 
     public boolean exists(UUID compId) {
@@ -216,39 +216,39 @@ public class CompositionRepository
 
     public boolean isDeleted(UUID ehrId, UUID compId, Integer version) {
         return isDeleted(
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.history()),
+                singleCompositionInEhrCondition(ehrId, compId),
+                singleCompositionInEhrCondition(ehrId, compId),
                 version);
     }
 
-    private Condition singleCompositionInEhrCondition(UUID ehrId, UUID compId, Table<?> versionTable) {
+    private Function<Table<?>, Condition> singleCompositionInEhrCondition(UUID ehrId, UUID compId) {
 
-        return versionTable
+        return versionTable -> versionTable
                 .field(VERSION_PROTOTYPE.EHR_ID)
                 .eq(ehrId)
-                .and(singleCompositionCondition(compId, versionTable));
+                .and(singleCompositionCondition(compId).apply(versionTable));
     }
 
-    private @NonNull Condition singleCompositionCondition(final UUID compId, final Table<?> versionTable) {
-        return versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(compId);
+    private Function<Table<?>, Condition> singleCompositionCondition(final UUID compId) {
+        return versionTable -> versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(compId);
     }
 
     public Optional<Composition> findByVersion(UUID ehrId, UUID compId, int version) {
 
         return findByVersion(
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.history()),
+                singleCompositionInEhrCondition(ehrId, compId),
+                singleCompositionInEhrCondition(ehrId, compId),
                 version);
     }
 
     public Optional<Composition> findHead(UUID ehrId, UUID compId) {
-        return findHead(singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()));
+        return findHead(singleCompositionInEhrCondition(ehrId, compId));
     }
 
     private Optional<CompVersionHistoryRecord> findRootRecordByVersion(UUID ehrId, UUID compId, int version) {
         return findRootRecordByVersion(
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.history()),
+                singleCompositionInEhrCondition(ehrId, compId),
+                singleCompositionInEhrCondition(ehrId, compId),
                 version);
     }
 
@@ -296,17 +296,15 @@ public class CompositionRepository
             UUID ehrUid, UUID versionedObjectUid, int version) {
 
         return getOriginalVersion(
-                singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.history()),
+                singleCompositionInEhrCondition(ehrUid, versionedObjectUid),
+                singleCompositionInEhrCondition(ehrUid, versionedObjectUid),
                 version);
     }
 
     public Optional<Integer> findVersionByTime(UUID compositionId, OffsetDateTime time) {
 
         return findVersionByTime(
-                        singleCompositionCondition(compositionId, tables.versionHead()),
-                        singleCompositionCondition(compositionId, tables.history()),
-                        time)
+                        singleCompositionCondition(compositionId), singleCompositionCondition(compositionId), time)
                 .map(LocatableUtils::getUidVersion);
     }
 

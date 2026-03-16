@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.SystemService;
@@ -94,7 +95,7 @@ public class EhrFolderRepository
     }
 
     @Override
-    protected Pair<Field<?>[], Field<?>[]> getAdditionalSelectFields(
+    protected Pair<Field<?>[], Field<?>[]> getAdditionalDataQuerySelectFields(
             final Table<?> versionTable, final Table<?> dataTable, final boolean head) {
         if (head) {
             return Pair.of(new Field[] {itemUuidFieldAggregation(versionTable)}, new Field[] {
@@ -255,8 +256,8 @@ public class EhrFolderRepository
         update(
                 ehrId,
                 folder,
-                singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx),
-                singleFolderInEhrCondition(tables.history(), ehrId, ehrFoldersIdx),
+                singleFolderInEhrCondition(ehrId, ehrFoldersIdx),
+                singleFolderInEhrCondition(ehrId, ehrFoldersIdx),
                 contributionId,
                 auditId,
                 r -> r.setEhrFoldersIdx(ehrFoldersIdx),
@@ -265,7 +266,7 @@ public class EhrFolderRepository
     }
 
     public Optional<Folder> findHead(UUID ehrId, int ehrFoldersIdx) {
-        return findHead(singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFoldersIdx));
+        return findHead(singleFolderInEhrCondition(ehrId, ehrFoldersIdx));
     }
 
     /**
@@ -284,8 +285,8 @@ public class EhrFolderRepository
         Table<EhrFolderVersionRecord> table = tables.versionHead();
         delete(
                 ehrId,
-                singleFolderInEhrCondition(table, ehrId, ehrFoldersIdx)
-                        .and(table.field(VERSION_PROTOTYPE.VO_ID).eq(rootFolderId)),
+                singleFolderInEhrCondition(ehrId, ehrFoldersIdx)
+                        .andThen(c -> c.and(table.field(VERSION_PROTOTYPE.VO_ID).eq(rootFolderId))),
                 version,
                 contributionId,
                 auditId,
@@ -295,9 +296,7 @@ public class EhrFolderRepository
     public Optional<Folder> findByVersion(UUID ehrId, int folderIdx, int version) {
 
         return findByVersion(
-                singleFolderInEhrCondition(tables.versionHead(), ehrId, folderIdx),
-                singleFolderInEhrCondition(tables.history(), ehrId, folderIdx),
-                version);
+                singleFolderInEhrCondition(ehrId, folderIdx), singleFolderInEhrCondition(ehrId, folderIdx), version);
     }
 
     @Override
@@ -307,20 +306,20 @@ public class EhrFolderRepository
 
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, int folderIdx, OffsetDateTime time) {
         return findVersionByTime(
-                singleFolderInEhrCondition(tables.versionHead(), ehrId, folderIdx),
-                singleFolderInEhrCondition(tables.history(), ehrId, folderIdx),
-                time);
+                singleFolderInEhrCondition(ehrId, folderIdx), singleFolderInEhrCondition(ehrId, folderIdx), time);
     }
 
     public boolean hasFolderAtIndex(UUID ehrId, int ehrFolderIdx) {
 
+        Table<EhrFolderVersionRecord> versionHead = tables.versionHead();
         var headQuery = context.selectOne()
-                .from(tables.versionHead())
-                .where(singleFolderInEhrCondition(tables.versionHead(), ehrId, ehrFolderIdx));
+                .from(versionHead)
+                .where(singleFolderInEhrCondition(ehrId, ehrFolderIdx).apply(versionHead));
 
+        Table<EhrFolderVersionHistoryRecord> history = tables.history();
         var historyQuery = context.selectOne()
-                .from(tables.history())
-                .where(singleFolderInEhrCondition(tables.history(), ehrId, ehrFolderIdx));
+                .from(history)
+                .where(singleFolderInEhrCondition(ehrId, ehrFolderIdx).apply(history));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
     }
@@ -332,11 +331,12 @@ public class EhrFolderRepository
 
         var headQuery = context.selectOne()
                 .from(versionTable)
-                .where(folderInEhrWithVoIdCondition(versionTable, ehrId, voId, ehrFolderIdx));
+                .where(folderInEhrWithVoIdCondition(ehrId, voId, ehrFolderIdx).apply(versionTable));
 
         var historyQuery = context.selectOne()
                 .from(historyTable)
-                .where(folderInEhrWithVoIdCondition(historyTable, ehrId, voId, ehrFolderIdx)
+                .where(folderInEhrWithVoIdCondition(ehrId, voId, ehrFolderIdx)
+                        .apply(historyTable)
                         .and(historyTable.field(EHR_FOLDER_VERSION.SYS_VERSION).eq(1)));
 
         return context.fetchExists(headQuery.unionAll(historyQuery));
@@ -365,14 +365,14 @@ public class EhrFolderRepository
         deleteHistoryQuery.execute();
     }
 
-    private Condition singleFolderInEhrCondition(Table<?> table, UUID ehrId, int folderIdx) {
-        return table.field(VERSION_PROTOTYPE.EHR_ID)
+    private Function<Table<?>, Condition> singleFolderInEhrCondition(UUID ehrId, int folderIdx) {
+        return table -> table.field(VERSION_PROTOTYPE.EHR_ID)
                 .eq(ehrId)
                 .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
     }
 
-    private Condition folderInEhrWithVoIdCondition(Table<?> table, UUID ehrId, UUID voId, int folderIdx) {
-        return Objects.requireNonNull(table.field(VERSION_PROTOTYPE.EHR_ID))
+    private Function<Table<?>, Condition> folderInEhrWithVoIdCondition(UUID ehrId, UUID voId, int folderIdx) {
+        return table -> Objects.requireNonNull(table.field(VERSION_PROTOTYPE.EHR_ID))
                 .eq(ehrId)
                 .and(table.field(EHR_FOLDER_VERSION.VO_ID).eq(voId))
                 .and(table.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX).eq(folderIdx));
