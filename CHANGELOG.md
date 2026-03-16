@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - RM constraint validation for DIRECTORY (with feature toggle) [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
  ### Changed 
 - update to java 25 [#1595](https://github.com/ehrbase/ehrbase/pull/1595)
+- changed history DB model for better compression [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
  ### Fixed
 - Adjusted some endpoints to comply with openEHR REST API specs; see [UPDATING.md](./UPDATING.md) [#1599](https://github.com/ehrbase/ehrbase/pull/1599)
 
