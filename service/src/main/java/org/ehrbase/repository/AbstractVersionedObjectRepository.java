@@ -95,29 +95,12 @@ import org.jooq.impl.SQLDataType;
 public abstract class AbstractVersionedObjectRepository<
         VR extends UpdatableRecord, DR extends UpdatableRecord, HR extends UpdatableRecord, O extends Locatable> {
 
-    protected final class Tables {
-        private final Table<VR> versionHead;
-        private final Table<DR> dataHead;
-        private final Table<HR> history;
+    protected record Tables<V extends Record, D extends Record, H extends Record>(
+            Table<V> versionHead, Table<D> dataHead, Table<H> history) {}
 
-        private Tables(Table<VR> versionHead, Table<DR> dataHead, Table<HR> history) {
-            this.versionHead = versionHead;
-            this.dataHead = dataHead;
-            this.history = history;
-        }
+    protected record VersionDataJoin(Table<?> versionTable, Table<?> dataTable, Table<?> joined) {}
 
-        public Table<VR> versionHead() {
-            return versionHead;
-        }
-
-        public Table<DR> dataHead() {
-            return dataHead;
-        }
-
-        public Table<HR> history() {
-            return history;
-        }
-    }
+    public record AdditionalDataQuerySelectFields(Field<?>[] selectFields, Field<?>[] groupByFields) {}
 
     public static final String NOT_MATCH_UID = "If-Match version_uid does not match uid";
     public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
@@ -130,7 +113,7 @@ public abstract class AbstractVersionedObjectRepository<
 
     private final AuditDetailsTargetType targetType;
 
-    protected final Tables tables;
+    protected final Tables<VR, DR, HR> tables;
     protected final DSLContext context;
     protected final ContributionRepository contributionRepository;
     protected final SystemService systemService;
@@ -146,7 +129,7 @@ public abstract class AbstractVersionedObjectRepository<
             SystemService systemService,
             TimeProvider timeProvider) {
         this.targetType = targetType;
-        this.tables = new Tables(versionHead.as("version"), dataHead.as("data"), versionHistory.as("history"));
+        this.tables = new Tables<>(versionHead.as("version"), dataHead.as("data"), versionHistory.as("history"));
         this.context = context;
         this.contributionRepository = contributionRepository;
         this.systemService = systemService;
@@ -524,7 +507,7 @@ public abstract class AbstractVersionedObjectRepository<
      * @param head
      * @return
      */
-    protected Pair<Field<?>[], Field<?>[]> getAdditionalDataQuerySelectFields(
+    protected AdditionalDataQuerySelectFields getAdditionalDataQuerySelectFields(
             Table<?> versionTable, Table<?> dataTable, boolean head) {
         return null;
     }
@@ -552,7 +535,7 @@ public abstract class AbstractVersionedObjectRepository<
 
         List<Field<?>> selectFields;
         List<Field<?>> groupByFields = Collections.emptyList();
-        Pair<Field<?>[], Field<?>[]> additionalFields =
+        AdditionalDataQuerySelectFields additionalFields =
                 getAdditionalDataQuerySelectFields(versionTable, dataTable, head);
         if (additionalFields == null) {
             selectFields = List.of(voIdField, sysVersionField, stringAggregationField);
@@ -560,14 +543,14 @@ public abstract class AbstractVersionedObjectRepository<
                 groupByFields = List.of(voIdField, sysVersionField);
             }
         } else {
-            Field<?>[] additionalSelectFields = additionalFields.getLeft();
+            Field<?>[] additionalSelectFields = additionalFields.selectFields();
             selectFields = new ArrayList<>(3 + additionalSelectFields.length);
             selectFields.add(voIdField);
             selectFields.add(sysVersionField);
             selectFields.add(stringAggregationField);
             Collections.addAll(selectFields, additionalSelectFields);
             if (head) {
-                Field<?>[] additionalGroupByFields = additionalFields.getRight();
+                Field<?>[] additionalGroupByFields = additionalFields.groupByFields();
                 groupByFields = new ArrayList<>(2 + additionalGroupByFields.length);
                 groupByFields.add(voIdField);
                 groupByFields.add(sysVersionField);
@@ -595,8 +578,6 @@ public abstract class AbstractVersionedObjectRepository<
                                 .and(DSL.not(dataTable.field(HISTORY_PROTOTYPE.SYS_DELETED))),
                         DSL.inline(GONE_MARKER));
     }
-
-    protected record VersionDataJoin(Table<?> versionTable, Table<?> dataTable, Table<?> joined) {}
 
     protected VersionDataJoin fromJoinedVersionData(boolean head) {
         if (head) {

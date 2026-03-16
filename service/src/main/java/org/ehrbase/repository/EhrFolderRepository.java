@@ -95,14 +95,17 @@ public class EhrFolderRepository
     }
 
     @Override
-    protected Pair<Field<?>[], Field<?>[]> getAdditionalDataQuerySelectFields(
+    protected AdditionalDataQuerySelectFields getAdditionalDataQuerySelectFields(
             final Table<?> versionTable, final Table<?> dataTable, final boolean head) {
         if (head) {
-            return Pair.of(new Field[] {itemUuidFieldAggregation(versionTable)}, new Field[] {
-                versionTable.field(EHR_FOLDER_VERSION.EHR_ID), versionTable.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
-            });
+            return new AdditionalDataQuerySelectFields(
+                    new Field[] {itemUuidFieldAggregation(versionTable)}, new Field[] {
+                        versionTable.field(EHR_FOLDER_VERSION.EHR_ID),
+                        versionTable.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
+                    });
         } else {
-            return Pair.of(new Field[] {versionTable.field(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)}, new Field[] {});
+            return new AdditionalDataQuerySelectFields(
+                    new Field[] {versionTable.field(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)}, new Field[] {});
         }
     }
 
