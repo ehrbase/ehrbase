@@ -40,6 +40,8 @@ import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.EhrStatusData;
+import org.ehrbase.jooq.pg.tables.EhrStatusVersion;
+import org.ehrbase.jooq.pg.tables.EhrStatusVersionHistory;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionHistoryRecord;
@@ -152,9 +154,8 @@ public class EhrRepository
     }
 
     public Optional<ObjectVersionId> findLatestVersion(UUID ehrId) {
-        Table<EhrStatusVersionRecord> versionHead = tables.versionHead();
-        return context.select(
-                        versionHead.field(VERSION_PROTOTYPE.VO_ID), versionHead.field(VERSION_PROTOTYPE.SYS_VERSION))
+        EhrStatusVersion versionHead = EHR_STATUS_VERSION.as("v");
+        return context.select(versionHead.VO_ID, versionHead.SYS_VERSION)
                 .from(versionHead)
                 .where(singleEhrStatusCondition(ehrId).apply(versionHead))
                 .fetchOptional()
@@ -193,14 +194,10 @@ public class EhrRepository
 
     public void adminDelete(UUID ehrId) {
 
-        Table<EhrStatusVersionRecord> versionHead = tables.versionHead();
-        context.deleteFrom(versionHead)
-                .where(versionHead.field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId))
-                .execute();
-        Table<EhrStatusVersionHistoryRecord> history = tables.history();
-        context.deleteFrom(history)
-                .where(history.field(HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
-                .execute();
+        EhrStatusVersion versionHead = EHR_STATUS_VERSION.as("v");
+        context.deleteFrom(versionHead).where(versionHead.EHR_ID.eq(ehrId)).execute();
+        EhrStatusVersionHistory history = EHR_STATUS_VERSION_HISTORY.as("h");
+        context.deleteFrom(history).where(history.EHR_ID.eq(ehrId)).execute();
         context.deleteFrom(EHR_).where(EHR_.ID.eq(ehrId)).execute();
     }
 
