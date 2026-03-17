@@ -149,7 +149,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         try {
             ehrFolderRepository.commit(ehrId, folder, contributionId, auditId, EHR_DIRECTORY_FOLDER_IDX);
-        } catch (DuplicateKeyException e) {
+        } catch (DuplicateKeyException _) {
             throw new StateConflictException("FOLDER with uid %s already exist.".formatted(folderUid));
         }
 

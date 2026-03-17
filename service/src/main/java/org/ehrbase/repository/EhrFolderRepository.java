@@ -64,7 +64,6 @@ import org.jooq.SelectSelectStep;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -139,8 +138,9 @@ public class EhrFolderRepository
     protected AdditionalDataQuerySelectFields getAdditionalDataQuerySelectFields(
             final Table<?> versionTable, final Table<?> dataTable, final boolean head) {
         if (head) {
+
             return new AdditionalDataQuerySelectFields(
-                    new Field[] {itemUuidFieldAggregation(versionTable)}, new Field[] {
+                    new Field[] {itemUuidFieldAggregation(versionTable, context)}, new Field[] {
                         versionTable.field(EHR_FOLDER_VERSION.EHR_ID),
                         versionTable.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX)
                     });
@@ -156,7 +156,8 @@ public class EhrFolderRepository
             final Table<EhrFolderDataRecord> dataHead,
             final OffsetDateTime now) {
         AdditionalCopyToHistoryFields base = super.additionalCopyToHistoryFields(versionHead, dataHead, now);
-        Field<?> uuidArrayField = itemUuidFieldAggregation(versionHead);
+
+        Field<?> uuidArrayField = itemUuidFieldAggregation(versionHead, context);
         return new AdditionalCopyToHistoryFields(
                 Streams.concat(base.headFields(), Stream.of(uuidArrayField)),
                 Streams.concat(base.historyFields(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
@@ -177,27 +178,26 @@ public class EhrFolderRepository
      * 	, 1)
      *
      * @param versionHead
+     * @param ctx
      * @return
      */
-    private @NonNull Field<?> itemUuidFieldAggregation(final Table<?> versionHead) {
-        Table<EhrFolderDataRecord> sqTable = tables.dataHead().as("h2");
-
+    public static Field<?> itemUuidFieldAggregation(final Table<?> versionHead, final DSLContext ctx) {
+        EhrFolderData sqTable = EHR_FOLDER_DATA.as("h2");
         SelectSelectStep<Record1<UUID>> separator = DSL.select(DSL.castNull(UUID.class));
-        Table<?> itemUuids = DSL.unnest(sqTable.field(EHR_FOLDER_DATA.ITEM_UUIDS));
+        Table<?> itemUuids = DSL.unnest(sqTable.ITEM_UUIDS);
         Field<UUID> unnestedUuid = itemUuids.field(0, UUID.class).as("v");
         Table<Record1<UUID>> unnestedWithSeparator = DSL.lateral(
-                        context.select(unnestedUuid).from(itemUuids).unionAll(separator))
+                        ctx.select(unnestedUuid).from(itemUuids).unionAll(separator))
                 .as("uid");
 
-        SelectConditionStep<Record1<UUID[]>> aggregated = context.select(DSL.arrayAgg(unnestedUuid)
-                        .orderBy(sqTable.field(DATA_PROTOTYPE.NUM).asc()))
+        SelectConditionStep<Record1<UUID[]>> aggregated = ctx.select(
+                        DSL.arrayAgg(unnestedUuid).orderBy(sqTable.NUM.asc()))
                 .from(sqTable)
                 .join(unnestedWithSeparator)
                 .on(DSL.trueCondition())
-                .where(sqTable.field(EHR_FOLDER_DATA.EHR_ID)
+                .where(sqTable.EHR_ID
                         .eq(versionHead.field(VERSION_PROTOTYPE.EHR_ID))
-                        .and(sqTable.field(EHR_FOLDER_DATA.EHR_FOLDERS_IDX)
-                                .eq(versionHead.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX))));
+                        .and(sqTable.EHR_FOLDERS_IDX.eq(versionHead.field(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX))));
 
         return AdditionalSQLFunctions.trim_array(aggregated.asField(), DSL.inline(1));
     }
@@ -267,7 +267,7 @@ public class EhrFolderRepository
             String uuidText = itemsNode.get(i).get("id").get("value").asText();
             try {
                 result[i] = UUID.fromString(uuidText);
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalArgumentException _) {
                 throw new IllegalArgumentException("Only UUIDs are supported as FOLDER.items.id.value");
             }
         }
