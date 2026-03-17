@@ -55,7 +55,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class CompositionRepository
         extends AbstractVersionedObjectRepository<
-                CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, Composition> {
+                CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, Composition, Void> {
 
     private final KnowledgeCacheService knowledgeCache;
 

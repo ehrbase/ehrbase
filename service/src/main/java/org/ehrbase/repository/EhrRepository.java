@@ -63,7 +63,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class EhrRepository
         extends AbstractVersionedObjectRepository<
-                EhrStatusVersionRecord, EhrStatusDataRecord, EhrStatusVersionHistoryRecord, EhrStatus> {
+                EhrStatusVersionRecord, EhrStatusDataRecord, EhrStatusVersionHistoryRecord, EhrStatus, Void> {
 
     public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttributeAlias.rmToJsonPathParts("is_modifiable");
     public static final String[] SUBJECT_ID_JSON_PATH =

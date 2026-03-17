@@ -22,12 +22,14 @@ import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_FOLDER_VERSION_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.Streams;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,6 +50,7 @@ import org.ehrbase.jooq.pg.util.AdditionalSQLFunctions;
 import org.ehrbase.openehr.dbformat.DbToRmFormat;
 import org.ehrbase.openehr.dbformat.StructureNode;
 import org.ehrbase.openehr.dbformat.VersionedObjectDataStructure;
+import org.ehrbase.repository.EhrFolderRepository.FolderParseContext;
 import org.ehrbase.service.TimeProvider;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
@@ -71,7 +74,45 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class EhrFolderRepository
         extends AbstractVersionedObjectRepository<
-                EhrFolderVersionRecord, EhrFolderDataRecord, EhrFolderVersionHistoryRecord, Folder> {
+                EhrFolderVersionRecord,
+                EhrFolderDataRecord,
+                EhrFolderVersionHistoryRecord,
+                Folder,
+                FolderParseContext> {
+
+    /**
+     * Prepares ArrayNodes containing the UUIDs for Folder.items to avoid O(n²) runtime for this part of the reconstruction.
+     */
+    public static class FolderParseContext {
+        private final List<ArrayNode> itemUuidRows = new ArrayList<>();
+
+        public FolderParseContext(final UUID[] itemUuids, JsonNodeFactory nodeFactory) {
+            ArrayNode itemUuidsNode = nodeFactory.arrayNode();
+            for (UUID uuid : itemUuids) {
+                if (uuid == null) {
+                    if (itemUuidsNode.isEmpty()) {
+                        itemUuidRows.add(null);
+                    } else {
+                        itemUuidRows.add(itemUuidsNode);
+                        itemUuidsNode = nodeFactory.arrayNode();
+                    }
+                } else {
+                    itemUuidsNode.add(uuid.toString());
+                }
+            }
+
+            if (!itemUuidsNode.isEmpty()) {
+                itemUuidRows.add(itemUuidsNode);
+            }
+        }
+
+        public ArrayNode getItemUuidsForRow(int row) {
+            if (row < itemUuidRows.size()) {
+                return itemUuidRows.get(row);
+            }
+            return null;
+        }
+    }
 
     public EhrFolderRepository(
             DSLContext context,
@@ -162,29 +203,17 @@ public class EhrFolderRepository
     }
 
     @Override
-    protected Pair<CharSequence, ObjectNode> parseJsonData(
-            final Pair<CharSequence, CharSequence> p, final Record rec, final int idx) {
-        Pair<CharSequence, ObjectNode> parsed = super.parseJsonData(p, rec, idx);
-        return insertFolderItemsArray(rec.get(3, UUID[].class), idx, parsed);
+    protected FolderParseContext buildParseContext(final Record rec, final ObjectMapper objectMapper) {
+        return new FolderParseContext(rec.get(3, UUID[].class), objectMapper.getNodeFactory());
     }
 
-    public static @NonNull Pair<CharSequence, ObjectNode> insertFolderItemsArray(
-            UUID[] itemIds, final int idx, final Pair<CharSequence, ObjectNode> parsed) {
-        ObjectNode node = parsed.getRight();
-        int row = 0;
-        ArrayNode itemUuidsNode = node.arrayNode();
-        for (final UUID uuid : itemIds) {
-            if (uuid == null) {
-                row++;
-                if (row > idx) {
-                    break;
-                }
-            } else if (row == idx) {
-                itemUuidsNode.add(uuid.toString());
-            }
-        }
-        if (!itemUuidsNode.isEmpty()) {
-            node.set(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS, itemUuidsNode);
+    @Override
+    protected ParsedRow parseJsonData(
+            final Pair<CharSequence, CharSequence> p, final Record rec, final int idx, FolderParseContext ctx) {
+        ParsedRow parsed = super.parseJsonData(p, rec, idx, ctx);
+        ArrayNode itemUuidsNode = ctx.getItemUuidsForRow(idx);
+        if (itemUuidsNode != null) {
+            parsed.data().set(DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS, itemUuidsNode);
         }
         return parsed;
     }

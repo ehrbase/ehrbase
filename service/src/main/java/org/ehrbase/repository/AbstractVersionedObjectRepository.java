@@ -20,6 +20,7 @@ package org.ehrbase.repository;
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Streams;
 import com.nedap.archie.rm.archetyped.Locatable;
@@ -92,7 +93,11 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
 public abstract class AbstractVersionedObjectRepository<
-        VR extends UpdatableRecord, DR extends UpdatableRecord, HR extends UpdatableRecord, O extends Locatable> {
+        VR extends UpdatableRecord,
+        DR extends UpdatableRecord,
+        HR extends UpdatableRecord,
+        O extends Locatable,
+        P_CTX> {
 
     protected record Tables<V extends Record, D extends Record, H extends Record>(
             Table<V> versionHead, Table<D> dataHead, Table<H> history) {}
@@ -102,6 +107,8 @@ public abstract class AbstractVersionedObjectRepository<
     public record AdditionalDataQuerySelectFields(Field<?>[] selectFields, Field<?>[] groupByFields) {}
 
     public record AdditionalCopyToHistoryFields(Stream<Field<?>> headFields, Stream<Field<?>> historyFields) {}
+
+    public record ParsedRow(CharSequence entityIdx, ObjectNode data) {}
 
     public static final String NOT_MATCH_UID = "If-Match version_uid does not match uid";
     public static final String NOT_MATCH_SYSTEM_ID = "If-Match version_uid does not match system id";
@@ -670,7 +677,8 @@ public abstract class AbstractVersionedObjectRepository<
                     "Data for %s (id: %s, version: %s) gone".formatted(targetType, id, version));
         }
         String dbFormat = dataRecord.get(2, String.class);
-        ObjectNode reconstructed = reconstruct(dbFormat, (p, idx) -> parseJsonData(p, dataRecord, idx));
+        P_CTX pCtx = buildParseContext(dataRecord, RmDbJson.MARSHAL_OM);
+        ObjectNode reconstructed = reconstruct(dbFormat, (p, idx) -> parseJsonData(p, dataRecord, idx, pCtx));
         DbToRmFormat.revertDbInPlace(reconstructed, false, true, true);
         final Locatable rmObject;
         try {
@@ -682,24 +690,27 @@ public abstract class AbstractVersionedObjectRepository<
         return Optional.of((L) rmObject);
     }
 
+    protected P_CTX buildParseContext(Record rec, ObjectMapper objectMapper) {
+        return null;
+    }
+
     public static ObjectNode reconstruct(
-            final String dbFormat,
-            BiFunction<Pair<CharSequence, CharSequence>, Integer, Pair<CharSequence, ObjectNode>> parseFunc) {
+            final String dbFormat, BiFunction<Pair<CharSequence, CharSequence>, Integer, ParsedRow> parseFunc) {
         Pair<CharSequence, CharSequence>[] rawRows = DbToRmFormat.parseDbObjectAggregateString(dbFormat);
-        Pair<CharSequence, ObjectNode>[] parsedRows = new Pair[rawRows.length];
+        ParsedRow[] parsedRows = new ParsedRow[rawRows.length];
         for (int i = 0; i < rawRows.length; i++) {
             parsedRows[i] = parseFunc.apply(rawRows[i], i);
         }
-        return DbToRmFormat.reconstructRmObjectTree(parsedRows, Pair::getLeft, Pair::getRight);
+        return DbToRmFormat.reconstructRmObjectTree(parsedRows, ParsedRow::entityIdx, ParsedRow::data);
     }
 
-    protected Pair<CharSequence, ObjectNode> parseJsonData(Pair<CharSequence, CharSequence> p, Record rec, int idx) {
+    protected ParsedRow parseJsonData(Pair<CharSequence, CharSequence> p, Record rec, int idx, final P_CTX pCtx) {
         return parseRow(p);
     }
 
-    public static Pair<CharSequence, ObjectNode> parseRow(final Pair<CharSequence, CharSequence> p) {
+    public static ParsedRow parseRow(final Pair<CharSequence, CharSequence> p) {
         try {
-            return Pair.of(
+            return new ParsedRow(
                     p.getLeft(), (ObjectNode) RmDbJson.MARSHAL_OM.readTree(new CharSequenceReader(p.getRight())));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
