@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
 import static org.mockito.Mockito.doReturn;
@@ -34,6 +35,7 @@ import com.nedap.archie.rm.datastructures.ItemList;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
@@ -52,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
@@ -466,6 +469,82 @@ class ValidationServiceTest {
         contribution.setAudit(validAuditDetails());
         consumer.accept(contribution);
         service().check(contribution);
+    }
+
+    // --- Folder ---
+
+    @Test
+    void checkFolderValid() {
+
+        Folder folder = folderWithName("root");
+        assertThatNoException().isThrownBy(() -> service().check(folder));
+    }
+
+    @Test
+    void checkFolderValidWithSubFolders() {
+
+        Folder root = folderWithName("root");
+        root.addFolder(folderWithName("alpha"));
+        root.addFolder(folderWithName("beta"));
+        assertThatNoException().isThrownBy(() -> service().check(root));
+    }
+
+    @Test
+    void checkFolderValidWithNestedSubFolders() {
+
+        Folder root = folderWithName("root");
+        Folder child = folderWithName("child");
+        child.addFolder(folderWithName("grandchild-a"));
+        child.addFolder(folderWithName("grandchild-b"));
+        root.addFolder(child);
+        assertThatNoException().isThrownBy(() -> service().check(root));
+    }
+
+    @Test
+    void checkFolderInvalidDuplicateSiblingName() {
+
+        Folder root = folderWithName("root");
+        root.addFolder(folderWithName("duplicate"));
+        root.addFolder(folderWithName("duplicate"));
+
+        assertThatThrownBy(() -> service().check(root))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Duplicate folder name duplicate");
+    }
+
+    @Test
+    void checkFolderInvalidDuplicateSiblingNameInNestedLevel() {
+
+        Folder root = folderWithName("root");
+        Folder child = folderWithName("child");
+        child.addFolder(folderWithName("duplicate"));
+        child.addFolder(folderWithName("duplicate"));
+        root.addFolder(child);
+
+        assertThatThrownBy(() -> service().check(root))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Duplicate folder name duplicate");
+    }
+
+    @Test
+    void checkFolderDuplicateNamesAllowedAcrossDifferentLevels() {
+
+        // Same name is only forbidden among siblings; the same name at different levels is fine.
+        Folder root = folderWithName("root");
+        Folder child = folderWithName("shared-name");
+        child.addFolder(folderWithName("shared-name"));
+        root.addFolder(child);
+
+        assertThatNoException().isThrownBy(() -> service().check(root));
+    }
+
+    private static Folder folderWithName(String name) {
+        Folder folder = new Folder();
+        folder.setName(new DvText(name));
+        folder.setArchetypeNodeId("openEHR-EHR-FOLDER.generic.v1");
+        folder.setItems(
+                List.of(new ObjectRef<>(new HierObjectId(UUID.randomUUID().toString()), "ns", "t")));
+        return folder;
     }
 
     // --- HELPER ---
