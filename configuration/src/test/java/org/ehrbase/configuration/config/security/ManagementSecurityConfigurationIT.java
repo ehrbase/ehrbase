@@ -52,13 +52,13 @@ public class ManagementSecurityConfigurationIT {
     @EhrbaseConfigurationIntegrationTest
     @TestPropertySource(
             properties = {
-                "management.endpoints.enabled-by-default=true",
+                "management.endpoints.access.default=read_only",
                 "management.endpoints.web.exposure.include=health,info,metrics,prometheus,loggers",
-                "management.endpoint.info.enabled=true",
-                "management.endpoint.metrics.enabled=true",
-                "management.endpoint.prometheus.enabled=true",
-                "management.endpoint.loggers.enabled=true",
-                "management.endpoint.health.enabled=true",
+                "management.endpoint.info.access=read_only",
+                "management.endpoint.metrics.access=read_only",
+                "management.endpoint.prometheus.access=read_only",
+                "management.endpoint.loggers.access=read_only",
+                "management.endpoint.health.access=read_only",
                 "management.health.db.enabled=false", // turn off db health checks for tests
             })
     @Nested
@@ -113,7 +113,7 @@ public class ManagementSecurityConfigurationIT {
     @TestPropertySource(
             properties = {
                 "management.endpoints.web.exposure.include=loggers",
-                "management.endpoint.loggers.enabled=true"
+                "management.endpoint.loggers.access=read_only"
             })
     @Nested
     class CSRFEnabledDefault {
@@ -135,7 +135,7 @@ public class ManagementSecurityConfigurationIT {
             properties = {
                 "ehrbase.security.management.endpoints.web.csrf-validation-enabled=false",
                 "management.endpoints.web.exposure.include=loggers",
-                "management.endpoint.loggers.enabled=true"
+                "management.endpoint.loggers.access=unrestricted"
             })
     @Nested
     class CSRFDisabled {
