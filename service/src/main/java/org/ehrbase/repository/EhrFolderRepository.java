@@ -208,7 +208,7 @@ public class EhrFolderRepository
     }
 
     @Override
-    protected ParsedRow parseJsonData(
+    public ParsedRow parseJsonData(
             final Pair<CharSequence, CharSequence> p, final Record rec, final int idx, FolderParseContext ctx) {
         ParsedRow parsed = super.parseJsonData(p, rec, idx, ctx);
         ArrayNode itemUuidsNode = ctx.getItemUuidsForRow(idx);
