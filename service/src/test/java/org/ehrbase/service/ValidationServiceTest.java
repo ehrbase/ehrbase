@@ -545,9 +545,11 @@ class ValidationServiceTest {
     @Test
     void checkFolderInvalidRmConstraints() {
         Folder folder = new Folder();
+        folder.setItems(List.of(new ObjectRef<>()));
         folder.setDetails(new ItemSingle(null, null, new Element()));
         Folder subfolder = new Folder();
         subfolder.setDetails(new ItemTree(null, null, List.of(new Cluster())));
+        subfolder.setItems(List.of(new ObjectRef<>()));
         folder.addFolder(subfolder);
 
         assertThatThrownBy(() -> service().check(folder))
@@ -561,13 +563,19 @@ class ValidationServiceTest {
                  /folders[1]/details/items[1]/archetype_node_id: Attribute archetype_node_id of class CLUSTER does not match existence 1..1,
                  /folders[1]/details/items[1]/name: Attribute name of class CLUSTER does not match existence 1..1,
                  /folders[1]/details/items[1]/items: Attribute does not match cardinality 1..*,
+                 /folders[1]/items[1]/namespace: Attribute namespace of class OBJECT_REF does not match existence 1..1,
+                 /folders[1]/items[1]/id: Attribute id of class OBJECT_REF does not match existence 1..1,
+                 /folders[1]/items[1]/type: Attribute type of class OBJECT_REF does not match existence 1..1,
                  /archetype_node_id: Attribute archetype_node_id of class FOLDER does not match existence 1..1,
                  /name: Attribute name of class FOLDER does not match existence 1..1,
                  /details/item: Invariant Inv_null_flavour_indicated failed on type ELEMENT,
                  /details/item/archetype_node_id: Attribute archetype_node_id of class ELEMENT does not match existence 1..1,
                  /details/item/name: Attribute name of class ELEMENT does not match existence 1..1,
                  /details/archetype_node_id: Attribute archetype_node_id of class ITEM_SINGLE does not match existence 1..1,
-                 /details/name: Attribute name of class ITEM_SINGLE does not match existence 1..1
+                 /details/name: Attribute name of class ITEM_SINGLE does not match existence 1..1,
+                 /items[1]/namespace: Attribute namespace of class OBJECT_REF does not match existence 1..1,
+                 /items[1]/id: Attribute id of class OBJECT_REF does not match existence 1..1,
+                 /items[1]/type: Attribute type of class OBJECT_REF does not match existence 1..1
                 """);
     }
 
