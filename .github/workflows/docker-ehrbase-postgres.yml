@@ -52,7 +52,7 @@ jobs:
 
       # setup qemu for multi arch
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       # setup buildx
       - name: Set up Docker Buildx
