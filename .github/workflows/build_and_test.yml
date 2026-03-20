@@ -112,7 +112,7 @@ jobs:
           path: ./application/target/
 
       - name: Docker - Build Base Image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile
@@ -531,7 +531,7 @@ jobs:
           path: ./tests/coverage
 
       - name: Docker - Build Jacoco-CLI
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         env:
           DOCKER_BUILD_SUMMARY: false
         with:
