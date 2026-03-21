@@ -66,6 +66,7 @@
     <module>rm-db-format</module>
     <module>aql-engine</module>
     <module>configuration</module>
+    <module>schema-generator</module>
   </modules>
 
   <properties>

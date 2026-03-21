@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.ehrbase.openehr</groupId>
+        <artifactId>server</artifactId>
+        <version>2.30.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>schema-generator</artifactId>
+    <name>EHRbase Schema Generator</name>
+    <description>Generates PostgreSQL DDL from openEHR Operational Templates</description>
+
+    <dependencies>
+        <!-- openEHR SDK: OPT 1.4 parsing -->
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>opt-1.4</artifactId>
+        </dependency>
+
+        <!-- openEHR SDK: WebTemplate model -->
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>web-template</artifactId>
+        </dependency>
+
+        <!-- Archie: openEHR Reference Model -->
+        <dependency>
+            <groupId>com.nedap.healthcare.archie</groupId>
+            <artifactId>openehr-rm</artifactId>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.ehrbase.openehr.sdk</groupId>
+            <artifactId>test-data</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
