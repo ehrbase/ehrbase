@@ -34,34 +34,41 @@ class FormatNegotiatorTest {
     // Migrated: acceptsMediaTypeApplicationJSON
     @Test
     void resolveInputJson() {
-        assertThat(FormatNegotiator.resolveInput("application/json", null)).isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
+        assertThat(FormatNegotiator.resolveInput("application/json", null))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
     }
 
     // Migrated: acceptsMediaTypeApplicationXML
     @Test
     void resolveInputXml() {
-        assertThat(FormatNegotiator.resolveInput("application/xml", null)).isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
+        assertThat(FormatNegotiator.resolveInput("application/xml", null))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
     }
 
     // Migrated: acceptsMediaTypeApplicationJSON_FLAT
     @Test
     void resolveInputFlat() {
-        assertThat(FormatNegotiator.resolveInput("application/openehr.wt.flat+json", null)).isEqualTo(FormatNegotiator.Format.FLAT);
+        assertThat(FormatNegotiator.resolveInput("application/openehr.wt.flat+json", null))
+                .isEqualTo(FormatNegotiator.Format.FLAT);
     }
 
     // Migrated: acceptsMediaTypeApplicationJSON_STRUCTURED
     @Test
     void resolveInputStructured() {
-        assertThat(FormatNegotiator.resolveInput("application/openehr.wt.structured+json", null)).isEqualTo(FormatNegotiator.Format.STRUCTURED);
+        assertThat(FormatNegotiator.resolveInput("application/openehr.wt.structured+json", null))
+                .isEqualTo(FormatNegotiator.Format.STRUCTURED);
     }
 
     // Migrated: format query param overrides content type
     @Test
     void formatParamOverridesContentType() {
-        assertThat(FormatNegotiator.resolveInput("application/xml", "JSON")).isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
-        assertThat(FormatNegotiator.resolveInput("application/json", "XML")).isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
+        assertThat(FormatNegotiator.resolveInput("application/xml", "JSON"))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
+        assertThat(FormatNegotiator.resolveInput("application/json", "XML"))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
         assertThat(FormatNegotiator.resolveInput("application/json", "FLAT")).isEqualTo(FormatNegotiator.Format.FLAT);
-        assertThat(FormatNegotiator.resolveInput("application/json", "STRUCTURED")).isEqualTo(FormatNegotiator.Format.STRUCTURED);
+        assertThat(FormatNegotiator.resolveInput("application/json", "STRUCTURED"))
+                .isEqualTo(FormatNegotiator.Format.STRUCTURED);
     }
 
     // Migrated: failsForMediaTypeApplicationXMLUnsupportedFormats + failsForMediaTypeApplicationJSONUnsupportedFormats
@@ -95,15 +102,18 @@ class FormatNegotiatorTest {
     // Migrated: format param overrides accept header
     @Test
     void resolveOutputFormatParamOverrides() {
-        assertThat(FormatNegotiator.resolveOutput("application/xml", "JSON")).isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
+        assertThat(FormatNegotiator.resolveOutput("application/xml", "JSON"))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
         assertThat(FormatNegotiator.resolveOutput("application/json", "FLAT")).isEqualTo(FormatNegotiator.Format.FLAT);
     }
 
     // Migrated: case-insensitive format param
     @Test
     void formatParamCaseInsensitive() {
-        assertThat(FormatNegotiator.resolveInput("application/json", "json")).isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
-        assertThat(FormatNegotiator.resolveInput("application/json", "Xml")).isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
+        assertThat(FormatNegotiator.resolveInput("application/json", "json"))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_JSON);
+        assertThat(FormatNegotiator.resolveInput("application/json", "Xml"))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
         assertThat(FormatNegotiator.resolveInput("application/json", "flat")).isEqualTo(FormatNegotiator.Format.FLAT);
     }
 
@@ -116,8 +126,10 @@ class FormatNegotiatorTest {
     // NEW: blank format param is ignored
     @Test
     void blankFormatParamIgnored() {
-        assertThat(FormatNegotiator.resolveInput("application/xml", "")).isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
-        assertThat(FormatNegotiator.resolveInput("application/xml", "  ")).isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
+        assertThat(FormatNegotiator.resolveInput("application/xml", ""))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
+        assertThat(FormatNegotiator.resolveInput("application/xml", "  "))
+                .isEqualTo(FormatNegotiator.Format.CANONICAL_XML);
     }
 
     // NEW: Format enum values

@@ -89,8 +89,7 @@ class CompositionControllerTest {
         when(mockCompositionService.create(eq(EHR_ID), any())).thenReturn(Optional.of(COMP_ID));
         when(mockCompositionService.serialize(any(), any())).thenReturn(new StructuredString("{}", null));
 
-        var response = spyController.createComposition(
-                EHR_ID.toString(), "{}", "application/json", null, null, prefer);
+        var response = spyController.createComposition(EHR_ID.toString(), "{}", "application/json", null, null, prefer);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         if (prefer.equals("return=representation")) {
@@ -103,8 +102,7 @@ class CompositionControllerTest {
     // Invalid EHR ID
     @Test
     void createCompositionInvalidEhrId() {
-        assertThatThrownBy(() ->
-                        spyController.createComposition("invalid", "{}", "application/json", null, null, null))
+        assertThatThrownBy(() -> spyController.createComposition("invalid", "{}", "application/json", null, null, null))
                 .isInstanceOf(InvalidApiParameterException.class);
     }
 
@@ -116,8 +114,8 @@ class CompositionControllerTest {
         when(mockCompositionService.serialize(any(), any())).thenReturn(new StructuredString("{\"test\":true}", null));
         when(mockCompositionService.getLastVersionNumber(EHR_ID, COMP_ID)).thenReturn(1);
 
-        var response = spyController.getComposition(
-                EHR_ID.toString(), COMP_ID.toString(), "application/json", null, null);
+        var response =
+                spyController.getComposition(EHR_ID.toString(), COMP_ID.toString(), "application/json", null, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
     }
@@ -144,7 +142,13 @@ class CompositionControllerTest {
         when(mockCompositionService.serialize(any(), any())).thenReturn(new StructuredString("{}", null));
 
         var response = spyController.updateComposition(
-                EHR_ID.toString(), COMP_ID + "::" + SYSTEM_ID + "::1", "{}", "application/json", ifMatch, null, null,
+                EHR_ID.toString(),
+                COMP_ID + "::" + SYSTEM_ID + "::1",
+                "{}",
+                "application/json",
+                ifMatch,
+                null,
+                null,
                 prefer);
 
         if (prefer.equals("return=representation")) {
@@ -198,8 +202,7 @@ class CompositionControllerTest {
                 .thenReturn(new StructuredString("{\"path/to/value\":42}", null));
         when(mockCompositionService.getLastVersionNumber(EHR_ID, COMP_ID)).thenReturn(1);
 
-        var response =
-                spyController.getComposition(EHR_ID.toString(), COMP_ID.toString(), null, "FLAT", null);
+        var response = spyController.getComposition(EHR_ID.toString(), COMP_ID.toString(), null, "FLAT", null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }

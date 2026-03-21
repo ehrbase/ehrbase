@@ -138,7 +138,8 @@ class EhrStatusControllerTest {
         var status = ehrStatus(UUID.randomUUID().toString());
         String ifMatch = "\"" + UUID.randomUUID() + "::" + SYSTEM_ID + "::1\"";
 
-        when(mockEhrService.updateStatus(eq(EHR_ID), any(), any(), any(), any())).thenReturn(status);
+        when(mockEhrService.updateStatus(eq(EHR_ID), any(), any(), any(), any()))
+                .thenReturn(status);
         when(mockEhrService.getLatestVersionUidOfStatus(EHR_ID))
                 .thenReturn(new ObjectVersionId(UUID.randomUUID().toString(), SYSTEM_ID, "2"));
 

@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
-import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -240,7 +239,8 @@ class EhrControllerTest {
     @Test
     void parseEhrIdValid() {
         UUID expected = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
-        assertThat(spyController.parseEhrId("a6ddec4c-a68a-49ef-963e-3e0bc1970a28")).isEqualTo(expected);
+        assertThat(spyController.parseEhrId("a6ddec4c-a68a-49ef-963e-3e0bc1970a28"))
+                .isEqualTo(expected);
     }
 
     @Test

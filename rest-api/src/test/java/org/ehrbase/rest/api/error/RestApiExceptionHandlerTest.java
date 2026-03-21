@@ -49,8 +49,8 @@ class RestApiExceptionHandlerTest {
 
     @Test
     void objectNotFoundReturns404() {
-        ProblemDetail pd = handler.handleNotFound(
-                new ObjectNotFoundException("ehr", "No EHR found with ID: abc"), request);
+        ProblemDetail pd =
+                handler.handleNotFound(new ObjectNotFoundException("ehr", "No EHR found with ID: abc"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(pd.getType().toString()).contains("ehr-not-found");
         assertThat(pd.getDetail()).contains("No EHR found");
@@ -58,24 +58,24 @@ class RestApiExceptionHandlerTest {
 
     @Test
     void compositionNotFoundReturns404() {
-        ProblemDetail pd = handler.handleNotFound(
-                new ObjectNotFoundException("composition", "Composition not found"), request);
+        ProblemDetail pd =
+                handler.handleNotFound(new ObjectNotFoundException("composition", "Composition not found"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(pd.getType().toString()).contains("composition-not-found");
     }
 
     @Test
     void templateNotFoundReturns404() {
-        ProblemDetail pd = handler.handleNotFound(
-                new ObjectNotFoundException("template", "Template not found"), request);
+        ProblemDetail pd =
+                handler.handleNotFound(new ObjectNotFoundException("template", "Template not found"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(pd.getType().toString()).contains("template-not-found");
     }
 
     @Test
     void preconditionFailedReturns412() {
-        ProblemDetail pd = handler.handlePreconditionFailed(
-                new PreconditionFailedException("Version mismatch"), request);
+        ProblemDetail pd =
+                handler.handlePreconditionFailed(new PreconditionFailedException("Version mismatch"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.PRECONDITION_FAILED.value());
         assertThat(pd.getType().toString()).contains("composition-version-mismatch");
     }
@@ -88,31 +88,28 @@ class RestApiExceptionHandlerTest {
 
     @Test
     void validationErrorReturns400() {
-        ProblemDetail pd = handler.handleValidation(
-                new ValidationException("Missing mandatory field"), request);
+        ProblemDetail pd = handler.handleValidation(new ValidationException("Missing mandatory field"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(pd.getType().toString()).contains("validation-error");
     }
 
     @Test
     void unprocessableEntityReturns422() {
-        ProblemDetail pd = handler.handleUnprocessable(
-                new UnprocessableEntityException("Cannot update template"), request);
+        ProblemDetail pd =
+                handler.handleUnprocessable(new UnprocessableEntityException("Cannot update template"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY.value());
     }
 
     @Test
     void invalidParamReturns400() {
-        ProblemDetail pd = handler.handleInvalidParam(
-                new InvalidApiParameterException("Invalid UUID"), request);
+        ProblemDetail pd = handler.handleInvalidParam(new InvalidApiParameterException("Invalid UUID"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.BAD_REQUEST.value());
         assertThat(pd.getType().toString()).contains("invalid-parameter");
     }
 
     @Test
     void notAcceptableReturns406() {
-        ProblemDetail pd = handler.handleNotAcceptable(
-                new NotAcceptableException("Unsupported format"), request);
+        ProblemDetail pd = handler.handleNotAcceptable(new NotAcceptableException("Unsupported format"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.NOT_ACCEPTABLE.value());
     }
 
@@ -124,8 +121,8 @@ class RestApiExceptionHandlerTest {
 
     @Test
     void unsupportedOperationReturns404() {
-        ProblemDetail pd = handler.handleUnsupported(
-                new UnsupportedOperationException("ADL 2.4 not implemented"), request);
+        ProblemDetail pd =
+                handler.handleUnsupported(new UnsupportedOperationException("ADL 2.4 not implemented"), request);
         assertThat(pd.getStatus()).isEqualTo(HttpStatus.NOT_FOUND.value());
         assertThat(pd.getType().toString()).contains("feature-disabled");
     }
@@ -140,8 +137,8 @@ class RestApiExceptionHandlerTest {
     // RFC 7807 structure validation
     @Test
     void problemDetailHasRequiredFields() {
-        ProblemDetail pd = handler.handleNotFound(
-                new ObjectNotFoundException("ehr", "No EHR found with ID: abc"), request);
+        ProblemDetail pd =
+                handler.handleNotFound(new ObjectNotFoundException("ehr", "No EHR found with ID: abc"), request);
         assertThat(pd.getType()).isNotNull();
         assertThat(pd.getTitle()).isNotNull();
         assertThat(pd.getDetail()).isEqualTo("No EHR found with ID: abc");

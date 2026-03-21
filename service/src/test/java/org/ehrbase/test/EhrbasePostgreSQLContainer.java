@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import org.flywaydb.core.Flyway;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.tools.jdbc.SingleConnectionDataSource;
@@ -160,8 +159,7 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
                 stmt.execute("GRANT ehrbase_audit TO " + username);
 
                 // Set search path for test user
-                stmt.execute("ALTER ROLE " + username
-                        + " SET search_path TO ehr_system, ehr_data, ehr_views, ext");
+                stmt.execute("ALTER ROLE " + username + " SET search_path TO ehr_system, ehr_data, ehr_views, ext");
             }
 
             var ds = new SingleConnectionDataSource(conn);
