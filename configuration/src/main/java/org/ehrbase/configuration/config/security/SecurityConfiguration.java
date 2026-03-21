@@ -39,6 +39,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizedClientRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * {@link Configuration} for secured endpoint authentication.
@@ -56,6 +57,9 @@ public class SecurityConfiguration {
     @Value("${ehrbase.security.management.endpoints.web.csrf-validation-enabled:true}")
     protected boolean managementEndpointsCSRFValidationEnabled;
 
+    @Value("${ehrbase.features.multi-tenant:false}")
+    protected boolean multiTenantEnabled;
+
     public SecurityConfiguration(SecurityConfig securityConfig) {
         this.securityConfig = securityConfig;
     }
@@ -65,6 +69,9 @@ public class SecurityConfiguration {
 
         return securityConfig
                 .configureHttpSecurity(http)
+                // Tenant context filter — sets RLS session variables after authentication
+                .addFilterAfter(new TenantSettingFilter(multiTenantEnabled),
+                        UsernamePasswordAuthenticationFilter.class)
                 // CORS will be always enabled
                 .cors(Customizer.withDefaults())
                 // Exclude apis from CSRF protection, to allow POST, PUT, DELETE, because there are used by client

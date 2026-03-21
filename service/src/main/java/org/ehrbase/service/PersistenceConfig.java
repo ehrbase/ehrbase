@@ -22,7 +22,6 @@ import javax.sql.DataSource;
 import org.jooq.ExecuteContext;
 import org.jooq.ExecuteListener;
 import org.jooq.SQLDialect;
-import org.jooq.impl.DataSourceConnectionProvider;
 import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultDSLContext;
 import org.jooq.impl.DefaultExecuteListenerProvider;
@@ -75,8 +74,8 @@ public class PersistenceConfig {
     }
 
     @Bean
-    public DataSourceConnectionProvider connectionProvider() {
-        return new DataSourceConnectionProvider(transactionAwareDataSource());
+    public TenantAwareConnectionProvider connectionProvider() {
+        return new TenantAwareConnectionProvider(transactionAwareDataSource());
     }
 
     @Bean
@@ -91,7 +90,7 @@ public class PersistenceConfig {
     }
 
     @Bean
-    public DefaultConfiguration configuration(JooqProperties properties, DataSourceConnectionProvider provider) {
+    public DefaultConfiguration configuration(JooqProperties properties, TenantAwareConnectionProvider provider) {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
         jooqConfiguration.set(provider);
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));

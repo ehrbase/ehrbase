@@ -101,6 +101,7 @@ ehrbase:
     admin-api: false
     item-tags: false
     adl2: false
+    multi-tenant: false
   # Admin API configuration
   admin:
     delete-mode: pseudonymize   # pseudonymize | physical | disabled
