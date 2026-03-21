@@ -15,20 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.configuration;
+package org.ehrbase.rest.api.config;
 
-import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.RestModuleConfiguration;
-import org.ehrbase.rest.api.config.RestApiConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
+/**
+ * Configuration for the EHRbase REST API v1 module.
+ * Scans the {@code org.ehrbase.rest.api} package for controllers and components.
+ */
 @Configuration
-@ComponentScan
-@Import({
-    ServiceModuleConfiguration.class,
-    RestModuleConfiguration.class,
-    RestApiConfiguration.class,
-})
-public class EhrBaseServerConfiguration {}
+@ComponentScan(basePackages = "org.ehrbase.rest.api")
+public class RestApiConfiguration {}

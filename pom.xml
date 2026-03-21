@@ -60,6 +60,7 @@
     <module>jooq-pg</module>
     <module>rest-ehr-scape</module>
     <module>rest-openehr</module>
+    <module>rest-api</module>
     <module>service</module>
     <module>test-coverage</module>
     <module>plugin</module>
