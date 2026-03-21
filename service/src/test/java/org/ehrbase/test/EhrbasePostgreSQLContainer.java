@@ -18,6 +18,7 @@
 package org.ehrbase.test;
 
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -45,14 +46,14 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
         return sharedContainer;
     }
 
-    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("ehrbase/ehrbase-v2-postgres");
+    private static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName.parse("postgres");
     public static final Integer POSTGRESQL_PORT = 5432;
     private String databaseName;
     private String username;
     private String password;
 
     public EhrbasePostgreSQLContainer() {
-        this(DEFAULT_IMAGE_NAME.withTag("16.2"));
+        this(DEFAULT_IMAGE_NAME.withTag("18"));
     }
 
     public EhrbasePostgreSQLContainer(DockerImageName dockerImageName) {
@@ -60,14 +61,15 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
         this.databaseName = "ehrbase";
         this.username = "ehrbase";
         this.password = "ehrbase";
-        dockerImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
         waitStrategy = new LogMessageWaitStrategy()
                 .withRegEx(".*database system is ready to accept connections.*\\s")
                 .withTimes(2)
-                .withStartupTimeout(Duration.of(30L, ChronoUnit.SECONDS));
+                .withStartupTimeout(Duration.of(60L, ChronoUnit.SECONDS));
         addExposedPort(POSTGRESQL_PORT);
         withLogConsumer(outputFrame -> logger.info(outputFrame.getUtf8String().trim()));
-        // withReuse(true)
+        withEnv("POSTGRES_DB", databaseName);
+        withEnv("POSTGRES_USER", username);
+        withEnv("POSTGRES_PASSWORD", password);
     }
 
     /**
@@ -133,14 +135,54 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
     @Override
     protected void runInitScriptIfRequired() {
         try (var conn = createConnection("")) {
-            Stream.of("ext", "ehr")
-                    .forEach(schema -> Flyway.configure()
-                            .dataSource(new SingleConnectionDataSource(conn))
-                            .schemas(schema)
-                            .placeholders(Map.of("ehrSchema", schema))
-                            .locations("classpath:db/migration/%s".formatted(schema))
-                            .load()
-                            .migrate());
+            // Create required schemas and install extensions for PG18+
+            try (Statement stmt = conn.createStatement()) {
+                // Create schemas for the new 5-schema architecture
+                stmt.execute("CREATE SCHEMA IF NOT EXISTS ext");
+                stmt.execute("CREATE SCHEMA IF NOT EXISTS ehr");
+                stmt.execute("CREATE SCHEMA IF NOT EXISTS ehr_system");
+                stmt.execute("CREATE SCHEMA IF NOT EXISTS ehr_data");
+                stmt.execute("CREATE SCHEMA IF NOT EXISTS ehr_views");
+                stmt.execute("CREATE SCHEMA IF NOT EXISTS ehr_staging");
+
+                // Install PG18 extensions in the ext schema
+                stmt.execute("CREATE EXTENSION IF NOT EXISTS btree_gist SCHEMA ext");
+                stmt.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA ext");
+                stmt.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto SCHEMA ext");
+                stmt.execute("CREATE EXTENSION IF NOT EXISTS ltree SCHEMA ext");
+
+                // Create roles referenced by compliance migrations
+                stmt.execute(
+                        "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ehrbase_restricted') THEN CREATE ROLE ehrbase_restricted NOLOGIN; END IF; END $$");
+                stmt.execute(
+                        "DO $$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'ehrbase_audit') THEN CREATE ROLE ehrbase_audit NOLOGIN; END IF; END $$");
+                stmt.execute("GRANT ehrbase_restricted TO " + username);
+                stmt.execute("GRANT ehrbase_audit TO " + username);
+
+                // Set search path for test user
+                stmt.execute("ALTER ROLE " + username
+                        + " SET search_path TO ehr_system, ehr_data, ehr_views, ext");
+            }
+
+            var ds = new SingleConnectionDataSource(conn);
+
+            // Migrate ext schema (extensions and aggregate functions)
+            Flyway.configure()
+                    .dataSource(ds)
+                    .schemas("ext")
+                    .placeholders(Map.of("ehrSchema", "ext", "extSchema", "ext"))
+                    .locations("classpath:db/migration/ext")
+                    .load()
+                    .migrate();
+
+            // Migrate ehr_system schema (new v2 architecture only)
+            Flyway.configure()
+                    .dataSource(ds)
+                    .schemas("ehr_system")
+                    .placeholders(Map.of("ehrSchema", "ehr_system"))
+                    .locations("classpath:db/migration/ehr/v2")
+                    .load()
+                    .migrate();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

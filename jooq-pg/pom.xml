@@ -35,7 +35,7 @@
   <name>EHRbase JOOQ</name>
 
   <properties>
-    <database.docker.image>ehrbase/ehrbase-postgres:16.2-mvp</database.docker.image>
+    <database.docker.image>postgres:18</database.docker.image>
   </properties>
 
   <dependencies>
@@ -73,16 +73,20 @@
                 <!-- let the docker engine chose a random container name to prevent clashed during parallel builds @see https://dmp.fabric8.io/#container-name -->
                 <containerNamePattern>%e</containerNamePattern>
                 <env>
-                  <EHRBASE_USER_ADMIN>${database.user}</EHRBASE_USER_ADMIN>
-                  <EHRBASE_PASSWORD_ADMIN>${database.pass}</EHRBASE_PASSWORD_ADMIN>
+                  <POSTGRES_DB>${database.name}</POSTGRES_DB>
+                  <POSTGRES_USER>${database.user}</POSTGRES_USER>
+                  <POSTGRES_PASSWORD>${database.pass}</POSTGRES_PASSWORD>
                 </env>
                 <ports>
                   <port>${database.port}:5432</port>
                 </ports>
+                <volumes>
+                  <bind>
+                    <volume>${project.basedir}/src/main/resources/jooq-init.sql:/docker-entrypoint-initdb.d/01-init.sql</volume>
+                  </bind>
+                </volumes>
                 <wait>
-                  <!-- The log message is not usable as indicator since the DB restarts multiple times during init -->
-                  <!--<log>database system is ready to accept connections</log>-->
-                  <log>listening on IPv.*</log>
+                  <log>database system is ready to accept connections</log>
                   <time>${database.timeout}</time>
                 </wait>
                 <log>
