@@ -114,7 +114,7 @@ CREATE POLICY access_policy ON ehr_system.composition
     USING (
         ehr_id IN (
             SELECT ehr_id FROM ehr_system.access_grants
-            WHERE user_id = current_setting('ehrbase.current_user')::uuid
+            WHERE user_id = current_setting('ehrbase.actor_id')::uuid
         )
         OR current_setting('ehrbase.user_role') = 'admin'
         OR current_setting('ehrbase.emergency_access', true) = 'true'

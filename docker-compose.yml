@@ -33,7 +33,7 @@ services:
   # Pre-configured ehrbase postgres.
   #
   ehrdb:
-    image: ${EHRBASE_POSTGRES_IMAGE:-ehrbase/ehrbase-v2-postgres:16.2}
+    image: ${EHRBASE_POSTGRES_IMAGE:-postgres:18}
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -41,6 +41,8 @@ services:
       EHRBASE_PASSWORD_ADMIN: ehrbase
       EHRBASE_USER: ehrbase_restricted
       EHRBASE_PASSWORD: ehrbase_restricted
+    volumes:
+      - ./createdb-docker.sql:/docker-entrypoint-initdb.d/01-createdb.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
