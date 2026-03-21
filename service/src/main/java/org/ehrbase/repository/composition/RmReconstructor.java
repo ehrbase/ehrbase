@@ -32,6 +32,7 @@ import com.nedap.archie.rm.datavalues.quantity.DvCount;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdinal;
 import com.nedap.archie.rm.datavalues.quantity.DvProportion;
 import com.nedap.archie.rm.datavalues.quantity.DvQuantity;
+import com.nedap.archie.rm.datavalues.quantity.DvScale;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDuration;
@@ -146,8 +147,8 @@ public final class RmReconstructor {
             case "DV_QUANTITY" -> {
                 Double magnitude = getAs(row, colBase + "_magnitude", Double.class);
                 String units = getAs(row, colBase + "_units", String.class);
-                Integer precision = getAs(row, colBase + "_precision", Integer.class);
-                yield magnitude != null ? new DvQuantity(units, magnitude, precision != null ? precision : 0) : null;
+                Long precision = getAs(row, colBase + "_precision", Long.class);
+                yield magnitude != null ? new DvQuantity(units, magnitude, precision != null ? precision : 0L) : null;
             }
 
             case "DV_COUNT" -> {
@@ -194,9 +195,9 @@ public final class RmReconstructor {
             case "DV_PROPORTION" -> {
                 Double numerator = getAs(row, colBase + "_numerator", Double.class);
                 Double denominator = getAs(row, colBase + "_denominator", Double.class);
-                Integer type = getAs(row, colBase + "_type", Integer.class);
+                Long type = getAs(row, colBase + "_type", Long.class);
                 yield numerator != null
-                        ? new DvProportion(numerator, denominator != null ? denominator : 1.0, type != null ? type : 0)
+                        ? new DvProportion(numerator, denominator != null ? denominator : 1.0, type != null ? type : 0L)
                         : null;
             }
 
@@ -209,6 +210,17 @@ public final class RmReconstructor {
                         symbolValue != null ? symbolValue : "",
                         new CodePhrase(new TerminologyId("local"), symbolCode != null ? symbolCode : ""));
                 yield new DvOrdinal(ordinalValue, symbol);
+            }
+
+            case "DV_SCALE" -> {
+                Double scaleValue = getAs(row, colBase + "_value", Double.class);
+                String scaleSymbolValue = getAs(row, colBase + "_symbol_value", String.class);
+                String scaleSymbolCode = getAs(row, colBase + "_symbol_code", String.class);
+                if (scaleValue == null) yield null;
+                DvCodedText scaleSymbol = new DvCodedText(
+                        scaleSymbolValue != null ? scaleSymbolValue : "",
+                        new CodePhrase(new TerminologyId("local"), scaleSymbolCode != null ? scaleSymbolCode : ""));
+                yield new DvScale(scaleValue, scaleSymbol);
             }
 
             case "DV_IDENTIFIER" -> {

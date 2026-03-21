@@ -62,7 +62,7 @@
         <ehrbase.openehr.sdk.version>2.31.0-SNAPSHOT</ehrbase.openehr.sdk.version>
         <!-- archie version should be in sync with sdk -->
         <!-- XXX: maybe this bom should use the SDK bom as parent to inherit this property -->
-        <archie.version>3.13.0</archie.version>
+        <archie.version>3.17.0</archie.version>
         <commons-io.version>2.21.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <flyway.version>11.15.0</flyway.version>

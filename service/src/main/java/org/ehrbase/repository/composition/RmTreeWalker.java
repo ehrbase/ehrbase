@@ -31,6 +31,7 @@ import com.nedap.archie.rm.datavalues.quantity.DvCount;
 import com.nedap.archie.rm.datavalues.quantity.DvOrdinal;
 import com.nedap.archie.rm.datavalues.quantity.DvProportion;
 import com.nedap.archie.rm.datavalues.quantity.DvQuantity;
+import com.nedap.archie.rm.datavalues.quantity.DvScale;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDate;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDuration;
@@ -231,6 +232,18 @@ public final class RmTreeWalker {
             }
 
             case DvOrdinal dv -> {
+                values.put(colBase + "_value", dv.getValue());
+                values.put(
+                        colBase + "_symbol_value",
+                        dv.getSymbol() != null ? dv.getSymbol().getValue() : null);
+                values.put(
+                        colBase + "_symbol_code",
+                        dv.getSymbol() != null && dv.getSymbol().getDefiningCode() != null
+                                ? dv.getSymbol().getDefiningCode().getCodeString()
+                                : null);
+            }
+
+            case DvScale dv -> {
                 values.put(colBase + "_value", dv.getValue());
                 values.put(
                         colBase + "_symbol_value",
