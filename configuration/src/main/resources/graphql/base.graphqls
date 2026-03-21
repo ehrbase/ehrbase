@@ -1,0 +1,80 @@
+# EHRbase GraphQL Schema — Base Types
+# Auto-generated template types are appended at runtime by GraphQlSchemaGeneratorService
+
+scalar DateTime
+scalar DateTimeRange
+scalar JSON
+scalar Long
+
+# Relay-style pagination
+type PageInfo {
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  endCursor: String
+}
+
+# Filter input types
+input IDFilter { eq: ID, in: [ID!] }
+input StringFilter { eq: String, contains: String, startsWith: String, in: [String!] }
+input FloatFilter { eq: Float, gt: Float, gte: Float, lt: Float, lte: Float }
+input IntFilter { eq: Int, gt: Int, gte: Int, lt: Int, lte: Int }
+input BooleanFilter { eq: Boolean }
+input DateTimeFilter { eq: DateTime, before: DateTime, after: DateTime }
+input TextSearch { query: String!, language: String }
+
+# EHR type
+type Ehr {
+  id: ID!
+  subjectId: String
+  subjectNamespace: String
+  creationDate: DateTime!
+  isModifiable: Boolean!
+  isQueryable: Boolean!
+}
+
+# Composition result (returned by mutations)
+type CompositionResult {
+  compositionId: ID!
+  ehrId: ID!
+  templateId: String!
+  version: Int!
+  committedAt: DateTime!
+}
+
+# Subscription event types
+type CompositionEvent {
+  action: String!
+  ehrId: ID!
+  compositionId: ID!
+  templateName: String
+  version: Int!
+  changeType: String!
+  committedAt: DateTime!
+}
+
+type AuditEventNotification {
+  eventType: String!
+  targetType: String!
+  targetId: String
+  action: String!
+  actorId: String
+  createdAt: DateTime!
+}
+
+# Root types
+type Query {
+  _empty: String
+}
+
+type Mutation {
+  createEhr(subjectId: String, subjectNamespace: String): Ehr!
+  createComposition(ehrId: ID!, templateId: String!, data: JSON!): CompositionResult!
+  updateComposition(compositionId: ID!, version: Int!, data: JSON!): CompositionResult!
+  deleteComposition(compositionId: ID!, version: Int!): Boolean!
+}
+
+type Subscription {
+  onCompositionChange(ehrId: ID): CompositionEvent!
+  onAuditEvent(tenantId: Int): AuditEventNotification!
+}

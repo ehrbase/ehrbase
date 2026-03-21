@@ -33,6 +33,17 @@ spring:
   application:
     name: ehrbase
 
+  graphql:
+    path: /api/v1/graphql
+    graphiql:
+      enabled: true
+      path: /api/v1/graphiql
+    websocket:
+      path: /api/v1/graphql/ws
+      connection-init-timeout: 60s
+    schema:
+      locations: classpath:graphql/
+
   cache:
     # change to type redis if usage of redis distributed cache is intended. Also turn on management.health.redis.enabled
     # if needed.

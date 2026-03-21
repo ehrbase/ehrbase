@@ -74,10 +74,7 @@ public class SecurityConfiguration {
                 // implementation and not only restricted to a browser access.
                 .csrf(csrf -> {
                     csrf.ignoringRequestMatchers(
-                            "/rest/**", // allow full access to the rest api
-                            "/plugin/**", // allow full access to plugin apis
-                            "/error/**" // ensure we have access to error re-routing
-                            );
+                            "/rest/**", "/api/v1/graphql", "/api/v1/graphql/ws", "/plugin/**", "/error/**");
                     // disable csrf in case 'management.endpoints.web.csrf-validation-enabled=false' is defined
                     if (!managementEndpointsCSRFValidationEnabled) {
                         logger.info("Management endpoint csrf security is disabled");
