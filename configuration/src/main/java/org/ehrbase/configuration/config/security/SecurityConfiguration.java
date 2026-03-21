@@ -17,16 +17,13 @@
  */
 package org.ehrbase.configuration.config.security;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.client.ClientsConfiguredCondition;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.config.Customizer;
@@ -77,22 +74,22 @@ public class SecurityConfiguration {
                 // implementation and not only restricted to a browser access.
                 .csrf(csrf -> {
                     csrf.ignoringRequestMatchers(
-                            antMatcher("/rest/**"), // allow full access to the rest api
-                            antMatcher("/plugin/**"), // allow full access to plugin apis
-                            antMatcher("/error/**") // ensure we have access to error re-routing
+                            "/rest/**", // allow full access to the rest api
+                            "/plugin/**", // allow full access to plugin apis
+                            "/error/**" // ensure we have access to error re-routing
                             );
                     // disable csrf in case 'management.endpoints.web.csrf-validation-enabled=false' is defined
                     if (!managementEndpointsCSRFValidationEnabled) {
                         logger.info("Management endpoint csrf security is disabled");
                         String path = StringUtils.removeEnd(securityConfig.webEndpointProperties.getBasePath(), "/");
-                        csrf.ignoringRequestMatchers(antMatcher(path + "/**"));
+                        csrf.ignoringRequestMatchers(path + "/**");
                     }
                 })
                 .build();
     }
 
     @Bean
-    @Conditional({ClientsConfiguredCondition.class})
+    @ConditionalOnBean(ClientRegistrationRepository.class)
     public OAuth2AuthorizedClientManager authorizedClientManager(
             ClientRegistrationRepository clientRegRep, OAuth2AuthorizedClientRepository authrClientRep) {
         OAuth2AuthorizedClientProvider authrClientProvider = OAuth2AuthorizedClientProviderBuilder.builder()

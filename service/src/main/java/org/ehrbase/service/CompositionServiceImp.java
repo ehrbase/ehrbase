@@ -181,12 +181,14 @@ public class CompositionServiceImp implements CompositionService {
     @Override
     public StructuredString serialize(Composition composition, CompositionFormat format) {
         return switch (format) {
-            case JSON -> new StructuredString(
-                    new CanonicalJson().marshal(composition),
-                    org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat.JSON);
-            case XML -> new StructuredString(
-                    new CanonicalXML().marshal(composition),
-                    org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat.XML);
+            case JSON ->
+                new StructuredString(
+                        new CanonicalJson().marshal(composition),
+                        org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat.JSON);
+            case XML ->
+                new StructuredString(
+                        new CanonicalXML().marshal(composition),
+                        org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat.XML);
             default -> throw new IllegalArgumentException("Unsupported format: " + format);
         };
     }

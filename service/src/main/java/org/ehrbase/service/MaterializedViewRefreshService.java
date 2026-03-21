@@ -23,7 +23,6 @@ import static org.jooq.impl.DSL.table;
 
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -65,8 +64,7 @@ public class MaterializedViewRefreshService {
     public void refreshAllMaterializedViews() {
         log.info("Starting scheduled refresh of all materialized views");
 
-        var matViews = dsl.select(
-                        field(name("view_name"), String.class), field(name("view_schema"), String.class))
+        var matViews = dsl.select(field(name("view_name"), String.class), field(name("view_schema"), String.class))
                 .from(VIEW_CATALOG)
                 .where(field(name("is_materialized"), Boolean.class).isTrue())
                 .fetch();

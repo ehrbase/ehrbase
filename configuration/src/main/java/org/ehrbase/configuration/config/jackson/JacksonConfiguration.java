@@ -19,7 +19,6 @@ package org.ehrbase.configuration.config.jackson;
 
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.dataformat.xml.ser.ToXmlGenerator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
@@ -35,7 +34,6 @@ import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonDeSerializer;
 import org.ehrbase.openehr.sdk.serialisation.mapper.RmObjectJsonSerializer;
 import org.ehrbase.openehr.sdk.serialisation.xmlencoding.CanonicalXML;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -55,16 +53,14 @@ import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConve
 public class JacksonConfiguration {
 
     @Bean
-    public Jackson2ObjectMapperBuilderCustomizer addCustomSerialization() {
-        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
-                .serializerByType(StructuredString.class, new StructuredStringJSonSerializer())
-                // RMObject support
-                .serializerByType(RMObject.class, new RmObjectJsonSerializer())
-                .deserializerByType(Folder.class, new RmObjectJsonDeSerializer())
-                // DTOs with RMObjects support
-                .deserializerByType(EhrStatus.class, new EhrStatusDeserializer(CanonicalJson.MARSHAL_OM))
-                .deserializerByType(ContributionCreateDto.class, new ContributionCreateDtoDeserializer())
-                .modules(new JavaTimeModule());
+    public com.fasterxml.jackson.databind.Module ehrbaseJacksonModule() {
+        var module = new com.fasterxml.jackson.databind.module.SimpleModule("ehrbase-rm");
+        module.addSerializer(StructuredString.class, new StructuredStringJSonSerializer());
+        module.addSerializer(RMObject.class, new RmObjectJsonSerializer());
+        module.addDeserializer(Folder.class, new RmObjectJsonDeSerializer());
+        module.addDeserializer(EhrStatus.class, new EhrStatusDeserializer(CanonicalJson.MARSHAL_OM));
+        module.addDeserializer(ContributionCreateDto.class, new ContributionCreateDtoDeserializer());
+        return module;
     }
 
     @Bean

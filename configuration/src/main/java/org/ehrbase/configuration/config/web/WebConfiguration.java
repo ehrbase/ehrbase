@@ -50,6 +50,7 @@ public class WebConfiguration implements WebMvcConfigurer {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
+        // setUseTrailingSlashMatch removed in Spring Framework 7.0
+        // Trailing slash matching is no longer supported
     }
 }

@@ -98,7 +98,8 @@ public final class RmTreeWalker {
         if (composition.getContext() != null
                 && composition.getContext().getParticipations() != null
                 && !composition.getContext().getParticipations().isEmpty()) {
-            mainValues.put("participations", serializeToJson(composition.getContext().getParticipations()));
+            mainValues.put(
+                    "participations", serializeToJson(composition.getContext().getParticipations()));
         }
 
         return new CompositionTableData(mainValues, childValues);

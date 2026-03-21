@@ -28,7 +28,6 @@ import org.ehrbase.repository.schema.ColumnMetadata;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
 import org.jooq.Record;
-import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.lang.Nullable;
