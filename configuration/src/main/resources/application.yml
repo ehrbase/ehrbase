@@ -54,14 +54,22 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 10
+      max-lifetime: 1800000       # 30 minutes
+      connection-timeout: 10000   # 10 seconds
+      connection-init-sql: "SET timezone = 'UTC'"
 
   flyway:
     driver-class-name: org.postgresql.Driver
-    ehr-schema: ehr
-    ext-schema: ext
-    ehr-location: classpath:db/migration/ehr
-    ext-location: classpath:db/migration/ext
+    # v2 rewrite: new schema in ehr/v2/, old legacy in ehr/v1/
+    ehr-schema: ehr_system
+    ehr-location: classpath:db/migration/ehr/v2
     ehr-strategy: MIGRATE
+    # ext extensions now in createdb-docker.sql, no separate migration needed
+    ext-schema: ext
+    ext-location: classpath:db/migration/ext/v1
     ext-strategy: MIGRATE
     user: ehrbase
     password: ehrbase
@@ -86,41 +94,18 @@ ehrbase:
   validation:
     check-for-extra-nodes: true
     validate-rm-constraints: true
-  aql:
-    # Improves AQL performance for paths containing consecutive at-/id-codes
-    # May produce unexpected results if the paths do not follow the archetype definitions
-    path-node-skipping: false
-    # CONTAINS with a node predicate excludes results from nested archetypes
-    archetype-local-node-predicates: true
-    pg-llj-workaround: true
-    experimental:
-      aql-on-folder:
-        enabled: false
   template:
-    # Allows to override templates using POST
     allow-overwrite: false
-  rest:
-    aql:
-      # allows to control query execution using debug params
-      debugging-enabled: false
-      response:
-        # add an information about the running ehrbase instance to the AQL meta.generator property
-        generator-details-enabled: false
-        # include executed_aql in the AQL meta information
-        executed-aql-enabled: true
-    experimental:
-      tags:
-        enabled: false
-        context-path: /rest/experimental/tags
-    ehrscape:
-      enabled: false
-  security:
-    # Configuration of actuator for reporting and health endpoints
-    management:
-      endpoints:
-        web:
-          # disables CSRF protection on management endpoints on base-path to use a client like curl or similar
-          csrf-validation-enabled: true
+  # Feature flags — centralized
+  features:
+    admin-api: false
+    item-tags: false
+    adl2: false
+  # Admin API configuration
+  admin:
+    delete-mode: pseudonymize   # pseudonymize | physical | disabled
+    require-approval: true       # 4-eyes principle
+    allow-delete-all: false
 
 
 httpclient:
@@ -129,15 +114,6 @@ httpclient:
 
 cache:
   template-init-on-startup: false
-  stored-query-init-on-startup: false
-  user-id-cache-config:
-    expire-after-access:
-      duration: 300
-      unit: SECONDS
-  external-fhir-terminology-cache-config:
-    expire-after-write:
-      duration: 300
-      unit: SECONDS
 
 openehr-api:
   context-path: /rest/openehr
@@ -157,19 +133,16 @@ logging:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr([%X]){faint} %clr(${PID}){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 
 server:
-  # Optional custom server nodename
-  # nodename: 'local.test.org'
+  # System identity — persisted in ehr_system.system on first startup
+  # If not set, auto-generated from hostname
+  nodename: 'local.ehrbase.org'
   port: 8080
   servlet:
     contextPath: /ehrbase
-
   tomcat:
     threads:
       min-spare: 200
       max: 200
-
-  # Option to disable strict invariant validation.
-  # disable-strict-validation: true
 
 
 # Configuration of actuator for reporting and health endpoints
@@ -210,7 +183,8 @@ management:
     metrics:
       # Enable / disable metrics endpoint
       access: none
-  # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
+  # OpenTelemetry — configured via OTel Java agent, not Spring properties
+  # Prometheus endpoint kept for backward compat with existing monitoring
   prometheus:
     metrics:
       export:
@@ -218,7 +192,6 @@ management:
   metrics:
     tags:
       application: ${spring.application.name}
-  # turn of redis per default, shall be enabled in case spring.cache.type: REDIS is used
   health:
     redis:
       enabled: false
@@ -241,13 +214,8 @@ client:
   ssl:
     enabled: false
 
-# JavaMelody
-javamelody:
-  enabled: false
-
-#  plugin configuration
+# Plugin configuration
 plugin-manager:
   plugin-dir: ./plugin_dir
-  plugin-config-dir: ./plugin_config_dir
   enable: true
   plugin-context-path: /plugin

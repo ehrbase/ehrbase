@@ -23,9 +23,11 @@ spring:
       maximum-pool-size: 50
       max-lifetime: 1800000
       minimum-idle: 10
+      connection-init-sql: "SET timezone = 'UTC'"
   flyway:
-    schemas: ehr
+    schemas: ehr_system
     user: ${DB_USER_ADMIN}
     password: ${DB_PASS_ADMIN}
+
 security:
   authType: NONE

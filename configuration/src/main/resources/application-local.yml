@@ -13,20 +13,24 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/ehrbase
     username: ehrbase_restricted
     password: ehrbase_restricted
   flyway:
-    schemas: ehr
+    schemas: ehr_system
     user: ehrbase
     password: ehrbase
 
 security:
   authType: NONE
 
-#use admin for cleaning up the db during tests
-admin-api:
-  active: true
-  allowDeleteAll: true
+ehrbase:
+  features:
+    admin-api: true
+  admin:
+    delete-mode: pseudonymize
+    require-approval: false
+    allow-delete-all: true

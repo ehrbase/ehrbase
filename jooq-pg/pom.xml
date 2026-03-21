@@ -213,7 +213,7 @@
               <name>org.jooq.meta.postgres.PostgresDatabase</name>
               <includes></includes>
               <excludes></excludes>
-              <inputSchema>ehr</inputSchema>
+              <inputSchema>ehr_system</inputSchema>
             </database>
             <generate>
               <javaTimeTypes>true</javaTimeTypes>
