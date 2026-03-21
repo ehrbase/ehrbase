@@ -163,18 +163,18 @@
             <configuration>
               <failOnMissingLocations>true</failOnMissingLocations>
               <locations>
-                <location>filesystem:src/main/resources/db/migration/ehr</location>
+                <location>filesystem:src/main/resources/db/migration/ehr/v2</location>
               </locations>
               <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
               <driver>org.postgresql.Driver</driver>
               <user>${database.user}</user>
               <password>${database.pass}</password>
-              <defaultSchema>ehr</defaultSchema>
+              <defaultSchema>ehr_system</defaultSchema>
               <schemas>
-                <schema>ehr</schema>
+                <schema>ehr_system</schema>
               </schemas>
               <placeholders>
-                <ehrSchema>ehr</ehrSchema>
+                <ehrSchema>ehr_system</ehrSchema>
               </placeholders>
             </configuration>
           </execution>

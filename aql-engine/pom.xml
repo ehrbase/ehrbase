@@ -10,7 +10,8 @@
   </parent>
 
   <artifactId>aql-engine</artifactId>
-  <name>EHRbase AQL Engine</name>
+  <name>EHRbase AQL Engine [DEPRECATED]</name>
+  <description>DEPRECATED: AQL engine replaced by SQL views + GraphQL in the rewrite. Will be removed in Phase 9.</description>
 
   <properties>
   </properties>
