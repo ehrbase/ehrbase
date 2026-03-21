@@ -107,6 +107,11 @@ ehrbase:
     validate-rm-constraints: true
   template:
     allow-overwrite: false
+  # GraphQL security & performance
+  graphql:
+    statement-timeout: 10s
+    max-query-depth: 10
+    max-query-complexity: 100
   # Feature flags — centralized
   features:
     admin-api: false
