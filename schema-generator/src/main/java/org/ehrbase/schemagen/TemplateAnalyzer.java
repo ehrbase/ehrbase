@@ -1,6 +1,7 @@
 package org.ehrbase.schemagen;
 
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplateInput;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplateNode;
 import org.ehrbase.schemagen.model.ColumnDescriptor;
 import org.ehrbase.schemagen.model.TableDescriptor;
@@ -10,8 +11,11 @@ import java.util.Set;
 
 /**
  * Analyzes a WebTemplate tree and produces TableDescriptor(s) for schema generation.
- * Walks the tree recursively, mapping structure nodes to table hierarchy and
- * data value nodes to PostgreSQL columns via TypeMapper.
+ * <p>
+ * Walks the tree recursively:
+ * - Structure nodes (SECTION, OBSERVATION, etc.) → recurse into children
+ * - ELEMENT nodes → extract DV type from children, map to columns via TypeMapper
+ * - Repeating CLUSTERs (max == -1) → separate child table
  */
 public class TemplateAnalyzer {
 
@@ -19,8 +23,7 @@ public class TemplateAnalyzer {
             "COMPOSITION", "SECTION", "OBSERVATION", "EVALUATION",
             "INSTRUCTION", "ACTION", "ADMIN_ENTRY", "ACTIVITY",
             "HISTORY", "EVENT", "POINT_EVENT", "INTERVAL_EVENT",
-            "ITEM_TREE", "ITEM_LIST", "ITEM_SINGLE", "ITEM_TABLE",
-            "CLUSTER", "ELEMENT"
+            "ITEM_TREE", "ITEM_LIST", "ITEM_SINGLE", "ITEM_TABLE"
     );
 
     /**
@@ -42,64 +45,123 @@ public class TemplateAnalyzer {
     private void walkNode(WebTemplateNode node, TableDescriptor table, String pathPrefix) {
         for (WebTemplateNode child : node.getChildren()) {
             String rmType = child.getRmType();
-            String childPath = buildPath(pathPrefix, child.getId());
+            String childId = child.getId();
 
             if (isRepeatingCluster(child)) {
-                TableDescriptor childTable = createChildTable(child, table, childPath);
+                // Repeating CLUSTER (max == -1 unbounded) → separate child table
+                TableDescriptor childTable = createChildTable(child, table);
                 table.addChildTable(childTable);
-            } else if (isDataValueNode(rmType)) {
-                String colBaseName = ColumnNamer.toColumnName(child.getId());
-                String prefixedBaseName = pathPrefix.isEmpty()
-                        ? colBaseName
-                        : pathPrefix.replace("/", "_").replaceFirst("^_", "") + "_" + colBaseName;
 
-                List<ColumnDescriptor> columns = TypeMapper.map(rmType, prefixedBaseName);
-                for (ColumnDescriptor col : columns) {
-                    table.addColumn(col);
-                }
+            } else if ("ELEMENT".equals(rmType)) {
+                // ELEMENT wraps a DV type — look at children for the actual DV node
+                handleElement(child, table, pathPrefix);
 
-                // If element has children (e.g., ELEMENT wrapping a DV type), recurse
-                if (!child.getChildren().isEmpty() && "ELEMENT".equals(rmType)) {
-                    walkNode(child, table, childPath);
-                }
-            } else if (isStructureNode(rmType)) {
-                walkNode(child, table, childPath);
+            } else if ("CLUSTER".equals(rmType)) {
+                // Non-repeating CLUSTER — flatten into parent table with prefixed columns
+                String newPrefix = buildPrefix(pathPrefix, childId);
+                walkNode(child, table, newPrefix);
+
+            } else if (isDvType(rmType)) {
+                // Direct DV type (rare — usually wrapped in ELEMENT)
+                String colBase = buildColumnName(pathPrefix, childId);
+                List<ColumnDescriptor> cols = TypeMapper.map(rmType, colBase);
+                cols.forEach(table::addColumn);
+
+            } else if (STRUCTURE_NODES.contains(rmType)) {
+                // Structure node — recurse without adding prefix (structures don't generate columns)
+                walkNode(child, table, pathPrefix);
             }
         }
     }
 
-    private TableDescriptor createChildTable(WebTemplateNode node, TableDescriptor parent, String path) {
+    /**
+     * Handles an ELEMENT node. ELEMENTs contain the actual DV type as a child
+     * (e.g., ELEMENT with child DV_QUANTITY for a blood pressure reading).
+     * The inputs list on the element also describes the expected data shape.
+     */
+    private void handleElement(WebTemplateNode element, TableDescriptor table, String pathPrefix) {
+        String elementId = element.getId();
+        String colBase = buildColumnName(pathPrefix, elementId);
+
+        // Check if element has DV children (the actual data type)
+        for (WebTemplateNode dvChild : element.getChildren()) {
+            String dvType = dvChild.getRmType();
+            if (isDvType(dvType)) {
+                List<ColumnDescriptor> cols = TypeMapper.map(dvType, colBase);
+                cols.forEach(table::addColumn);
+                return;
+            }
+        }
+
+        // Fallback: if no DV child, use inputs to determine type
+        if (!element.getInputs().isEmpty()) {
+            String rmType = inferRmTypeFromInputs(element);
+            List<ColumnDescriptor> cols = TypeMapper.map(rmType, colBase);
+            cols.forEach(table::addColumn);
+            return;
+        }
+
+        // Last resort: JSONB fallback
+        table.addColumn(new ColumnDescriptor(colBase, "JSONB"));
+    }
+
+    /**
+     * Infers the RM type from the ELEMENT's inputs list.
+     * WebTemplateInput has 'type' field: CODED_TEXT, TEXT, DECIMAL, INTEGER, DATE, TIME, DATETIME, etc.
+     */
+    private String inferRmTypeFromInputs(WebTemplateNode element) {
+        List<WebTemplateInput> inputs = element.getInputs();
+        if (inputs.isEmpty()) return "DV_TEXT";
+
+        // If there's a 'coded_text' input, it's DV_CODED_TEXT
+        for (WebTemplateInput input : inputs) {
+            if ("CODED_TEXT".equals(input.getType())) return "DV_CODED_TEXT";
+        }
+
+        // Check first input type
+        String firstType = inputs.getFirst().getType();
+        return switch (firstType) {
+            case "TEXT" -> "DV_TEXT";
+            case "DECIMAL" -> "DV_QUANTITY";
+            case "INTEGER" -> "DV_COUNT";
+            case "BOOLEAN" -> "DV_BOOLEAN";
+            case "DATE" -> "DV_DATE";
+            case "TIME" -> "DV_TIME";
+            case "DATETIME" -> "DV_DATE_TIME";
+            case "DURATION" -> "DV_DURATION";
+            default -> "DV_TEXT";
+        };
+    }
+
+    private TableDescriptor createChildTable(WebTemplateNode node, TableDescriptor parent) {
         String childTableName = parent.getTableName() + "_" + ColumnNamer.toColumnName(node.getId());
         TableDescriptor childTable = new TableDescriptor(childTableName, parent.getTemplateId());
         childTable.addSystemColumns();
-
-        // FK to parent
         childTable.addColumn(new ColumnDescriptor("parent_id", "UUID NOT NULL", false));
 
-        // Walk the cluster's children
         walkNode(node, childTable, "");
 
         return childTable;
     }
 
-    private boolean isStructureNode(String rmType) {
-        return STRUCTURE_NODES.contains(rmType);
-    }
-
-    private boolean isDataValueNode(String rmType) {
-        return rmType.startsWith("DV_") || "ELEMENT".equals(rmType);
+    private boolean isDvType(String rmType) {
+        return rmType != null && rmType.startsWith("DV_");
     }
 
     private boolean isRepeatingCluster(WebTemplateNode node) {
-        return "CLUSTER".equals(node.getRmType())
-                && node.getMax() != 1
-                && node.getMax() == -1; // -1 means unbounded in WebTemplate
+        // max == -1 means unbounded in WebTemplate
+        return "CLUSTER".equals(node.getRmType()) && node.getMax() == -1;
     }
 
-    private String buildPath(String prefix, String id) {
-        if (prefix.isEmpty()) {
-            return id;
-        }
-        return prefix + "/" + id;
+    private String buildPrefix(String existing, String id) {
+        if (existing.isEmpty()) return id;
+        return existing + "_" + id;
+    }
+
+    private String buildColumnName(String prefix, String id) {
+        String colName = ColumnNamer.toColumnName(id);
+        if (prefix.isEmpty()) return colName;
+        String prefixClean = ColumnNamer.toColumnName(prefix);
+        return prefixClean + "_" + colName;
     }
 }

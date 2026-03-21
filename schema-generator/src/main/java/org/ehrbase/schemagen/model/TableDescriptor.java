@@ -2,6 +2,8 @@ package org.ehrbase.schemagen.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TableDescriptor {
 
@@ -32,6 +34,17 @@ public class TableDescriptor {
     }
 
     public void addColumn(ColumnDescriptor column) {
+        // Deduplicate: if column name already exists, append a numeric suffix
+        String name = column.name();
+        Set<String> existingNames = columns.stream().map(ColumnDescriptor::name).collect(Collectors.toSet());
+        String uniqueName = name;
+        int suffix = 2;
+        while (existingNames.contains(uniqueName)) {
+            uniqueName = name + "_" + suffix++;
+        }
+        if (!uniqueName.equals(name)) {
+            column = new ColumnDescriptor(uniqueName, column.pgType(), column.nullable(), column.defaultValue(), column.comment());
+        }
         columns.add(column);
     }
 
