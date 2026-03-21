@@ -50,10 +50,9 @@ class SchemaVerificationIT {
         List<String> tables = new ArrayList<>();
         try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
-            ResultSet rs = stmt.executeQuery(
-                    "SELECT table_schema || '.' || table_name FROM information_schema.tables "
-                            + "WHERE table_schema IN ('ehr_system','ehr_data','ehr_views','ehr_staging') "
-                            + "ORDER BY 1");
+            ResultSet rs = stmt.executeQuery("SELECT table_schema || '.' || table_name FROM information_schema.tables "
+                    + "WHERE table_schema IN ('ehr_system','ehr_data','ehr_views','ehr_staging') "
+                    + "ORDER BY 1");
             while (rs.next()) {
                 tables.add(rs.getString(1));
             }

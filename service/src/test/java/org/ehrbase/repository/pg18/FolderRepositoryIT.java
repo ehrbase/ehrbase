@@ -51,10 +51,9 @@ class FolderRepositoryIT {
 
     private String createEhr(Connection conn) throws Exception {
         ResultSet rs = conn.createStatement()
-                .executeQuery(
-                        "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                                + "VALUES ('folder-patient-" + UUID.randomUUID() + "', 'ehr.folder.org', 1) "
-                                + "RETURNING id");
+                .executeQuery("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+                        + "VALUES ('folder-patient-" + UUID.randomUUID() + "', 'ehr.folder.org', 1) "
+                        + "RETURNING id");
         rs.next();
         return rs.getString("id");
     }
@@ -97,8 +96,7 @@ class FolderRepositoryIT {
 
             // Verify all 3 folders exist
             PreparedStatement query = conn.prepareStatement(
-                    "SELECT name, path::text FROM ehr_system.ehr_folder "
-                            + "WHERE ehr_id = ?::uuid ORDER BY path");
+                    "SELECT name, path::text FROM ehr_system.ehr_folder " + "WHERE ehr_id = ?::uuid ORDER BY path");
             query.setString(1, ehrId);
             ResultSet rs = query.executeQuery();
 
@@ -134,9 +132,8 @@ class FolderRepositoryIT {
             }
 
             // Query descendants of prefix.clinical (should return clinical, lab, radiology)
-            PreparedStatement query = conn.prepareStatement(
-                    "SELECT name FROM ehr_system.ehr_folder "
-                            + "WHERE ehr_id = ?::uuid AND path <@ ?::ext.ltree ORDER BY path");
+            PreparedStatement query = conn.prepareStatement("SELECT name FROM ehr_system.ehr_folder "
+                    + "WHERE ehr_id = ?::uuid AND path <@ ?::ext.ltree ORDER BY path");
             query.setString(1, ehrId);
             query.setString(2, prefix + ".clinical");
             ResultSet rs = query.executeQuery();
@@ -172,9 +169,8 @@ class FolderRepositoryIT {
             }
 
             // Query ancestors of prefix.clinical.lab (should return root, clinical, lab)
-            PreparedStatement query = conn.prepareStatement(
-                    "SELECT name FROM ehr_system.ehr_folder "
-                            + "WHERE ehr_id = ?::uuid AND path @> ?::ext.ltree ORDER BY path");
+            PreparedStatement query = conn.prepareStatement("SELECT name FROM ehr_system.ehr_folder "
+                    + "WHERE ehr_id = ?::uuid AND path @> ?::ext.ltree ORDER BY path");
             query.setString(1, ehrId);
             query.setString(2, prefix + ".clinical.lab");
             ResultSet rs = query.executeQuery();
@@ -206,8 +202,8 @@ class FolderRepositoryIT {
 
             // Create template + composition
             String templateUnique = "folder.template." + UUID.randomUUID();
-            PreparedStatement tps = conn.prepareStatement(
-                    "INSERT INTO ehr_system.template (template_id, content, sys_tenant) "
+            PreparedStatement tps =
+                    conn.prepareStatement("INSERT INTO ehr_system.template (template_id, content, sys_tenant) "
                             + "VALUES (?, '<template/>', 1) RETURNING id");
             tps.setString(1, templateUnique);
             ResultSet tplRs = tps.executeQuery();
@@ -270,8 +266,7 @@ class FolderRepositoryIT {
                             + "FROM ehr_system.ehr_folder WHERE id = '" + folderId + "'");
 
             // Delete v1 from current
-            conn.createStatement()
-                    .execute("DELETE FROM ehr_system.ehr_folder WHERE id = '" + folderId + "'");
+            conn.createStatement().execute("DELETE FROM ehr_system.ehr_folder WHERE id = '" + folderId + "'");
 
             // Insert v2
             PreparedStatement psV2 = conn.prepareStatement(

@@ -50,8 +50,8 @@ class EhrRepositoryIT {
     @Test
     void createEhr() throws Exception {
         try (Connection conn = connect()) {
-            PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+            PreparedStatement ps =
+                    conn.prepareStatement("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
                             + "VALUES (?, ?, 1) RETURNING id, subject_id, subject_namespace, creation_date");
             ps.setString(1, "patient-001");
             ps.setString(2, "ehr.test.org");
@@ -71,8 +71,8 @@ class EhrRepositoryIT {
     void createEhrWithId() throws Exception {
         UUID explicitId = UUID.randomUUID();
         try (Connection conn = connect()) {
-            PreparedStatement ps = conn.prepareStatement(
-                    "INSERT INTO ehr_system.ehr (id, subject_id, subject_namespace, sys_tenant) "
+            PreparedStatement ps =
+                    conn.prepareStatement("INSERT INTO ehr_system.ehr (id, subject_id, subject_namespace, sys_tenant) "
                             + "VALUES (?::uuid, ?, ?, 1) RETURNING id");
             ps.setString(1, explicitId.toString());
             ps.setString(2, "patient-explicit");
@@ -89,9 +89,8 @@ class EhrRepositoryIT {
         try (Connection conn = connect()) {
             // Create EHR first
             ResultSet ehrRs = conn.createStatement()
-                    .executeQuery(
-                            "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                                    + "VALUES ('patient-status', 'ehr.test.org', 1) RETURNING id");
+                    .executeQuery("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+                            + "VALUES ('patient-status', 'ehr.test.org', 1) RETURNING id");
             ehrRs.next();
             String ehrId = ehrRs.getString("id");
 
@@ -118,9 +117,8 @@ class EhrRepositoryIT {
         try (Connection conn = connect()) {
             // Create EHR
             ResultSet ehrRs = conn.createStatement()
-                    .executeQuery(
-                            "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                                    + "VALUES ('patient-update', 'ehr.test.org', 1) RETURNING id");
+                    .executeQuery("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+                            + "VALUES ('patient-update', 'ehr.test.org', 1) RETURNING id");
             ehrRs.next();
             String ehrId = ehrRs.getString("id");
 
@@ -147,8 +145,7 @@ class EhrRepositoryIT {
                             + "FROM ehr_system.ehr_status WHERE id = '" + statusId + "'");
 
             // Delete v1 from current
-            conn.createStatement()
-                    .execute("DELETE FROM ehr_system.ehr_status WHERE id = '" + statusId + "'");
+            conn.createStatement().execute("DELETE FROM ehr_system.ehr_status WHERE id = '" + statusId + "'");
 
             // Insert v2
             PreparedStatement psV2 = conn.prepareStatement(
@@ -183,13 +180,12 @@ class EhrRepositoryIT {
         try (Connection conn = connect()) {
             // Create EHR with unique subject
             conn.createStatement()
-                    .execute("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                            + "VALUES ('" + uniqueSubject + "', 'ehr.find.org', 1)");
+                    .execute("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) " + "VALUES ('"
+                            + uniqueSubject + "', 'ehr.find.org', 1)");
 
             // Query by subject
-            PreparedStatement ps = conn.prepareStatement(
-                    "SELECT id, subject_id, subject_namespace FROM ehr_system.ehr "
-                            + "WHERE subject_id = ? AND subject_namespace = ?");
+            PreparedStatement ps = conn.prepareStatement("SELECT id, subject_id, subject_namespace FROM ehr_system.ehr "
+                    + "WHERE subject_id = ? AND subject_namespace = ?");
             ps.setString(1, uniqueSubject);
             ps.setString(2, "ehr.find.org");
             ResultSet rs = ps.executeQuery();
@@ -204,8 +200,7 @@ class EhrRepositoryIT {
     void ehrNotFound() throws Exception {
         UUID nonExistentId = UUID.randomUUID();
         try (Connection conn = connect()) {
-            PreparedStatement ps =
-                    conn.prepareStatement("SELECT id FROM ehr_system.ehr WHERE id = ?::uuid");
+            PreparedStatement ps = conn.prepareStatement("SELECT id FROM ehr_system.ehr WHERE id = ?::uuid");
             ps.setString(1, nonExistentId.toString());
             ResultSet rs = ps.executeQuery();
 

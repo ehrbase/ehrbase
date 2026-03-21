@@ -51,7 +51,8 @@ class ViewCatalogIT {
 
     @Test
     void registerView() throws Exception {
-        String viewName = "v_test_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
+        String viewName =
+                "v_test_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         try (Connection conn = connect()) {
             PreparedStatement ps = conn.prepareStatement(
                     "INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, template_id, "
@@ -76,8 +77,8 @@ class ViewCatalogIT {
         try (Connection conn = connect()) {
             // Insert template views
             for (int i = 1; i <= 2; i++) {
-                PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, "
+                PreparedStatement ps =
+                        conn.prepareStatement("INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, "
                                 + "source, description, sys_tenant) "
                                 + "VALUES (?, 'ehr_views', 'template', 'auto', 'Template view', 1)");
                 ps.setString(1, "v_tpl_" + suffix + "_" + i);
@@ -86,8 +87,8 @@ class ViewCatalogIT {
 
             // Insert compliance views
             for (int i = 1; i <= 3; i++) {
-                PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, "
+                PreparedStatement ps =
+                        conn.prepareStatement("INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, "
                                 + "source, description, sys_tenant) "
                                 + "VALUES (?, 'ehr_views', 'compliance', 'auto', 'Compliance view', 1)");
                 ps.setString(1, "v_comp_" + suffix + "_" + i);
@@ -95,9 +96,8 @@ class ViewCatalogIT {
             }
 
             // Query template views with our suffix
-            PreparedStatement queryTpl = conn.prepareStatement(
-                    "SELECT view_name FROM ehr_system.view_catalog "
-                            + "WHERE view_type = 'template' AND view_name LIKE ?");
+            PreparedStatement queryTpl = conn.prepareStatement("SELECT view_name FROM ehr_system.view_catalog "
+                    + "WHERE view_type = 'template' AND view_name LIKE ?");
             queryTpl.setString(1, "v_tpl_" + suffix + "%");
             ResultSet rsTpl = queryTpl.executeQuery();
             List<String> templateViews = new ArrayList<>();
@@ -107,9 +107,8 @@ class ViewCatalogIT {
             assertThat(templateViews).hasSize(2);
 
             // Query compliance views with our suffix
-            PreparedStatement queryComp = conn.prepareStatement(
-                    "SELECT view_name FROM ehr_system.view_catalog "
-                            + "WHERE view_type = 'compliance' AND view_name LIKE ?");
+            PreparedStatement queryComp = conn.prepareStatement("SELECT view_name FROM ehr_system.view_catalog "
+                    + "WHERE view_type = 'compliance' AND view_name LIKE ?");
             queryComp.setString(1, "v_comp_" + suffix + "%");
             ResultSet rsComp = queryComp.executeQuery();
             List<String> complianceViews = new ArrayList<>();
@@ -128,8 +127,8 @@ class ViewCatalogIT {
             for (int i = 1; i <= 2; i++) {
                 String viewName =
                         "v_rm_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-                PreparedStatement ps = conn.prepareStatement(
-                        "INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, "
+                PreparedStatement ps =
+                        conn.prepareStatement("INSERT INTO ehr_system.view_catalog (view_name, view_schema, view_type, "
                                 + "template_id, source, description, sys_tenant) "
                                 + "VALUES (?, 'ehr_views', 'template', ?, 'auto', 'To be removed', 1)");
                 ps.setString(1, viewName);
@@ -146,8 +145,7 @@ class ViewCatalogIT {
             assertThat(rsBefore.getInt(1)).isEqualTo(2);
 
             // Delete by template_id
-            PreparedStatement del =
-                    conn.prepareStatement("DELETE FROM ehr_system.view_catalog WHERE template_id = ?");
+            PreparedStatement del = conn.prepareStatement("DELETE FROM ehr_system.view_catalog WHERE template_id = ?");
             del.setString(1, templateId);
             int deleted = del.executeUpdate();
             assertThat(deleted).isEqualTo(2);

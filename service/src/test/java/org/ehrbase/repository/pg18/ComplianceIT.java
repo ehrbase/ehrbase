@@ -51,10 +51,9 @@ class ComplianceIT {
 
     private String createEhr(Connection conn) throws Exception {
         ResultSet rs = conn.createStatement()
-                .executeQuery(
-                        "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                                + "VALUES ('compliance-patient-" + UUID.randomUUID() + "', 'ehr.compliance.org', 1) "
-                                + "RETURNING id");
+                .executeQuery("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+                        + "VALUES ('compliance-patient-" + UUID.randomUUID() + "', 'ehr.compliance.org', 1) "
+                        + "RETURNING id");
         rs.next();
         return rs.getString("id");
     }
@@ -119,8 +118,8 @@ class ComplianceIT {
             String activeId = rsActive.getString("id");
 
             // Insert withdrawn consent
-            PreparedStatement psWithdrawn = conn.prepareStatement(
-                    "INSERT INTO ehr_system.consent (ehr_id, consent_type, status, granted_by, "
+            PreparedStatement psWithdrawn =
+                    conn.prepareStatement("INSERT INTO ehr_system.consent (ehr_id, consent_type, status, granted_by, "
                             + "withdrawn_at, sys_tenant) "
                             + "VALUES (?::uuid, 'research', 'withdrawn', 'patient', now(), 1) RETURNING id");
             psWithdrawn.setString(1, ehrId);
@@ -129,8 +128,8 @@ class ComplianceIT {
             String withdrawnId = rsWithdrawn.getString("id");
 
             // Insert expired consent (expires_at in the past)
-            PreparedStatement psExpired = conn.prepareStatement(
-                    "INSERT INTO ehr_system.consent (ehr_id, consent_type, status, granted_by, "
+            PreparedStatement psExpired =
+                    conn.prepareStatement("INSERT INTO ehr_system.consent (ehr_id, consent_type, status, granted_by, "
                             + "expires_at, sys_tenant) "
                             + "VALUES (?::uuid, 'data_sharing', 'active', 'patient', "
                             + "now() - interval '1 day', 1) RETURNING id");
@@ -140,9 +139,8 @@ class ComplianceIT {
             String expiredId = rsExpired.getString("id");
 
             // Query all consents for this EHR and verify
-            PreparedStatement query = conn.prepareStatement(
-                    "SELECT id, consent_type, status, withdrawn_at, expires_at "
-                            + "FROM ehr_system.consent WHERE ehr_id = ?::uuid ORDER BY consent_type");
+            PreparedStatement query = conn.prepareStatement("SELECT id, consent_type, status, withdrawn_at, expires_at "
+                    + "FROM ehr_system.consent WHERE ehr_id = ?::uuid ORDER BY consent_type");
             query.setString(1, ehrId);
             ResultSet rs = query.executeQuery();
 
@@ -158,16 +156,14 @@ class ComplianceIT {
 
             // Verify withdrawn consent has withdrawn_at set
             ResultSet wRs = conn.createStatement()
-                    .executeQuery(
-                            "SELECT withdrawn_at FROM ehr_system.consent WHERE id = '" + withdrawnId + "'");
+                    .executeQuery("SELECT withdrawn_at FROM ehr_system.consent WHERE id = '" + withdrawnId + "'");
             wRs.next();
             assertThat(wRs.getTimestamp("withdrawn_at")).isNotNull();
 
             // Verify expired consent has expires_at in the past
             ResultSet eRs = conn.createStatement()
-                    .executeQuery(
-                            "SELECT expires_at < now() AS is_expired FROM ehr_system.consent WHERE id = '"
-                                    + expiredId + "'");
+                    .executeQuery("SELECT expires_at < now() AS is_expired FROM ehr_system.consent WHERE id = '"
+                            + expiredId + "'");
             eRs.next();
             assertThat(eRs.getBoolean("is_expired")).isTrue();
         }

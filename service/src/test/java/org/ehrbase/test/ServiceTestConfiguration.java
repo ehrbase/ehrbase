@@ -22,7 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import javax.sql.DataSource;
 import org.ehrbase.service.TimeProvider;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;

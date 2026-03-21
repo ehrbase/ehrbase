@@ -54,15 +54,14 @@ class CompositionRepositoryIT {
      */
     private String[] createEhrAndTemplate(Connection conn) throws Exception {
         ResultSet ehrRs = conn.createStatement()
-                .executeQuery(
-                        "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                                + "VALUES ('comp-patient-" + UUID.randomUUID() + "', 'ehr.comp.org', 1) RETURNING id");
+                .executeQuery("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+                        + "VALUES ('comp-patient-" + UUID.randomUUID() + "', 'ehr.comp.org', 1) RETURNING id");
         ehrRs.next();
         String ehrId = ehrRs.getString("id");
 
         String templateUnique = "test.template." + UUID.randomUUID();
-        PreparedStatement tps = conn.prepareStatement(
-                "INSERT INTO ehr_system.template (template_id, content, sys_tenant) "
+        PreparedStatement tps =
+                conn.prepareStatement("INSERT INTO ehr_system.template (template_id, content, sys_tenant) "
                         + "VALUES (?, '<template/>', 1) RETURNING id");
         tps.setString(1, templateUnique);
         ResultSet tplRs = tps.executeQuery();
@@ -131,8 +130,7 @@ class CompositionRepositoryIT {
                             + "FROM ehr_system.composition WHERE id = '" + compId + "'");
 
             // Delete v1 from current
-            conn.createStatement()
-                    .execute("DELETE FROM ehr_system.composition WHERE id = '" + compId + "'");
+            conn.createStatement().execute("DELETE FROM ehr_system.composition WHERE id = '" + compId + "'");
 
             // Insert v2
             PreparedStatement psV2 = conn.prepareStatement(
@@ -190,8 +188,7 @@ class CompositionRepositoryIT {
                             + "FROM ehr_system.composition WHERE id = '" + compId + "'");
 
             // Remove from current table
-            conn.createStatement()
-                    .execute("DELETE FROM ehr_system.composition WHERE id = '" + compId + "'");
+            conn.createStatement().execute("DELETE FROM ehr_system.composition WHERE id = '" + compId + "'");
 
             // Verify gone from current
             ResultSet currentRs = conn.createStatement()
@@ -238,8 +235,7 @@ class CompositionRepositoryIT {
                             + "FROM ehr_system.composition WHERE id = '" + compId + "'");
 
             // Delete v1 from current, insert v2
-            conn.createStatement()
-                    .execute("DELETE FROM ehr_system.composition WHERE id = '" + compId + "'");
+            conn.createStatement().execute("DELETE FROM ehr_system.composition WHERE id = '" + compId + "'");
             PreparedStatement psV2 = conn.prepareStatement(
                     "INSERT INTO ehr_system.composition (id, ehr_id, template_id, archetype_id, template_name, "
                             + "composer_name, sys_version, change_type, committer_name, sys_tenant) "
@@ -260,8 +256,8 @@ class CompositionRepositoryIT {
 
             // Query v2 from current
             ResultSet currRs = conn.createStatement()
-                    .executeQuery("SELECT composer_name, sys_version FROM ehr_system.composition "
-                            + "WHERE id = '" + compId + "'");
+                    .executeQuery("SELECT composer_name, sys_version FROM ehr_system.composition " + "WHERE id = '"
+                            + compId + "'");
             assertThat(currRs.next()).isTrue();
             assertThat(currRs.getString("composer_name")).isEqualTo("Dr. V2");
             assertThat(currRs.getInt("sys_version")).isEqualTo(2);

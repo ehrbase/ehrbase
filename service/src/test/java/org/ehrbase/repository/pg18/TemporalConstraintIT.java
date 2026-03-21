@@ -128,8 +128,7 @@ class TemporalConstraintIT {
     void ehrSystemSchemaExists() throws Exception {
         try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery(
-                    "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ehr_system'");
+            var rs = stmt.executeQuery("SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ehr_system'");
             assertThat(rs.next()).isTrue();
         }
     }
@@ -138,8 +137,7 @@ class TemporalConstraintIT {
     void ehrDataSchemaExists() throws Exception {
         try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery(
-                    "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ehr_data'");
+            var rs = stmt.executeQuery("SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ehr_data'");
             assertThat(rs.next()).isTrue();
         }
     }
@@ -148,8 +146,7 @@ class TemporalConstraintIT {
     void ehrViewsSchemaExists() throws Exception {
         try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery(
-                    "SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ehr_views'");
+            var rs = stmt.executeQuery("SELECT 1 FROM information_schema.schemata WHERE schema_name = 'ehr_views'");
             assertThat(rs.next()).isTrue();
         }
     }
@@ -158,9 +155,8 @@ class TemporalConstraintIT {
     void compositionTableUsesUuidv7() throws Exception {
         try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery(
-                    "SELECT column_default FROM information_schema.columns "
-                            + "WHERE table_schema = 'ehr_system' AND table_name = 'composition' AND column_name = 'id'");
+            var rs = stmt.executeQuery("SELECT column_default FROM information_schema.columns "
+                    + "WHERE table_schema = 'ehr_system' AND table_name = 'composition' AND column_name = 'id'");
             assertThat(rs.next()).isTrue();
             assertThat(rs.getString(1)).contains("uuidv7");
         }
@@ -170,10 +166,9 @@ class TemporalConstraintIT {
     void compositionTableHasTemporalConstraint() throws Exception {
         try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery(
-                    "SELECT column_name FROM information_schema.columns "
-                            + "WHERE table_schema = 'ehr_system' AND table_name = 'composition' "
-                            + "AND column_name = 'valid_period'");
+            var rs = stmt.executeQuery("SELECT column_name FROM information_schema.columns "
+                    + "WHERE table_schema = 'ehr_system' AND table_name = 'composition' "
+                    + "AND column_name = 'valid_period'");
             assertThat(rs.next()).isTrue();
         }
     }

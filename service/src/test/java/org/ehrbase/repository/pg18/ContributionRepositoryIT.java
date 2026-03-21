@@ -49,10 +49,9 @@ class ContributionRepositoryIT {
 
     private String createEhr(Connection conn) throws Exception {
         ResultSet rs = conn.createStatement()
-                .executeQuery(
-                        "INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
-                                + "VALUES ('contrib-patient-" + UUID.randomUUID() + "', 'ehr.contrib.org', 1) "
-                                + "RETURNING id");
+                .executeQuery("INSERT INTO ehr_system.ehr (subject_id, subject_namespace, sys_tenant) "
+                        + "VALUES ('contrib-patient-" + UUID.randomUUID() + "', 'ehr.contrib.org', 1) "
+                        + "RETURNING id");
         rs.next();
         return rs.getString("id");
     }
@@ -113,8 +112,8 @@ class ContributionRepositoryIT {
 
             // Create template
             String templateUnique = "contrib.template." + UUID.randomUUID();
-            PreparedStatement tps = conn.prepareStatement(
-                    "INSERT INTO ehr_system.template (template_id, content, sys_tenant) "
+            PreparedStatement tps =
+                    conn.prepareStatement("INSERT INTO ehr_system.template (template_id, content, sys_tenant) "
                             + "VALUES (?, '<template/>', 1) RETURNING id");
             tps.setString(1, templateUnique);
             ResultSet tplRs = tps.executeQuery();
@@ -146,8 +145,8 @@ class ContributionRepositoryIT {
 
             // Verify the FK link: query composition and check contribution_id
             ResultSet verifyRs = conn.createStatement()
-                    .executeQuery("SELECT contribution_id FROM ehr_system.composition WHERE id = '" + compositionId
-                            + "'");
+                    .executeQuery(
+                            "SELECT contribution_id FROM ehr_system.composition WHERE id = '" + compositionId + "'");
             assertThat(verifyRs.next()).isTrue();
             assertThat(verifyRs.getString("contribution_id")).isEqualTo(contributionId);
         }

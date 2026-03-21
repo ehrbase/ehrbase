@@ -61,7 +61,8 @@ class UuidV7IT {
 
         assertThat(uuids).hasSize(10);
         for (int i = 1; i < uuids.size(); i++) {
-            assertThat(uuids.get(i).toString()).isGreaterThanOrEqualTo(uuids.get(i - 1).toString());
+            assertThat(uuids.get(i).toString())
+                    .isGreaterThanOrEqualTo(uuids.get(i - 1).toString());
         }
     }
 

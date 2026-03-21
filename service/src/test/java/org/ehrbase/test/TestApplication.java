@@ -28,6 +28,5 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>Spring Boot's test framework auto-detects this class as the application entry point
  * for all integration tests in the service module.
  */
-@SpringBootApplication(
-        scanBasePackages = {"org.ehrbase.service", "org.ehrbase.cache", "org.ehrbase.repository"})
+@SpringBootApplication(scanBasePackages = {"org.ehrbase.service", "org.ehrbase.cache", "org.ehrbase.repository"})
 public class TestApplication {}

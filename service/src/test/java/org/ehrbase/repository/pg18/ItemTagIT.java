@@ -87,9 +87,8 @@ class ItemTagIT {
             }
 
             // Query by target
-            PreparedStatement query = conn.prepareStatement(
-                    "SELECT key, value FROM ehr_system.item_tag "
-                            + "WHERE target_id = ?::uuid AND target_type = 'composition' ORDER BY key");
+            PreparedStatement query = conn.prepareStatement("SELECT key, value FROM ehr_system.item_tag "
+                    + "WHERE target_id = ?::uuid AND target_type = 'composition' ORDER BY key");
             query.setString(1, targetId.toString());
             ResultSet rs = query.executeQuery();
 
@@ -123,8 +122,8 @@ class ItemTagIT {
             String tagId = rs.getString("id");
 
             // Delete the tag
-            int deleted = conn.createStatement()
-                    .executeUpdate("DELETE FROM ehr_system.item_tag WHERE id = '" + tagId + "'");
+            int deleted =
+                    conn.createStatement().executeUpdate("DELETE FROM ehr_system.item_tag WHERE id = '" + tagId + "'");
             assertThat(deleted).isEqualTo(1);
 
             // Verify gone
