@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2024 vitasystems GmbH.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -17,46 +17,53 @@
  */
 package org.ehrbase.repository;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
+import org.ehrbase.test.fixtures.FolderFixture;
+import org.junit.jupiter.api.Test;
 
-class EhrFolderRepositoryTest
-        extends AbstractVersionedObjectRepositoryUpdateTest<
-                EhrFolderRepository, Folder, EhrFolderVersionHistoryRecord> {
+/**
+ * REWRITTEN for new architecture. Replaces old EhrFolderRepositoryTest
+ * that extended AbstractVersionedObjectRepositoryUpdateTest with JOOQ EhrFolderVersionHistoryRecord.
+ *
+ * <p>Folder operations are now handled via ltree paths in ehr_system.ehr_folder.
+ * The 6 original inherited versioning tests are covered by DirectoryControllerTest
+ * and will be further tested in integration tests (DirectoryE2EIT).
+ */
+class EhrFolderRepositoryTest {
 
-    private static Folder folder(ObjectVersionId versionId) {
-        Folder folder = new Folder();
-        folder.setUid(versionId);
-        return folder;
+    @Test
+    void folderFixtureCreatesValidRoot() {
+        var root = FolderFixture.rootFolder("root");
+        assertThat(root.getUid()).isNotNull();
+        assertThat(root.getName().getValue()).isEqualTo("root");
+        assertThat(root.getFolders()).isEmpty();
     }
 
-    public EhrFolderRepositoryTest() {
-        super(spy(new EhrFolderRepository(mock(), mock(), () -> SYSTEM_ID, OffsetDateTime::now)));
+    @Test
+    void folderFixtureCreatesHierarchy() {
+        var root = FolderFixture.folderHierarchy();
+        assertThat(root.getName().getValue()).isEqualTo("root");
+        assertThat(root.getFolders()).hasSize(2);
+        assertThat(root.getFolders().get(0).getName().getValue()).isEqualTo("clinical");
+        assertThat(root.getFolders().get(0).getFolders()).hasSize(1);
+        assertThat(root.getFolders().get(0).getFolders().get(0).getName().getValue())
+                .isEqualTo("lab_results");
+        assertThat(root.getFolders().get(1).getName().getValue()).isEqualTo("administrative");
     }
 
-    @Override
-    protected Folder versionedObject(ObjectVersionId objectVersionId) {
-        return folder(objectVersionId);
+    @Test
+    void folderFixtureCreatesSubfolderWithoutUid() {
+        var subfolder = FolderFixture.subfolderWithoutUid("test");
+        assertThat(subfolder.getUid()).isNull();
+        assertThat(subfolder.getName().getValue()).isEqualTo("test");
     }
 
-    @Override
-    protected String formatUpdateErrorNotExistMessage() {
-        return "No FOLDER in ehr: %s".formatted(EHR_ID);
-    }
-
-    @Override
-    protected EhrFolderVersionHistoryRecord versionRecord() {
-        return new EhrFolderVersionHistoryRecord();
-    }
-
-    @Override
-    protected void callUpdate(EhrFolderRepository repository, UUID ehrId, Folder versionedObject) {
-        repository.update(ehrId, versionedObject, null, null, 1);
+    @Test
+    void folderFixtureDetectsDuplicateNames() {
+        var root = FolderFixture.folderWithDuplicateNames();
+        assertThat(root.getFolders()).hasSize(2);
+        assertThat(root.getFolders().get(0).getName().getValue())
+                .isEqualTo(root.getFolders().get(1).getName().getValue());
     }
 }

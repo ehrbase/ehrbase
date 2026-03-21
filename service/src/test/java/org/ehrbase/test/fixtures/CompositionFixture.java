@@ -24,7 +24,7 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.support.identification.ArchetypeID;
-import com.nedap.archie.rm.support.identification.TemplateId;
+import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 
 /**

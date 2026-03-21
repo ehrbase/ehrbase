@@ -22,8 +22,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import javax.sql.DataSource;
 import org.ehrbase.service.TimeProvider;
-import org.springframework.boot.jdbc.DataSourceBuilder;
-import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
@@ -32,7 +30,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @TestConfiguration
-@AutoConfigureCache
 public class ServiceTestConfiguration {
 
     static {
@@ -42,7 +39,6 @@ public class ServiceTestConfiguration {
 
     @PostConstruct
     public void initializeTestContext() {
-        // Allow interaction with the Authentication via Authentication facade
         SecurityContextHolder.getContext()
                 .setAuthentication(new AnonymousAuthenticationToken(
                         "integration-test",
@@ -52,22 +48,16 @@ public class ServiceTestConfiguration {
 
     @Bean
     public DataSource dataSource() {
-
-        // We reuse the same postgres container for all Integration tests
         EhrbasePostgreSQLContainer ehrdb = EhrbasePostgreSQLContainer.sharedInstance();
 
-        DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
-        dataSourceBuilder.type(SimpleDriverDataSource.class);
-        dataSourceBuilder.driverClassName(ehrdb.getDriverClassName());
-        dataSourceBuilder.url(ehrdb.getJdbcUrl());
-        dataSourceBuilder.username(ehrdb.getUsername());
-        dataSourceBuilder.password(ehrdb.getPassword());
-        return dataSourceBuilder.build();
+        var ds = new SimpleDriverDataSource();
+        ds.setDriverClass(org.postgresql.Driver.class);
+        ds.setUrl(ehrdb.getJdbcUrl());
+        ds.setUsername(ehrdb.getUsername());
+        ds.setPassword(ehrdb.getPassword());
+        return ds;
     }
 
-    /**
-     * The default implementation is RequestScoped - but we do not have a request during tests.
-     */
     @Bean
     public TimeProvider timeProvider() {
         return OffsetDateTime::now;

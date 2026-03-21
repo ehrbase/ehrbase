@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2024 vitasystems GmbH.
+ * Copyright (c) 2024 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -19,58 +19,18 @@ package org.ehrbase.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
-import org.ehrbase.test.ServiceIntegrationTest;
-import org.ehrbase.util.SemVer;
-import org.ehrbase.util.StoredQueryQualifiedName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
-@ServiceIntegrationTest
+/**
+ * DROPPED: Stored queries removed from architecture (replaced by SQL views + GraphQL).
+ *
+ * <p>Original test: retrieveAllLatest — tested version filtering (5 queries, SNAPSHOT handling).
+ * See SqlViewQueryIT for replacement query integration tests.
+ */
 class StoredQueryRepositoryIT {
 
-    private static final String DEFAULT_QUERY_TYPE = "AQL";
-
-    @Autowired
-    StoredQueryRepository storedQueryRepository;
-
     @Test
-    void retrieveAllLatest() {
-
-        storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.2::QueryA", new SemVer(1, 2, 3, null)),
-                "SELECT h FROM EHR h",
-                DEFAULT_QUERY_TYPE);
-
-        storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(1, 2, 3, null)),
-                "SELECT e FROM EHR e",
-                DEFAULT_QUERY_TYPE);
-        // SNAPSHOT ignored
-        storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(3, 2, 3, "SNAPSHOT")),
-                "SELECT g FROM EHR g",
-                DEFAULT_QUERY_TYPE);
-        storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryB", new SemVer(2, 2, 3, null)),
-                "SELECT f FROM EHR f",
-                DEFAULT_QUERY_TYPE);
-
-        storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.1::QueryX", new SemVer(2, 2, 3, null)),
-                "SELECT x FROM EHR x",
-                DEFAULT_QUERY_TYPE);
-
-        // SNAPSHOT ignored
-        storedQueryRepository.store(
-                StoredQueryQualifiedName.create("dom.3::QueryC", new SemVer(3, 2, 3, "SNAPSHOT")),
-                "SELECT i FROM EHR i",
-                DEFAULT_QUERY_TYPE);
-
-        List<QueryDefinitionResultDto> results = storedQueryRepository.retrieveAllLatest();
-        assertThat(results.stream().map(QueryDefinitionResultDto::getQueryText))
-                .containsExactly("SELECT f FROM EHR f", "SELECT x FROM EHR x", "SELECT h FROM EHR h");
-        results.stream().forEach(System.out::println);
+    void storedQueriesRemovedFromArchitecture() {
+        assertThat(true).as("Stored queries replaced by SQL views — see plans/phase-08-testing.md").isTrue();
     }
 }

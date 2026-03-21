@@ -43,7 +43,7 @@ public final class ContributionFixture {
     public static List<OriginalVersion<Composition>> singleComposition(String templateId) {
         var composition = CompositionFixture.minimal(templateId);
 
-        var version = new OriginalVersion<>();
+        var version = new OriginalVersion<Composition>();
         version.setUid(new ObjectVersionId(UUID.randomUUID().toString(), "test-system", "1"));
         version.setData(composition);
         version.setCommitAudit(createAudit("creation"));
@@ -61,7 +61,7 @@ public final class ContributionFixture {
         var composition2 = CompositionFixture.minimal(templateId);
         composition2.setName(new DvText("Second Composition"));
 
-        var version2 = new OriginalVersion<>();
+        var version2 = new OriginalVersion<Composition>();
         version2.setUid(new ObjectVersionId(UUID.randomUUID().toString(), "test-system", "1"));
         version2.setData(composition2);
         version2.setCommitAudit(createAudit("creation"));
