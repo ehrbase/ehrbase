@@ -144,7 +144,7 @@ public class ViewCatalogService {
      */
     @Transactional
     public void generatePatientSummaryView(short tenantId) {
-        Result<Record> templates = dsl.select(
+        var templates = dsl.select(
                         field(name("sr", "table_name"), String.class), field(name("t", "template_id"), String.class))
                 .from(SCHEMA_REGISTRY.as("sr"))
                 .join(TEMPLATE.as("t"))

@@ -95,9 +95,7 @@ public class CompositionServiceImp implements CompositionService {
         UUID templateUuid = knowledgeCache
                 .findUuidByTemplateId(templateId)
                 .orElseThrow(() -> new ObjectNotFoundException("template", templateId));
-        WebTemplate webTemplate = knowledgeCache
-                .getQueryOptMetaData(templateId)
-                .orElseThrow(() -> new ObjectNotFoundException("web_template", templateId));
+        WebTemplate webTemplate = knowledgeCache.getInternalTemplate(templateId);
 
         if (contributionId == null) {
             contributionId = contributionRepository.createContribution(ehrId, "composition", "creation");
@@ -131,9 +129,7 @@ public class CompositionServiceImp implements CompositionService {
         UUID templateUuid = knowledgeCache
                 .findUuidByTemplateId(templateId)
                 .orElseThrow(() -> new ObjectNotFoundException("template", templateId));
-        WebTemplate webTemplate = knowledgeCache
-                .getQueryOptMetaData(templateId)
-                .orElseThrow(() -> new ObjectNotFoundException("web_template", templateId));
+        WebTemplate webTemplate = knowledgeCache.getInternalTemplate(templateId);
 
         if (contributionId == null) {
             contributionId = contributionRepository.createContribution(ehrId, "composition", "modification");
@@ -185,8 +181,12 @@ public class CompositionServiceImp implements CompositionService {
     @Override
     public StructuredString serialize(Composition composition, CompositionFormat format) {
         return switch (format) {
-            case JSON -> new StructuredString(new CanonicalJson().marshal(composition), CompositionFormat.JSON);
-            case XML -> new StructuredString(new CanonicalXML().marshal(composition), CompositionFormat.XML);
+            case JSON -> new StructuredString(
+                    new CanonicalJson().marshal(composition),
+                    org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat.JSON);
+            case XML -> new StructuredString(
+                    new CanonicalXML().marshal(composition),
+                    org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat.XML);
             default -> throw new IllegalArgumentException("Unsupported format: " + format);
         };
     }

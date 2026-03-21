@@ -22,7 +22,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Collection;
 import java.util.function.Function;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
+import org.springframework.boot.cache.autoconfigure.CacheManagerCustomizer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.Cache;
@@ -41,8 +41,7 @@ import org.springframework.context.annotation.Configuration;
 public class CacheConfiguration {
 
     @Bean
-    @ConditionalOnExpression(
-            "T(org.springframework.boot.autoconfigure.cache.CacheType).CAFFEINE.name().equalsIgnoreCase(\"${spring.cache.type}\")")
+    @ConditionalOnExpression("'CAFFEINE'.equalsIgnoreCase('${spring.cache.type:CAFFEINE}')")
     public CacheManagerCustomizer<CaffeineCacheManager> cacheManagerCustomizer(CacheProperties cacheProperties) {
         return cm -> configureCaffeineCacheManager(cm, cacheProperties, CacheProvider.EhrBaseCache::name);
     }

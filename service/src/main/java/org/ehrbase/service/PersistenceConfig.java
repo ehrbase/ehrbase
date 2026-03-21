@@ -25,12 +25,8 @@ import org.jooq.SQLDialect;
 import org.jooq.impl.DefaultConfiguration;
 import org.jooq.impl.DefaultDSLContext;
 import org.jooq.impl.DefaultExecuteListenerProvider;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jooq.JooqProperties;
-import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -42,7 +38,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @EnableTransactionManagement
-@EnableConfigurationProperties(JooqProperties.class)
 public class PersistenceConfig {
 
     static class ExceptionTranslator implements ExecuteListener {
@@ -66,11 +61,8 @@ public class PersistenceConfig {
     }
 
     @Bean
-    public DataSourceTransactionManager transactionManager(
-            ObjectProvider<TransactionManagerCustomizers> transactionManagerCustomizers) {
-        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
-        transactionManagerCustomizers.ifAvailable((customizers) -> customizers.customize(transactionManager));
-        return transactionManager;
+    public DataSourceTransactionManager transactionManager() {
+        return new DataSourceTransactionManager(dataSource);
     }
 
     @Bean
@@ -90,12 +82,11 @@ public class PersistenceConfig {
     }
 
     @Bean
-    public DefaultConfiguration configuration(JooqProperties properties, TenantAwareConnectionProvider provider) {
+    public DefaultConfiguration configuration(TenantAwareConnectionProvider provider) {
         DefaultConfiguration jooqConfiguration = new DefaultConfiguration();
         jooqConfiguration.set(provider);
         jooqConfiguration.set(new DefaultExecuteListenerProvider(exceptionTransformer()));
-        jooqConfiguration.set(properties.determineSqlDialect(provider.dataSource()));
-
+        jooqConfiguration.set(SQLDialect.POSTGRES);
         return jooqConfiguration;
     }
 }

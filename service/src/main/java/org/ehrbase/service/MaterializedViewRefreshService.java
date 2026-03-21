@@ -65,7 +65,7 @@ public class MaterializedViewRefreshService {
     public void refreshAllMaterializedViews() {
         log.info("Starting scheduled refresh of all materialized views");
 
-        Result<Record> matViews = dsl.select(
+        var matViews = dsl.select(
                         field(name("view_name"), String.class), field(name("view_schema"), String.class))
                 .from(VIEW_CATALOG)
                 .where(field(name("is_materialized"), Boolean.class).isTrue())

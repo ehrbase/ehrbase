@@ -94,10 +94,11 @@ public final class RmTreeWalker {
         WebTemplateNode root = webTemplate.getTree();
         walkNode(root, composition, mainValues, childValues, "", metadata);
 
-        // Participations JSONB
-        if (composition.getParticipations() != null
-                && !composition.getParticipations().isEmpty()) {
-            mainValues.put("participations", serializeParticipations(composition));
+        // Participations JSONB — from composition context
+        if (composition.getContext() != null
+                && composition.getContext().getParticipations() != null
+                && !composition.getContext().getParticipations().isEmpty()) {
+            mainValues.put("participations", serializeToJson(composition.getContext().getParticipations()));
         }
 
         return new CompositionTableData(mainValues, childValues);
@@ -345,16 +346,6 @@ public final class RmTreeWalker {
         if (prefix.isEmpty()) return colName;
         String prefixClean = ColumnNamer.toColumnName(prefix);
         return prefixClean + "_" + colName;
-    }
-
-    private static String serializeParticipations(Composition composition) {
-        // Serialize participations to JSON array
-        try {
-            var mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            return mapper.writeValueAsString(composition.getParticipations());
-        } catch (Exception e) {
-            return "[]";
-        }
     }
 
     private static String serializeToJson(Object value) {

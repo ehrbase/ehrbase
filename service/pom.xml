@@ -109,12 +109,20 @@
       <artifactId>spring-tx</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-aop</artifactId>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-aop</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjweaver</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-cache</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.security</groupId>
@@ -183,6 +191,7 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>jdbc</artifactId>
+      <version>1.20.6</version>
       <scope>test</scope>
     </dependency>
     <dependency>

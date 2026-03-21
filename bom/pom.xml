@@ -66,7 +66,7 @@
         <commons-io.version>2.21.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <flyway.version>11.15.0</flyway.version>
-        <javamelody.version>2.6.0</javamelody.version>
+        <!-- javamelody removed: no Spring Boot 4.0 support, replaced by OTel Java agent -->
         <json-path.version>2.9.0</json-path.version>
         <junit.version>5.10.2</junit.version>
 
@@ -76,7 +76,7 @@
         <postgresql.version>42.7.8</postgresql.version>
 
         <!-- spring -->
-        <spring-boot.version>3.5.9</spring-boot.version>
+        <spring-boot.version>4.0.4</spring-boot.version>
         <springdoc-openapi.version>2.8.15</springdoc-openapi.version>
 
         <!-- not used ehrbase but needed for the version plugin -->
@@ -302,11 +302,7 @@
                 <version>${git-commit-id-plugin.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>net.bull.javamelody</groupId>
-                <artifactId>javamelody-spring-boot-starter</artifactId>
-                <version>${javamelody.version}</version>
-            </dependency>
+            <!-- javamelody removed: no Spring Boot 4.0 support -->
             <dependency>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq</artifactId>

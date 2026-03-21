@@ -91,8 +91,8 @@ public class EhrRepository {
             subjectNamespace = ref.getNamespace();
         }
 
-        boolean isQueryable = status.isQueryable() != null ? status.isQueryable() : true;
-        boolean isModifiable = status.isModifiable() != null ? status.isModifiable() : true;
+        boolean isQueryable = Boolean.TRUE.equals(status.isQueryable());
+        boolean isModifiable = Boolean.TRUE.equals(status.isModifiable());
 
         // INSERT into ehr_system.ehr
         if (ehrId == null) {
@@ -189,8 +189,8 @@ public class EhrRepository {
             subjectNamespace = self.getExternalRef().getNamespace();
         }
 
-        boolean isQueryable = status.isQueryable() != null ? status.isQueryable() : true;
-        boolean isModifiable = status.isModifiable() != null ? status.isModifiable() : true;
+        boolean isQueryable = Boolean.TRUE.equals(status.isQueryable());
+        boolean isModifiable = Boolean.TRUE.equals(status.isModifiable());
 
         // INSERT new version
         dsl.insertInto(EHR_STATUS)

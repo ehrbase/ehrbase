@@ -276,7 +276,7 @@ public class CompositionRepository {
     }
 
     public int getVersionByTimestamp(UUID compositionId, OffsetDateTime timestamp) {
-        Record1<Integer> result = dsl.resultQuery(
+        org.jooq.Record row = dsl.resultQuery(
                         "SELECT sys_version FROM ehr_system.composition WHERE id = ? AND valid_period @> ?::timestamptz"
                                 + " UNION ALL"
                                 + " SELECT sys_version FROM ehr_system.composition_history WHERE id = ? AND valid_period @> ?::timestamptz"
@@ -285,13 +285,13 @@ public class CompositionRepository {
                         timestamp,
                         compositionId,
                         timestamp)
-                .fetchOne(field(name("sys_version"), Integer.class));
-        if (result == null) {
+                .fetchOne();
+        if (row == null) {
             throw new org.ehrbase.api.exception.ObjectNotFoundException(
                     "composition",
                     "No version found at timestamp %s for composition %s".formatted(timestamp, compositionId));
         }
-        return result;
+        return row.get(field(name("sys_version"), Integer.class));
     }
 
     public Optional<UUID> getEhrIdForComposition(UUID compositionId) {
@@ -351,7 +351,7 @@ public class CompositionRepository {
         if (templateIdRow == null) {
             return null;
         }
-        return knowledgeCache.getQueryOptMetaData(templateIdRow.value1()).orElse(null);
+        return knowledgeCache.getInternalTemplate(templateIdRow.value1());
     }
 
     private CompositionMetadata mapToCompositionMetadata(Record row) {
