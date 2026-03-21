@@ -56,7 +56,10 @@ public class TenantAwareConnectionProvider extends DataSourceConnectionProvider 
             } catch (SQLException e) {
                 throw new DataAccessException("Failed to set tenant session variables", e);
             }
-            log.trace("SET LOCAL tenant={} user={} role={}", tenantInfo.tenantId(), tenantInfo.userId(),
+            log.trace(
+                    "SET LOCAL tenant={} user={} role={}",
+                    tenantInfo.tenantId(),
+                    tenantInfo.userId(),
                     tenantInfo.userRole());
         }
 

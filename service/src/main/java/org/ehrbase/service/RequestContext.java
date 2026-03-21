@@ -66,8 +66,7 @@ public class RequestContext {
         }
 
         // Populate from HttpServletRequest
-        ServletRequestAttributes attrs =
-                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         if (attrs != null) {
             HttpServletRequest request = attrs.getRequest();
             this.ipAddress = request.getRemoteAddr();

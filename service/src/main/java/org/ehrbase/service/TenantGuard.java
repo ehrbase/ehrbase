@@ -52,8 +52,11 @@ public class TenantGuard {
     public void assertTenantMatch(short entityTenant) {
         short requestTenant = requestContext.getTenantId();
         if (entityTenant != requestTenant) {
-            log.error("SECURITY VIOLATION: tenant mismatch — entity tenant={}, request tenant={}, user={}",
-                    entityTenant, requestTenant, requestContext.getUserId());
+            log.error(
+                    "SECURITY VIOLATION: tenant mismatch — entity tenant={}, request tenant={}, user={}",
+                    entityTenant,
+                    requestTenant,
+                    requestContext.getUserId());
 
             auditEventService.recordEvent(
                     "security_violation",
@@ -66,9 +69,8 @@ public class TenantGuard {
                             "request_tenant", requestTenant,
                             "user_id", requestContext.getUserId()));
 
-            throw new SecurityException(
-                    "Tenant mismatch: entity tenant=%d does not match request tenant=%d"
-                            .formatted(entityTenant, requestTenant));
+            throw new SecurityException("Tenant mismatch: entity tenant=%d does not match request tenant=%d"
+                    .formatted(entityTenant, requestTenant));
         }
     }
 }

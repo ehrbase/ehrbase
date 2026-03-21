@@ -75,6 +75,10 @@
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>aql-engine</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>schema-generator</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>com.auth0</groupId>

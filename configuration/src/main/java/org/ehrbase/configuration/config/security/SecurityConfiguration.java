@@ -70,8 +70,7 @@ public class SecurityConfiguration {
         return securityConfig
                 .configureHttpSecurity(http)
                 // Tenant context filter — sets RLS session variables after authentication
-                .addFilterAfter(new TenantSettingFilter(multiTenantEnabled),
-                        UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new TenantSettingFilter(multiTenantEnabled), UsernamePasswordAuthenticationFilter.class)
                 // CORS will be always enabled
                 .cors(Customizer.withDefaults())
                 // Exclude apis from CSRF protection, to allow POST, PUT, DELETE, because there are used by client
