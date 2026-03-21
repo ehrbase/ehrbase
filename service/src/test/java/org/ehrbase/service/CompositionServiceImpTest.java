@@ -39,7 +39,9 @@ class CompositionServiceImpTest {
     @Disabled("ensureTemplateCompatible removed — template compatibility checked at schema generation time")
     @Test
     void ensureTemplateCompatible() {
-        assertThat(true).as("See SchemaGeneratorTest for template compatibility validation").isTrue();
+        assertThat(true)
+                .as("See SchemaGeneratorTest for template compatibility validation")
+                .isTrue();
     }
 
     @Disabled("isOlder removed — version comparison still tested in SemVerTest")

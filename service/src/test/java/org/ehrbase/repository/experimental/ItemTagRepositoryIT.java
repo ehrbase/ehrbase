@@ -40,6 +40,8 @@ class ItemTagRepositoryIT {
     @Disabled("item_tag table migration not yet in ehr/v2 DDL — re-enable after adding V7__item_tags.sql")
     @Test
     void bulkStoreAndFind() {
-        assertThat(true).as("Re-enable after V7__item_tags.sql migration is added").isTrue();
+        assertThat(true)
+                .as("Re-enable after V7__item_tags.sql migration is added")
+                .isTrue();
     }
 }

@@ -18,12 +18,8 @@
 package org.ehrbase.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.nedap.archie.rm.archetyped.Archetyped;
-import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.support.identification.ArchetypeID;
 import org.ehrbase.test.fixtures.CompositionFixture;
 import org.junit.jupiter.api.Test;
 

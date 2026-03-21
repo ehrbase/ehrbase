@@ -36,6 +36,8 @@ class AbstractVersionedObjectRepositoryUpdateTest {
 
     @Test
     void placeholderForRemovedAbstractClass() {
-        assertThat(true).as("AbstractVersionedObjectRepository removed — see EhrRepositoryTest").isTrue();
+        assertThat(true)
+                .as("AbstractVersionedObjectRepository removed — see EhrRepositoryTest")
+                .isTrue();
     }
 }

@@ -20,7 +20,6 @@ package org.ehrbase.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -43,7 +42,6 @@ import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
@@ -52,7 +50,6 @@ import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -185,8 +182,7 @@ class EhrServiceTest {
                 .when(ehrRepository)
                 .createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
 
-        assertThatThrownBy(() -> service().create(ehrId, ehrStatusDto))
-                .isInstanceOf(DuplicateKeyException.class);
+        assertThatThrownBy(() -> service().create(ehrId, ehrStatusDto)).isInstanceOf(DuplicateKeyException.class);
     }
 
     @Test
@@ -197,8 +193,7 @@ class EhrServiceTest {
         EhrService service = service();
         doReturn(false).when(ehrRepository).ehrExists(ehrId);
 
-        assertThatThrownBy(() -> service.getEhrStatus(ehrId))
-                .isInstanceOf(ObjectNotFoundException.class);
+        assertThatThrownBy(() -> service.getEhrStatus(ehrId)).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
@@ -210,8 +205,7 @@ class EhrServiceTest {
         doReturn(true).when(ehrRepository).ehrExists(ehrId);
         doReturn(Optional.empty()).when(ehrRepository).findCurrentStatus(ehrId);
 
-        assertThatThrownBy(() -> service.getEhrStatus(ehrId))
-                .isInstanceOf(ObjectNotFoundException.class);
+        assertThatThrownBy(() -> service.getEhrStatus(ehrId)).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
@@ -267,8 +261,7 @@ class EhrServiceTest {
 
         OriginalVersion<EhrStatus> originalVersion =
                 service.getEhrStatusAtVersion(ehrId, statusId, 5).orElseThrow();
-        assertThat(originalVersion.getUid().getValue())
-                .isEqualTo(statusId + "::test-ehr-service::5");
+        assertThat(originalVersion.getUid().getValue()).isEqualTo(statusId + "::test-ehr-service::5");
         assertThat(originalVersion.getData()).isEqualTo(ehrStatusDto);
     }
 
@@ -280,9 +273,7 @@ class EhrServiceTest {
         EhrStatus ehrStatusDto = ehrStatus(ifMatch, null);
         EhrService service = service();
 
-        doThrow(new ObjectNotFoundException("EHR", "Test"))
-                .when(ehrRepository)
-                .checkEhrExistsAndIsModifiable(ehrId);
+        doThrow(new ObjectNotFoundException("EHR", "Test")).when(ehrRepository).checkEhrExistsAndIsModifiable(ehrId);
 
         assertThatThrownBy(() -> service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null))
                 .isInstanceOf(ObjectNotFoundException.class);
@@ -296,8 +287,8 @@ class EhrServiceTest {
         EhrStatus ehrStatusDto = ehrStatus(ifMatch, null);
 
         // After update, the repository returns the updated status with version 8
-        EhrStatus updatedStatus = ehrStatus(
-                new ObjectVersionId("10a0ec8e-c459-4a28-bad4-fbdc03593ac1", "test-ehr-service", "8"), null);
+        EhrStatus updatedStatus =
+                ehrStatus(new ObjectVersionId("10a0ec8e-c459-4a28-bad4-fbdc03593ac1", "test-ehr-service", "8"), null);
 
         EhrService service = service();
 

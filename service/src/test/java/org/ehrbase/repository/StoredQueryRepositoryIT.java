@@ -31,6 +31,8 @@ class StoredQueryRepositoryIT {
 
     @Test
     void storedQueriesRemovedFromArchitecture() {
-        assertThat(true).as("Stored queries replaced by SQL views — see plans/phase-08-testing.md").isTrue();
+        assertThat(true)
+                .as("Stored queries replaced by SQL views — see plans/phase-08-testing.md")
+                .isTrue();
     }
 }

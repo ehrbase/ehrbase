@@ -36,6 +36,8 @@ class StoredQueryServiceTest {
 
     @Test
     void storedQueriesRemovedFromArchitecture() {
-        assertThat(true).as("Stored queries replaced by SQL views + GraphQL — see phase-08-testing.md").isTrue();
+        assertThat(true)
+                .as("Stored queries replaced by SQL views + GraphQL — see phase-08-testing.md")
+                .isTrue();
     }
 }
