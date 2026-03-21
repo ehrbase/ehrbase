@@ -18,13 +18,7 @@
 package org.ehrbase.service.graphql;
 
 import graphql.schema.idl.RuntimeWiring;
-import org.ehrbase.service.graphql.fetcher.AuditEventSubscriptionFetcher;
-import org.ehrbase.service.graphql.fetcher.CompositionSubscriptionFetcher;
-import org.ehrbase.service.graphql.fetcher.CreateCompositionFetcher;
-import org.ehrbase.service.graphql.fetcher.CreateEhrFetcher;
-import org.ehrbase.service.graphql.fetcher.DeleteCompositionFetcher;
 import org.ehrbase.service.graphql.fetcher.GenericViewDataFetcher;
-import org.ehrbase.service.graphql.fetcher.UpdateCompositionFetcher;
 import org.ehrbase.service.graphql.scalars.DateTimeRangeScalar;
 import org.ehrbase.service.graphql.scalars.DateTimeScalar;
 import org.ehrbase.service.graphql.scalars.JsonScalar;
@@ -35,7 +29,11 @@ import org.springframework.graphql.execution.RuntimeWiringConfigurer;
 import org.springframework.stereotype.Component;
 
 /**
- * Configures GraphQL runtime wiring: custom scalars, query data fetchers, mutations, and subscriptions.
+ * Configures GraphQL runtime wiring: custom scalars and dynamic template query data fetchers.
+ *
+ * <p>Mutations and subscriptions are handled by {@link org.ehrbase.service.graphql.controller.EhrGraphQlController}
+ * using {@code @MutationMapping} and {@code @SubscriptionMapping} annotations — Spring for GraphQL 2.0.2
+ * auto-detects these and wires them automatically.
  */
 @Component
 public class GraphQlRuntimeWiringConfigurer implements RuntimeWiringConfigurer {
@@ -44,30 +42,11 @@ public class GraphQlRuntimeWiringConfigurer implements RuntimeWiringConfigurer {
 
     private final GenericViewDataFetcher genericViewDataFetcher;
     private final GraphQlSchemaRegistryService schemaRegistry;
-    private final CreateEhrFetcher createEhrFetcher;
-    private final CreateCompositionFetcher createCompositionFetcher;
-    private final UpdateCompositionFetcher updateCompositionFetcher;
-    private final DeleteCompositionFetcher deleteCompositionFetcher;
-    private final CompositionSubscriptionFetcher compositionSubscriptionFetcher;
-    private final AuditEventSubscriptionFetcher auditEventSubscriptionFetcher;
 
     public GraphQlRuntimeWiringConfigurer(
-            GenericViewDataFetcher genericViewDataFetcher,
-            GraphQlSchemaRegistryService schemaRegistry,
-            CreateEhrFetcher createEhrFetcher,
-            CreateCompositionFetcher createCompositionFetcher,
-            UpdateCompositionFetcher updateCompositionFetcher,
-            DeleteCompositionFetcher deleteCompositionFetcher,
-            CompositionSubscriptionFetcher compositionSubscriptionFetcher,
-            AuditEventSubscriptionFetcher auditEventSubscriptionFetcher) {
+            GenericViewDataFetcher genericViewDataFetcher, GraphQlSchemaRegistryService schemaRegistry) {
         this.genericViewDataFetcher = genericViewDataFetcher;
         this.schemaRegistry = schemaRegistry;
-        this.createEhrFetcher = createEhrFetcher;
-        this.createCompositionFetcher = createCompositionFetcher;
-        this.updateCompositionFetcher = updateCompositionFetcher;
-        this.deleteCompositionFetcher = deleteCompositionFetcher;
-        this.compositionSubscriptionFetcher = compositionSubscriptionFetcher;
-        this.auditEventSubscriptionFetcher = auditEventSubscriptionFetcher;
     }
 
     @Override
@@ -78,27 +57,14 @@ public class GraphQlRuntimeWiringConfigurer implements RuntimeWiringConfigurer {
         builder.scalar(JsonScalar.INSTANCE);
         builder.scalar(LongScalar.INSTANCE);
 
-        // Template-derived query fields
+        // Dynamic template-derived query fields (backed by GenericViewDataFetcher)
         for (String queryField : schemaRegistry.getQueryFieldNames()) {
             builder.type("Query", wiring -> wiring.dataFetcher(queryField, genericViewDataFetcher));
         }
 
-        // Mutations
-        builder.type(
-                "Mutation",
-                wiring -> wiring.dataFetcher("createEhr", createEhrFetcher)
-                        .dataFetcher("createComposition", createCompositionFetcher)
-                        .dataFetcher("updateComposition", updateCompositionFetcher)
-                        .dataFetcher("deleteComposition", deleteCompositionFetcher));
-
-        // Subscriptions
-        builder.type(
-                "Subscription",
-                wiring -> wiring.dataFetcher("onCompositionChange", compositionSubscriptionFetcher)
-                        .dataFetcher("onAuditEvent", auditEventSubscriptionFetcher));
-
         log.info(
-                "GraphQL runtime wiring: 4 scalars, {} queries, 4 mutations, 2 subscriptions",
+                "GraphQL runtime wiring: 4 scalars, {} dynamic query fields"
+                        + " (mutations + subscriptions via @Controller annotations)",
                 schemaRegistry.getQueryFieldNames().size());
     }
 }
