@@ -1,0 +1,214 @@
+/*
+ * Copyright (c) 2024 vitasystems GmbH.
+ *
+ * This file is part of project EHRbase
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.ehrbase.service.graphql;
+
+import static org.jooq.impl.DSL.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.ehrbase.service.ViewCatalogService;
+import org.ehrbase.service.ViewCatalogService.ViewCatalogEntry;
+import org.jooq.DSLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+/**
+ * Generates GraphQL SDL (Schema Definition Language) from the view catalog.
+ * Produces type definitions, filter inputs, ordering enums, and connection types
+ * for each view registered in {@code ehr_system.view_catalog}.
+ *
+ * <p>Called at startup and on template upload for hot-reload.
+ */
+@Service
+public class GraphQlSchemaGeneratorService {
+
+    private static final Logger log = LoggerFactory.getLogger(GraphQlSchemaGeneratorService.class);
+
+    private static final org.jooq.Table<?> INFO_COLUMNS = table(name("information_schema", "columns"));
+
+    private final ViewCatalogService viewCatalogService;
+    private final DSLContext dsl;
+
+    public GraphQlSchemaGeneratorService(ViewCatalogService viewCatalogService, DSLContext dsl) {
+        this.viewCatalogService = viewCatalogService;
+        this.dsl = dsl;
+    }
+
+    /**
+     * Generates GraphQL SDL for all template views in the catalog.
+     *
+     * @param tenantId current tenant
+     * @return SDL string to be appended to the base schema
+     */
+    public String generateSchema(short tenantId) {
+        List<ViewCatalogEntry> views = viewCatalogService.listViews("template", tenantId);
+        if (views.isEmpty()) {
+            log.debug("No template views found for tenant {}", tenantId);
+            return "";
+        }
+
+        var sdl = new StringBuilder();
+        var queryFields = new StringBuilder();
+
+        for (ViewCatalogEntry view : views) {
+            List<ColumnInfo> columns = queryViewColumns(view.viewSchema(), view.viewName());
+            if (columns.isEmpty()) {
+                continue;
+            }
+
+            String typeName = PgToGraphQlTypeMapper.toTypeName(view.viewName());
+            String queryField = PgToGraphQlTypeMapper.toQueryFieldName(view.viewName());
+
+            sdl.append(generateType(typeName, columns));
+            sdl.append(generateFilterInput(typeName, columns));
+            sdl.append(generateOrderByEnum(typeName, columns));
+            sdl.append(generateConnectionTypes(typeName));
+
+            queryFields.append("  ").append(queryField).append("(");
+            queryFields.append("filter: ").append(typeName).append("Filter, ");
+            queryFields.append("orderBy: ").append(typeName).append("OrderBy, ");
+            queryFields.append("first: Int, after: String");
+            queryFields.append("): ").append(typeName).append("Connection!\n");
+        }
+
+        if (!queryFields.isEmpty()) {
+            sdl.append("\nextend type Query {\n");
+            sdl.append(queryFields);
+            sdl.append("}\n");
+        }
+
+        log.info("Generated GraphQL schema for {} template views", views.size());
+        return sdl.toString();
+    }
+
+    /**
+     * Returns all query field names for the current schema (used by RuntimeWiringConfigurer).
+     */
+    public List<String> getQueryFieldNames(short tenantId) {
+        List<ViewCatalogEntry> views = viewCatalogService.listViews("template", tenantId);
+        List<String> fields = new ArrayList<>();
+        for (ViewCatalogEntry view : views) {
+            fields.add(PgToGraphQlTypeMapper.toQueryFieldName(view.viewName()));
+        }
+        return fields;
+    }
+
+    /**
+     * Maps a query field name back to its view name.
+     * "bloodPressures" -> "v_blood_pressure"
+     */
+    public String queryFieldToViewName(String queryField) {
+        String withoutPlural = queryField.endsWith("s") ? queryField.substring(0, queryField.length() - 1) : queryField;
+        var sb = new StringBuilder("v_");
+        for (int i = 0; i < withoutPlural.length(); i++) {
+            char c = withoutPlural.charAt(i);
+            if (Character.isUpperCase(c) && i > 0) {
+                sb.append('_');
+            }
+            sb.append(Character.toLowerCase(c));
+        }
+        return sb.toString();
+    }
+
+    private String generateType(String typeName, List<ColumnInfo> columns) {
+        var sb = new StringBuilder();
+        sb.append("type ").append(typeName).append(" {\n");
+        for (ColumnInfo col : columns) {
+            String gqlType = PgToGraphQlTypeMapper.map(col.dataType, col.nullable);
+            if (gqlType == null) {
+                continue;
+            }
+            sb.append("  ")
+                    .append(PgToGraphQlTypeMapper.toCamelCase(col.name))
+                    .append(": ")
+                    .append(gqlType)
+                    .append("\n");
+        }
+        sb.append("}\n\n");
+        return sb.toString();
+    }
+
+    private String generateFilterInput(String typeName, List<ColumnInfo> columns) {
+        var sb = new StringBuilder();
+        sb.append("input ").append(typeName).append("Filter {\n");
+        for (ColumnInfo col : columns) {
+            String gqlType = PgToGraphQlTypeMapper.map(col.dataType, true);
+            if (gqlType == null) {
+                continue;
+            }
+            String filterType = PgToGraphQlTypeMapper.filterInputTypeName(gqlType);
+            if (filterType != null) {
+                sb.append("  ")
+                        .append(PgToGraphQlTypeMapper.toCamelCase(col.name))
+                        .append(": ")
+                        .append(filterType)
+                        .append("\n");
+            }
+        }
+        sb.append("  textSearch: TextSearch\n");
+        sb.append("}\n\n");
+        return sb.toString();
+    }
+
+    private String generateOrderByEnum(String typeName, List<ColumnInfo> columns) {
+        var sb = new StringBuilder();
+        sb.append("enum ").append(typeName).append("OrderBy {\n");
+        for (ColumnInfo col : columns) {
+            String gqlType = PgToGraphQlTypeMapper.map(col.dataType, true);
+            if (gqlType == null) {
+                continue;
+            }
+            String enumName = col.name.toUpperCase();
+            sb.append("  ").append(enumName).append("_ASC\n");
+            sb.append("  ").append(enumName).append("_DESC\n");
+        }
+        sb.append("}\n\n");
+        return sb.toString();
+    }
+
+    private String generateConnectionTypes(String typeName) {
+        return "type " + typeName + "Connection {\n"
+                + "  edges: [" + typeName + "Edge!]!\n"
+                + "  pageInfo: PageInfo!\n"
+                + "  totalCount: Int!\n"
+                + "}\n\n"
+                + "type " + typeName + "Edge {\n"
+                + "  node: " + typeName + "!\n"
+                + "  cursor: String!\n"
+                + "}\n\n";
+    }
+
+    private List<ColumnInfo> queryViewColumns(String schema, String viewName) {
+        var rows = dsl.select(field(name("column_name")), field(name("data_type")), field(name("is_nullable")))
+                .from(INFO_COLUMNS)
+                .where(field(name("table_schema")).eq(schema))
+                .and(field(name("table_name")).eq(viewName))
+                .orderBy(field(name("ordinal_position")))
+                .fetch();
+
+        return rows.stream()
+                .map(r -> new ColumnInfo(
+                        r.get(field(name("column_name")), String.class),
+                        r.get(field(name("data_type")), String.class),
+                        "YES".equals(r.get(field(name("is_nullable")), String.class))))
+                .toList();
+    }
+
+    private record ColumnInfo(String name, String dataType, boolean nullable) {}
+}
