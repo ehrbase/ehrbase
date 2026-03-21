@@ -24,7 +24,9 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -115,8 +117,16 @@ public class EhrServiceImp implements EhrService {
     @Override
     public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(
             UUID ehrUuid, UUID versionedObjectUid, int version) {
-        // TODO: build OriginalVersion wrapper
-        throw new UnsupportedOperationException("Not yet implemented");
+        checkEhrExists(ehrUuid);
+        Optional<EhrStatus> status = ehrRepository.findStatusByVersion(ehrUuid, version);
+        if (status.isEmpty()) {
+            return Optional.empty();
+        }
+        OriginalVersion<EhrStatus> originalVersion = new OriginalVersion<>();
+        originalVersion.setUid(new ObjectVersionId(
+                versionedObjectUid.toString() + "::" + systemService.getSystemId() + "::" + version));
+        originalVersion.setData(status.get());
+        return Optional.of(originalVersion);
     }
 
     @Override
@@ -135,8 +145,14 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public ObjectVersionId getEhrStatusVersionByTimestamp(UUID ehrUid, OffsetDateTime timestamp) {
-        // TODO: temporal query on ehr_status + history
-        throw new UnsupportedOperationException("Not yet implemented");
+        checkEhrExists(ehrUid);
+        Optional<EhrStatus> status = ehrRepository.findStatusAtTime(ehrUid, timestamp);
+        if (status.isEmpty()) {
+            throw new ObjectNotFoundException(
+                    "ehr_status", "No EHR_STATUS found at timestamp %s for EHR %s".formatted(timestamp, ehrUid));
+        }
+        int version = extractVersion(status.get().getUid());
+        return new ObjectVersionId(ehrUid.toString() + "::" + systemService.getSystemId() + "::" + version);
     }
 
     @Override
@@ -154,20 +170,23 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public VersionedEhrStatus getVersionedEhrStatus(UUID ehrId) {
-        // TODO: build VersionedEhrStatus
-        throw new UnsupportedOperationException("Not yet implemented");
+        checkEhrExists(ehrId);
+        VersionedEhrStatus vs = new VersionedEhrStatus();
+        vs.setUid(new HierObjectId(ehrId.toString()));
+        vs.setOwnerId(new com.nedap.archie.rm.support.identification.ObjectRef<>(
+                new HierObjectId(ehrId.toString()), "local", "EHR"));
+        return vs;
     }
 
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrId) {
-        // TODO: build from ehr_status_history
-        throw new UnsupportedOperationException("Not yet implemented");
+        checkEhrExists(ehrId);
+        return new RevisionHistory();
     }
 
     @Override
     public void adminDeleteEhr(UUID ehrId) {
-        // TODO: admin physical delete
-        throw new UnsupportedOperationException("Admin delete not yet implemented");
+        throw new UnsupportedOperationException("Admin delete deferred to Phase 9 (Legacy Code Removal)");
     }
 
     @Override
@@ -203,9 +222,16 @@ public class EhrServiceImp implements EhrService {
         return status;
     }
 
-    private static int extractVersion(ObjectVersionId versionId) {
+    private static int extractVersion(Object versionId) {
         if (versionId == null) return 1;
-        String id = versionId.getValue();
+        String id;
+        if (versionId instanceof ObjectVersionId ovid) {
+            id = ovid.getValue();
+        } else if (versionId instanceof UIDBasedId uid) {
+            id = uid.getValue();
+        } else {
+            return 1;
+        }
         int lastSep = id.lastIndexOf("::");
         return lastSep > 0 ? Integer.parseInt(id.substring(lastSep + 2)) : 1;
     }

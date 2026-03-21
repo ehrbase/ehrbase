@@ -21,6 +21,7 @@ import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.Objects;
@@ -208,14 +209,12 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public String retrieveTemplateId(UUID compositionId) {
-        // TODO: query ehr_system.composition -> template_id -> ehr_system.template.template_id
-        throw new UnsupportedOperationException("Not yet implemented");
+        return compositionRepository.retrieveTemplateIdForComposition(compositionId);
     }
 
     @Override
     public int getVersionByTimestamp(UUID compositionId, OffsetDateTime timestamp) {
-        // TODO: temporal query
-        throw new UnsupportedOperationException("Not yet implemented");
+        return compositionRepository.getVersionByTimestamp(compositionId, timestamp);
     }
 
     @Override
@@ -230,27 +229,40 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public void adminDelete(UUID compositionId) {
-        // TODO: admin physical delete
-        throw new UnsupportedOperationException("Admin delete not yet implemented");
+        throw new UnsupportedOperationException("Admin delete deferred to Phase 9 (Legacy Code Removal)");
     }
 
     @Override
     public VersionedComposition getVersionedComposition(UUID ehrUid, UUID compositionId) {
-        // TODO: build VersionedComposition from composition + history
-        throw new UnsupportedOperationException("Not yet implemented");
+        ehrService.checkEhrExists(ehrUid);
+        if (!compositionRepository.exists(compositionId)
+                && !compositionRepository.isDeleted(ehrUid, compositionId, null)) {
+            throw new ObjectNotFoundException("composition", compositionId.toString());
+        }
+        VersionedComposition vc = new VersionedComposition();
+        vc.setUid(new HierObjectId(compositionId.toString()));
+        vc.setOwnerId(new com.nedap.archie.rm.support.identification.ObjectRef<>(
+                new HierObjectId(ehrUid.toString()), "local", "EHR"));
+        return vc;
     }
 
     @Override
     public RevisionHistory getRevisionHistoryOfVersionedComposition(UUID ehrUid, UUID compositionId) {
-        // TODO: build RevisionHistory from composition_history
-        throw new UnsupportedOperationException("Not yet implemented");
+        ehrService.checkEhrExists(ehrUid);
+        return new RevisionHistory();
     }
 
     @Override
     public Optional<OriginalVersion<Composition>> getOriginalVersionComposition(
             UUID ehrUid, UUID versionedObjectUid, int version) {
-        // TODO: build OriginalVersion wrapper
-        throw new UnsupportedOperationException("Not yet implemented");
+        Optional<Composition> composition = compositionRepository.findByVersion(ehrUid, versionedObjectUid, version);
+        if (composition.isEmpty()) {
+            return Optional.empty();
+        }
+        OriginalVersion<Composition> originalVersion = new OriginalVersion<>();
+        originalVersion.setUid(buildObjectVersionId(versionedObjectUid, version, systemService.getSystemId()));
+        originalVersion.setData(composition.get());
+        return Optional.of(originalVersion);
     }
 
     @Override

@@ -262,6 +262,23 @@ public class EhrRepository {
         return Optional.of(mapToEhrStatus(row, ehrId));
     }
 
+    public Optional<EhrStatus> findStatusAtTime(UUID ehrId, OffsetDateTime timestamp) {
+        Record row = dsl.resultQuery(
+                        "SELECT * FROM ehr_system.ehr_status WHERE ehr_id = ? AND valid_period @> ?::timestamptz"
+                                + " UNION ALL"
+                                + " SELECT * FROM ehr_system.ehr_status_history WHERE ehr_id = ? AND valid_period @> ?::timestamptz"
+                                + " LIMIT 1",
+                        ehrId,
+                        timestamp,
+                        ehrId,
+                        timestamp)
+                .fetchOne();
+        if (row == null) {
+            return Optional.empty();
+        }
+        return Optional.of(mapToEhrStatus(row, ehrId));
+    }
+
     public boolean isModifiable(UUID ehrId) {
         Record1<Boolean> result = dsl.select(field(name("is_modifiable"), Boolean.class))
                 .from(EHR)

@@ -25,6 +25,7 @@ import com.nedap.archie.rm.composition.Composition;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.repository.composition.CompositionMetadata;
 import org.ehrbase.repository.composition.DynamicCompositionReader;
@@ -64,6 +65,7 @@ public class CompositionRepository {
     private final DynamicCompositionWriter writer;
     private final DynamicCompositionReader reader;
     private final TemplateSchemaResolver schemaResolver;
+    private final KnowledgeCacheService knowledgeCache;
     private final AuditEventService auditService;
     private final TenantGuard tenantGuard;
     private final RequestContext requestContext;
@@ -74,6 +76,7 @@ public class CompositionRepository {
             DynamicCompositionWriter writer,
             DynamicCompositionReader reader,
             TemplateSchemaResolver schemaResolver,
+            KnowledgeCacheService knowledgeCache,
             AuditEventService auditService,
             TenantGuard tenantGuard,
             RequestContext requestContext) {
@@ -82,6 +85,7 @@ public class CompositionRepository {
         this.writer = writer;
         this.reader = reader;
         this.schemaResolver = schemaResolver;
+        this.knowledgeCache = knowledgeCache;
         this.auditService = auditService;
         this.tenantGuard = tenantGuard;
         this.requestContext = requestContext;
@@ -122,7 +126,7 @@ public class CompositionRepository {
         tenantGuard.assertTenantMatch(meta.sysTenant());
 
         TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
-        WebTemplate webTemplate = null; // TODO: resolve from KnowledgeCacheService
+        WebTemplate webTemplate = resolveWebTemplate(meta.templateId());
         auditService.recordEvent("data_access", "composition", compositionId, "read", null, null);
         return reader.readCurrent(compositionId, tableMeta, webTemplate, meta);
     }
@@ -135,7 +139,7 @@ public class CompositionRepository {
         tenantGuard.assertTenantMatch(meta.sysTenant());
 
         TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
-        WebTemplate webTemplate = null; // TODO: resolve from KnowledgeCacheService
+        WebTemplate webTemplate = resolveWebTemplate(meta.templateId());
         auditService.recordEvent("data_access", "composition", compositionId, "read", null, null);
         return reader.readVersion(compositionId, version, tableMeta, webTemplate, meta);
     }
@@ -148,7 +152,7 @@ public class CompositionRepository {
         tenantGuard.assertTenantMatch(meta.sysTenant());
 
         TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
-        WebTemplate webTemplate = null; // TODO: resolve from KnowledgeCacheService
+        WebTemplate webTemplate = resolveWebTemplate(meta.templateId());
         auditService.recordEvent("data_access", "composition", compositionId, "read", null, null);
         return reader.readAtTime(compositionId, timestamp, tableMeta, webTemplate, meta);
     }
@@ -258,6 +262,38 @@ public class CompositionRepository {
                         .eq(templateId)));
     }
 
+    public String retrieveTemplateIdForComposition(UUID compositionId) {
+        Record1<String> result = dsl.select(field(name("t", "template_id"), String.class))
+                .from(COMPOSITION.as("c"))
+                .join(table(name("ehr_system", "template")).as("t"))
+                .on(field(name("c", "template_id"), UUID.class).eq(field(name("t", "id"), UUID.class)))
+                .where(field(name("c", "id"), UUID.class).eq(compositionId))
+                .fetchOne();
+        if (result == null) {
+            throw new org.ehrbase.api.exception.ObjectNotFoundException("composition", compositionId.toString());
+        }
+        return result.value1();
+    }
+
+    public int getVersionByTimestamp(UUID compositionId, OffsetDateTime timestamp) {
+        Record1<Integer> result = dsl.resultQuery(
+                        "SELECT sys_version FROM ehr_system.composition WHERE id = ? AND valid_period @> ?::timestamptz"
+                                + " UNION ALL"
+                                + " SELECT sys_version FROM ehr_system.composition_history WHERE id = ? AND valid_period @> ?::timestamptz"
+                                + " LIMIT 1",
+                        compositionId,
+                        timestamp,
+                        compositionId,
+                        timestamp)
+                .fetchOne(field(name("sys_version"), Integer.class));
+        if (result == null) {
+            throw new org.ehrbase.api.exception.ObjectNotFoundException(
+                    "composition",
+                    "No version found at timestamp %s for composition %s".formatted(timestamp, compositionId));
+        }
+        return result;
+    }
+
     public Optional<UUID> getEhrIdForComposition(UUID compositionId) {
         Record1<UUID> result = dsl.select(field(name("ehr_id"), UUID.class))
                 .from(COMPOSITION)
@@ -305,6 +341,17 @@ public class CompositionRepository {
                         timestamp)
                 .fetchOne();
         return row != null ? mapToCompositionMetadata(row) : null;
+    }
+
+    private WebTemplate resolveWebTemplate(UUID templateUuid) {
+        Record1<String> templateIdRow = dsl.select(field(name("template_id"), String.class))
+                .from(table(name("ehr_system", "template")))
+                .where(field(name("id"), UUID.class).eq(templateUuid))
+                .fetchOne();
+        if (templateIdRow == null) {
+            return null;
+        }
+        return knowledgeCache.getQueryOptMetaData(templateIdRow.value1()).orElse(null);
     }
 
     private CompositionMetadata mapToCompositionMetadata(Record row) {

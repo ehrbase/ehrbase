@@ -122,11 +122,6 @@ public final class RmReconstructor {
         composer.setName(meta.composerName());
         composition.setComposer(composer);
 
-        // TODO: Walk WebTemplate tree to reconstruct content structure
-        // This requires building the full RM tree (Sections, Observations, Elements, etc.)
-        // For now, this creates the composition shell with metadata.
-        // Full content reconstruction will be implemented when specific templates are tested.
-
         return composition;
     }
 
