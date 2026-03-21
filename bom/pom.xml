@@ -62,13 +62,14 @@
         <ehrbase.openehr.sdk.version>2.31.0-SNAPSHOT</ehrbase.openehr.sdk.version>
         <!-- archie version should be in sync with sdk -->
         <!-- XXX: maybe this bom should use the SDK bom as parent to inherit this property -->
-        <archie.version>3.17.0</archie.version>
+        <archie.version>3.13.0</archie.version>
         <commons-io.version>2.21.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <flyway.version>11.15.0</flyway.version>
         <!-- javamelody removed: no Spring Boot 4.0 support, replaced by OTel Java agent -->
         <json-path.version>2.9.0</json-path.version>
         <junit.version>5.10.2</junit.version>
+        <junit-jupiter.version>6.0.3</junit-jupiter.version>
 
         <!-- jooq -->
         <slf4j.version>2.0.17</slf4j.version>
@@ -109,6 +110,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <!-- JUnit 6 BOM — must come FIRST to override SDK's older JUnit 5.x -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- SDK pulls in slf4j 1.7.x, but Spring needs 2.0.x -->
             <dependency>
                 <groupId>org.slf4j</groupId>

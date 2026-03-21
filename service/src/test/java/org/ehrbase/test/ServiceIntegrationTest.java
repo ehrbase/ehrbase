@@ -23,7 +23,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.ehrbase.ServiceModuleConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 
@@ -33,7 +32,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Inherited
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        classes = {ServiceModuleConfiguration.class, ServiceTestConfiguration.class},
+        classes = {TestApplication.class, ServiceTestConfiguration.class},
         properties = {
             "spring.main.banner-mode=off",
             "spring.main.log-startup-info=false",

@@ -22,7 +22,10 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import javax.sql.DataSource;
 import org.ehrbase.service.TimeProvider;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -61,5 +64,10 @@ public class ServiceTestConfiguration {
     @Bean
     public TimeProvider timeProvider() {
         return OffsetDateTime::now;
+    }
+
+    @Bean
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager();
     }
 }

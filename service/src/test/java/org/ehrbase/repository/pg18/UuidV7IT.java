@@ -20,30 +20,37 @@ package org.ehrbase.repository.pg18;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import javax.sql.DataSource;
-import org.ehrbase.test.ServiceIntegrationTest;
+import org.ehrbase.test.EhrbasePostgreSQLContainer;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * PG18-specific integration test: UUIDv7 features.
- * Verifies uuidv7() generates chronologically ordered UUIDs.
+ * Connects directly to the PG18 testcontainer — no Spring context needed.
  */
-@ServiceIntegrationTest
 class UuidV7IT {
 
-    @Autowired
-    private DataSource dataSource;
+    private static EhrbasePostgreSQLContainer pg;
+
+    @BeforeAll
+    static void startContainer() {
+        pg = EhrbasePostgreSQLContainer.sharedInstance();
+    }
+
+    private Connection connect() throws Exception {
+        return DriverManager.getConnection(pg.getJdbcUrl(), pg.getUsername(), pg.getPassword());
+    }
 
     @Test
     void uuidv7GeneratesChronologicallyOrderedIds() throws Exception {
         List<UUID> uuids = new ArrayList<>();
-        try (Connection conn = dataSource.getConnection();
+        try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
             for (int i = 0; i < 10; i++) {
                 ResultSet rs = stmt.executeQuery("SELECT uuidv7()");
@@ -53,23 +60,19 @@ class UuidV7IT {
         }
 
         assertThat(uuids).hasSize(10);
-        // UUIDv7 embeds timestamp in most significant bits — sequential generation
-        // means string comparison should reflect chronological order
         for (int i = 1; i < uuids.size(); i++) {
-            assertThat(uuids.get(i).toString())
-                    .isGreaterThanOrEqualTo(uuids.get(i - 1).toString());
+            assertThat(uuids.get(i).toString()).isGreaterThanOrEqualTo(uuids.get(i - 1).toString());
         }
     }
 
     @Test
     void uuidExtractTimestampReturnsTime() throws Exception {
-        try (Connection conn = dataSource.getConnection();
+        try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("SELECT uuid_extract_timestamp(uuidv7())");
             rs.next();
             var timestamp = rs.getTimestamp(1);
             assertThat(timestamp).isNotNull();
-            // Should be within the last minute
             long diffMs = System.currentTimeMillis() - timestamp.getTime();
             assertThat(diffMs).isLessThan(60_000);
         }
@@ -77,7 +80,7 @@ class UuidV7IT {
 
     @Test
     void uuidv7HasVersion7() throws Exception {
-        try (Connection conn = dataSource.getConnection();
+        try (Connection conn = connect();
                 Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery("SELECT uuidv7()");
             rs.next();
