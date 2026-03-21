@@ -39,6 +39,9 @@ public class TemplateAnalyzer {
 
         walkNode(root, mainTable, "");
 
+        // Add participations JSONB column (clinicians involved in composition)
+        mainTable.addColumn(new ColumnDescriptor("participations", "JSONB DEFAULT '[]'"));
+
         return mainTable;
     }
 
@@ -89,6 +92,7 @@ public class TemplateAnalyzer {
             if (isDvType(dvType)) {
                 List<ColumnDescriptor> cols = TypeMapper.map(dvType, colBase);
                 cols.forEach(table::addColumn);
+                addNullFlavourIfOptional(element, table, colBase);
                 return;
             }
         }
@@ -98,11 +102,23 @@ public class TemplateAnalyzer {
             String rmType = inferRmTypeFromInputs(element);
             List<ColumnDescriptor> cols = TypeMapper.map(rmType, colBase);
             cols.forEach(table::addColumn);
+            addNullFlavourIfOptional(element, table, colBase);
             return;
         }
 
         // Last resort: JSONB fallback
         table.addColumn(new ColumnDescriptor(colBase, "JSONB"));
+    }
+
+    /**
+     * Adds a _null_flavour TEXT column for optional ELEMENT nodes.
+     * openEHR allows null_flavour on any data value (e.g., "not available", "unknown").
+     * Only generated for optional elements (min == 0) since mandatory elements can't be null.
+     */
+    private void addNullFlavourIfOptional(WebTemplateNode element, TableDescriptor table, String colBase) {
+        if (element.getMin() == 0) {
+            table.addColumn(new ColumnDescriptor(colBase + "_null_flavour", "TEXT"));
+        }
     }
 
     /**

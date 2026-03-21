@@ -44,6 +44,15 @@ public class SchemaGenerator {
             sb.append("\n");
         }
 
+        // PG18 virtual generated columns for case-insensitive search on key TEXT fields
+        for (ColumnDescriptor col : table.getColumns()) {
+            if ("TEXT".equals(col.pgType()) && isSearchableColumn(col.name())) {
+                sb.append("    , ").append(quoteIdentifier(col.name() + "_search"))
+                  .append(" TEXT GENERATED ALWAYS AS (casefold(").append(quoteIdentifier(col.name()))
+                  .append(")) VIRTUAL\n");
+            }
+        }
+
         // PG18 temporal primary key
         sb.append("    , PRIMARY KEY (id, valid_period WITHOUT OVERLAPS)\n");
 
@@ -113,6 +122,15 @@ public class SchemaGenerator {
                 + "FROM " + dataTable + " t\n"
                 + "JOIN ehr_system.composition c ON t.composition_id = c.id\n"
                 + "JOIN ehr_system.ehr e ON t.ehr_id = e.id;\n\n";
+    }
+
+    /**
+     * Determines if a TEXT column should get a virtual generated casefold() column for search.
+     * Only for columns likely to be searched case-insensitively (value fields, names, comments).
+     */
+    private boolean isSearchableColumn(String name) {
+        return name.endsWith("_value") || name.equals("comment_val")
+                || name.endsWith("_name") || name.equals("name_val");
     }
 
     private String quoteIdentifier(String name) {
