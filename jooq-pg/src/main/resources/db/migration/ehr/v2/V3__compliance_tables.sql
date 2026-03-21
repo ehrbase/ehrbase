@@ -31,8 +31,10 @@ CREATE INDEX idx_audit_event_actor ON ehr_system.audit_event (actor_id);
 CREATE INDEX idx_audit_event_time ON ehr_system.audit_event (created_at);
 
 -- IMMUTABLE: revoke destructive operations from application role
--- (ehrbase_app can INSERT only — no UPDATE, DELETE, TRUNCATE)
--- Note: These GRANTs/REVOKEs execute after default privileges are applied
+-- ehrbase_restricted (app) can INSERT only — no UPDATE, DELETE, TRUNCATE
+REVOKE UPDATE, DELETE, TRUNCATE ON ehr_system.audit_event FROM ehrbase_restricted;
+-- Ensure INSERT is still granted (in case default privileges didn't cover it)
+GRANT INSERT ON ehr_system.audit_event TO ehrbase_restricted;
 
 -- ============================================================
 -- Consent Management
