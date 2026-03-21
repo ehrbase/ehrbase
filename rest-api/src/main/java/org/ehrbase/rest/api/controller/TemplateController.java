@@ -51,12 +51,17 @@ public class TemplateController extends BaseApiController {
 
     private final KnowledgeCacheService knowledgeCache;
     private final TemplateService templateService;
+    private final org.ehrbase.service.SchemaExecutorService schemaExecutor;
     private final RequestContext requestContext;
 
     public TemplateController(
-            KnowledgeCacheService knowledgeCache, TemplateService templateService, RequestContext requestContext) {
+            KnowledgeCacheService knowledgeCache,
+            TemplateService templateService,
+            org.ehrbase.service.SchemaExecutorService schemaExecutor,
+            RequestContext requestContext) {
         this.knowledgeCache = knowledgeCache;
         this.templateService = templateService;
+        this.schemaExecutor = schemaExecutor;
         this.requestContext = requestContext;
     }
 
@@ -66,11 +71,24 @@ public class TemplateController extends BaseApiController {
             value = "/adl1.4",
             consumes = MediaType.APPLICATION_XML_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Upload ADL 1.4 OPT XML template")
-    public ResponseEntity<TemplateResponseDto> uploadAdl14(@RequestBody OPERATIONALTEMPLATE template) {
+    @Operation(
+            summary = "Upload ADL 1.4 OPT XML template",
+            description = "Stores template, generates normalized tables in ehr_data, creates views in ehr_views, "
+                    + "registers in schema_registry and view_catalog, refreshes GraphQL schema")
+    public ResponseEntity<java.util.Map<String, Object>> uploadAdl14(@RequestBody OPERATIONALTEMPLATE template) {
 
+        // 1. Store template in knowledge cache
         String templateId = knowledgeCache.addOperationalTemplate(template);
         requestContext.setTemplateId(templateId);
+
+        // 2. Resolve template UUID
+        java.util.UUID templateUuid = knowledgeCache
+                .findUuidByTemplateId(templateId)
+                .orElseThrow(() -> new ObjectNotFoundException("template", templateId));
+
+        // 3. Run full schema generation pipeline
+        String tableName =
+                schemaExecutor.executeSchemaGeneration(templateId, templateUuid, requestContext.getTenantId());
 
         URI location = locationUri("api", "v1", "templates", "adl1.4", templateId);
 
@@ -78,15 +96,16 @@ public class TemplateController extends BaseApiController {
                 .retrieveOperationalTemplate(templateId)
                 .orElseThrow(() -> new ObjectNotFoundException("template", templateId));
 
-        TemplateResponseDto dto = new TemplateResponseDto(
-                templateId,
-                stored.getConcept(),
-                stored.getDefinition() != null
-                        ? stored.getDefinition().getArchetypeId().getValue()
-                        : null,
-                null);
-
-        return ResponseEntity.created(location).body(dto);
+        return ResponseEntity.created(location)
+                .body(java.util.Map.of(
+                        "templateId",
+                        templateId,
+                        "concept",
+                        stored.getConcept() != null ? stored.getConcept() : "",
+                        "tables",
+                        java.util.List.of("ehr_data." + tableName),
+                        "status",
+                        "active"));
     }
 
     @GetMapping(value = "/adl1.4", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -109,6 +109,29 @@ public class DirectoryController extends BaseApiController {
         return ResponseEntity.status(201).body(Map.of("name", folderName, "path", path, "ehr_id", ehrId.toString()));
     }
 
+    @org.springframework.web.bind.annotation.PutMapping(
+            value = "/{folder_id}",
+            consumes = MediaType.APPLICATION_JSON_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Update folder")
+    public ResponseEntity<Map<String, Object>> updateFolder(
+            @PathVariable("ehr_id") String ehrIdStr,
+            @PathVariable("folder_id") String folderIdStr,
+            @RequestBody Map<String, Object> body) {
+
+        UUID ehrId = parseEhrId(ehrIdStr);
+        UUID folderId = parseUuid(folderIdStr, "folder");
+        ehrService.checkEhrExistsAndIsModifiable(ehrId);
+        requestContext.setEhrId(ehrId);
+
+        String newName = (String) body.get("name");
+        if (newName != null) {
+            dsl.execute("UPDATE ehr_system.ehr_folder SET name = ? WHERE id = ?", newName, folderId);
+        }
+
+        return ResponseEntity.ok(Map.of("folder_id", folderId.toString(), "name", newName != null ? newName : ""));
+    }
+
     @DeleteMapping("/{folder_id}")
     @Operation(summary = "Delete folder")
     public ResponseEntity<Void> deleteFolder(

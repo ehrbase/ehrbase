@@ -63,13 +63,16 @@ public class CompositionController extends BaseApiController {
     private final EhrService ehrService;
     private final SystemService systemService;
     private final RequestContext requestContext;
+    private final org.jooq.DSLContext dsl;
 
     public CompositionController(
             CompositionService compositionService,
             EhrService ehrService,
             SystemService systemService,
-            RequestContext requestContext) {
+            RequestContext requestContext,
+            org.jooq.DSLContext dsl) {
         this.compositionService = compositionService;
+        this.dsl = dsl;
         this.ehrService = ehrService;
         this.systemService = systemService;
         this.requestContext = requestContext;
@@ -117,6 +120,27 @@ public class CompositionController extends BaseApiController {
                     .body(serialized.getValue());
         }
         return created(location, versionUid).build();
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "List compositions for EHR", description = "Returns composition metadata (not full content)")
+    public ResponseEntity<java.util.List<java.util.Map<String, Object>>> listCompositions(
+            @PathVariable("ehr_id") String ehrIdStr) {
+
+        UUID ehrId = parseEhrId(ehrIdStr);
+        ehrService.checkEhrExists(ehrId);
+        requestContext.setEhrId(ehrId);
+
+        var rows = dsl.resultQuery(
+                        "SELECT id, template_name, archetype_id, sys_version, change_type, committed_at "
+                                + "FROM ehr_system.composition WHERE ehr_id = ? ORDER BY committed_at DESC",
+                        ehrId)
+                .fetch();
+
+        java.util.List<java.util.Map<String, Object>> compositions =
+                rows.stream().map(org.jooq.Record::intoMap).toList();
+
+        return ResponseEntity.ok(compositions);
     }
 
     @GetMapping(

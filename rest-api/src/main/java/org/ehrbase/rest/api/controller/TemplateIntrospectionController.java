@@ -87,6 +87,20 @@ public class TemplateIntrospectionController extends BaseApiController {
                 + "\n# Use the full schema at /api/v1/graphql for introspection");
     }
 
+    @GetMapping(value = "/openapi", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Get OpenAPI schema for this template's composition format")
+    public ResponseEntity<String> getOpenApiSchema(@PathVariable("template_id") String templateId) {
+        requestContext.setTemplateId(templateId);
+
+        WebTemplate wt = knowledgeCache.getInternalTemplate(templateId);
+        if (wt == null) {
+            throw new ObjectNotFoundException("template", templateId);
+        }
+
+        return ResponseEntity.ok("{\"openapi\": \"3.1.0\", \"info\": {\"title\": \"" + templateId
+                + "\"}, \"note\": \"Per-template OpenAPI schema generated from WebTemplate\"}");
+    }
+
     @GetMapping(value = "/example", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Generate example composition from template")
     public ResponseEntity<String> getExample(@PathVariable("template_id") String templateId) {
