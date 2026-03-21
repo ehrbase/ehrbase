@@ -17,241 +17,325 @@
  */
 package org.ehrbase.repository;
 
-import static org.ehrbase.jooq.pg.Tables.EHR_;
-import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
-import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
-import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION_HISTORY;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.table;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
-import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
-import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.support.identification.PartyRef;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.service.SystemService;
-import org.ehrbase.api.util.LocatableUtils;
-import org.ehrbase.jooq.pg.enums.ContributionChangeType;
-import org.ehrbase.jooq.pg.tables.Ehr;
-import org.ehrbase.jooq.pg.tables.EhrStatusData;
-import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrStatusDataHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionRecord;
-import org.ehrbase.openehr.dbformat.RmAttributeAlias;
+import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.service.AuditEventService;
+import org.ehrbase.service.RequestContext;
+import org.ehrbase.service.TenantGuard;
 import org.ehrbase.service.TimeProvider;
-import org.jooq.Condition;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.Record1;
-import org.jooq.Table;
-import org.jooq.TableField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Handles DB Access to {@link  org.ehrbase.jooq.pg.tables.Ehr} and {@link  org.ehrbase.jooq.pg.tables.EhrStatusVersion} etc.
+ * Repository for EHR and EHR_STATUS CRUD operations.
+ * Uses JOOQ with the new {@code ehr_system.ehr} and {@code ehr_system.ehr_status} tables.
+ * Same versioning pattern as composition (explicit app-code, no triggers).
  */
 @Repository
-public class EhrRepository
-        extends AbstractVersionedObjectRepository<
-                EhrStatusVersionRecord,
-                EhrStatusDataRecord,
-                EhrStatusVersionHistoryRecord,
-                EhrStatusDataHistoryRecord,
-                EhrStatus> {
+public class EhrRepository {
 
-    public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttributeAlias.rmToJsonPathParts("is_modifiable");
-    public static final String[] SUBJECT_ID_JSON_PATH =
-            RmAttributeAlias.rmToJsonPathParts("subject/external_ref/id/value");
-    public static final String[] SUBJECT_NAMESPACE_JSON_PATH =
-            RmAttributeAlias.rmToJsonPathParts("subject/external_ref/namespace");
+    private static final Logger log = LoggerFactory.getLogger(EhrRepository.class);
+
+    private static final org.jooq.Table<?> EHR = table(name("ehr_system", "ehr"));
+    private static final org.jooq.Table<?> EHR_STATUS = table(name("ehr_system", "ehr_status"));
+    private static final org.jooq.Table<?> EHR_STATUS_HISTORY = table(name("ehr_system", "ehr_status_history"));
+
+    private final DSLContext dsl;
+    private final TimeProvider timeProvider;
+    private final AuditEventService auditService;
+    private final TenantGuard tenantGuard;
+    private final RequestContext requestContext;
 
     public EhrRepository(
-            DSLContext context,
-            ContributionRepository contributionRepository,
-            SystemService systemService,
-            TimeProvider timeProvider) {
-
-        super(
-                AuditDetailsTargetType.EHR_STATUS,
-                EHR_STATUS_VERSION,
-                EHR_STATUS_DATA,
-                EHR_STATUS_VERSION_HISTORY,
-                EHR_STATUS_DATA_HISTORY,
-                context,
-                contributionRepository,
-                systemService,
-                timeProvider);
-    }
-
-    @Override
-    protected List<TableField<EhrStatusVersionRecord, ?>> getVersionDataJoinFields() {
-        return List.of(EHR_STATUS_VERSION.EHR_ID);
+            DSLContext dsl,
+            TimeProvider timeProvider,
+            AuditEventService auditService,
+            TenantGuard tenantGuard,
+            RequestContext requestContext) {
+        this.dsl = dsl;
+        this.timeProvider = timeProvider;
+        this.auditService = auditService;
+        this.tenantGuard = tenantGuard;
+        this.requestContext = requestContext;
     }
 
     @Transactional
-    public void commit(UUID ehrId, EhrStatus status, UUID contributionId, UUID auditId) {
+    public UUID createEhr(UUID ehrId, EhrStatus status, UUID contributionId) {
+        OffsetDateTime now = timeProvider.getNow();
+        short tenantId = requestContext.getTenantId();
+        String committerName = requestContext.getUserId();
 
-        EhrRecord ehrRecord = context.newRecord(Ehr.EHR_);
+        // Extract subject info from EhrStatus
+        String subjectId = null;
+        String subjectNamespace = null;
+        if (status.getSubject() instanceof PartySelf self && self.getExternalRef() != null) {
+            PartyRef ref = self.getExternalRef();
+            subjectId = ref.getId() != null ? ref.getId().getValue() : null;
+            subjectNamespace = ref.getNamespace();
+        }
 
-        ehrRecord.setId(ehrId);
-        ehrRecord.setCreationDate(timeProvider.getNow());
-        ehrRecord.store();
+        boolean isQueryable = status.isQueryable() != null ? status.isQueryable() : true;
+        boolean isModifiable = status.isModifiable() != null ? status.isModifiable() : true;
 
-        commitHead(
-                ehrId,
-                status,
-                contributionId,
-                auditId,
-                ContributionChangeType.creation,
-                r -> {},
-                (n, r) -> r.setEhrId(ehrId));
+        // INSERT into ehr_system.ehr
+        if (ehrId == null) {
+            Record1<UUID> result = dsl.insertInto(EHR)
+                    .set(field(name("subject_id"), String.class), subjectId)
+                    .set(field(name("subject_namespace"), String.class), subjectNamespace)
+                    .set(field(name("is_queryable"), Boolean.class), isQueryable)
+                    .set(field(name("is_modifiable"), Boolean.class), isModifiable)
+                    .set(field(name("creation_date"), OffsetDateTime.class), now)
+                    .set(field(name("sys_tenant"), Short.class), tenantId)
+                    .returningResult(field(name("id"), UUID.class))
+                    .fetchOne();
+            ehrId = result != null ? result.value1() : null;
+        } else {
+            dsl.insertInto(EHR)
+                    .set(field(name("id"), UUID.class), ehrId)
+                    .set(field(name("subject_id"), String.class), subjectId)
+                    .set(field(name("subject_namespace"), String.class), subjectNamespace)
+                    .set(field(name("is_queryable"), Boolean.class), isQueryable)
+                    .set(field(name("is_modifiable"), Boolean.class), isModifiable)
+                    .set(field(name("creation_date"), OffsetDateTime.class), now)
+                    .set(field(name("sys_tenant"), Short.class), tenantId)
+                    .execute();
+        }
+
+        // INSERT into ehr_system.ehr_status (version 1)
+        String archetypeNodeId =
+                status.getArchetypeNodeId() != null ? status.getArchetypeNodeId() : "openEHR-EHR-EHR_STATUS.generic.v1";
+        String statusName = status.getName() != null ? status.getName().getValue() : "EHR Status";
+
+        dsl.insertInto(EHR_STATUS)
+                .set(field(name("ehr_id"), UUID.class), ehrId)
+                .set(field(name("is_queryable"), Boolean.class), isQueryable)
+                .set(field(name("is_modifiable"), Boolean.class), isModifiable)
+                .set(field(name("subject_id"), String.class), subjectId)
+                .set(field(name("subject_namespace"), String.class), subjectNamespace)
+                .set(field(name("archetype_node_id"), String.class), archetypeNodeId)
+                .set(field(name("name"), String.class), statusName)
+                .set(field(name("sys_version"), Integer.class), 1)
+                .set(field(name("contribution_id"), UUID.class), contributionId)
+                .set(field(name("change_type"), String.class), "creation")
+                .set(field(name("committed_at"), OffsetDateTime.class), now)
+                .set(field(name("committer_name"), String.class), committerName)
+                .set(field(name("committer_id"), String.class), committerName)
+                .set(field(name("sys_tenant"), Short.class), tenantId)
+                .execute();
+
+        auditService.recordEvent("data_modify", "ehr", ehrId, "create", null, null);
+        log.debug("Created EHR: id={}", ehrId);
+        return ehrId;
     }
 
-    @Override
-    public boolean hasEhr(UUID ehrId) {
-        return super.hasEhr(ehrId);
+    @Transactional
+    public void updateEhrStatus(UUID ehrId, EhrStatus status, int expectedVersion, UUID contributionId) {
+        OffsetDateTime now = timeProvider.getNow();
+        short tenantId = requestContext.getTenantId();
+        String committerName = requestContext.getUserId();
+
+        // Optimistic locking
+        Record current = dsl.select()
+                .from(EHR_STATUS)
+                .where(field(name("ehr_id"), UUID.class).eq(ehrId))
+                .and(field(name("sys_version"), Integer.class).eq(expectedVersion))
+                .fetchOne();
+
+        if (current == null) {
+            throw new PreconditionFailedException(
+                    "EHR_STATUS version mismatch: expected %d".formatted(expectedVersion));
+        }
+
+        int newVersion = expectedVersion + 1;
+
+        // Archive old to _history
+        dsl.execute(
+                "INSERT INTO ehr_system.ehr_status_history SELECT * FROM ehr_system.ehr_status WHERE ehr_id = ?",
+                ehrId);
+        dsl.execute(
+                "UPDATE ehr_system.ehr_status_history SET valid_period = tstzrange(lower(valid_period), ?) WHERE ehr_id = ? AND upper(valid_period) IS NULL",
+                now,
+                ehrId);
+
+        // Delete old from current
+        dsl.deleteFrom(EHR_STATUS)
+                .where(field(name("ehr_id"), UUID.class).eq(ehrId))
+                .execute();
+
+        // Extract updated fields
+        String subjectId = null;
+        String subjectNamespace = null;
+        if (status.getSubject() instanceof PartySelf self && self.getExternalRef() != null) {
+            subjectId = self.getExternalRef().getId() != null
+                    ? self.getExternalRef().getId().getValue()
+                    : null;
+            subjectNamespace = self.getExternalRef().getNamespace();
+        }
+
+        boolean isQueryable = status.isQueryable() != null ? status.isQueryable() : true;
+        boolean isModifiable = status.isModifiable() != null ? status.isModifiable() : true;
+
+        // INSERT new version
+        dsl.insertInto(EHR_STATUS)
+                .set(field(name("ehr_id"), UUID.class), ehrId)
+                .set(field(name("is_queryable"), Boolean.class), isQueryable)
+                .set(field(name("is_modifiable"), Boolean.class), isModifiable)
+                .set(field(name("subject_id"), String.class), subjectId)
+                .set(field(name("subject_namespace"), String.class), subjectNamespace)
+                .set(
+                        field(name("archetype_node_id"), String.class),
+                        status.getArchetypeNodeId() != null
+                                ? status.getArchetypeNodeId()
+                                : "openEHR-EHR-EHR_STATUS.generic.v1")
+                .set(
+                        field(name("name"), String.class),
+                        status.getName() != null ? status.getName().getValue() : "EHR Status")
+                .set(field(name("sys_version"), Integer.class), newVersion)
+                .set(field(name("contribution_id"), UUID.class), contributionId)
+                .set(field(name("change_type"), String.class), "modification")
+                .set(field(name("committed_at"), OffsetDateTime.class), now)
+                .set(field(name("committer_name"), String.class), committerName)
+                .set(field(name("committer_id"), String.class), committerName)
+                .set(field(name("sys_tenant"), Short.class), tenantId)
+                .execute();
+
+        // Update ehr table flags
+        dsl.update(EHR)
+                .set(field(name("is_queryable"), Boolean.class), isQueryable)
+                .set(field(name("is_modifiable"), Boolean.class), isModifiable)
+                .set(field(name("subject_id"), String.class), subjectId)
+                .set(field(name("subject_namespace"), String.class), subjectNamespace)
+                .where(field(name("id"), UUID.class).eq(ehrId))
+                .execute();
+
+        auditService.recordEvent("data_modify", "ehr", ehrId, "update", null, null);
+        log.debug("Updated EHR status: ehr={} version={}->{}", ehrId, expectedVersion, newVersion);
     }
 
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
-    public boolean hasEhrNewTransaction(UUID ehrId) {
-        return hasEhr(ehrId);
+    public Optional<EhrStatus> findCurrentStatus(UUID ehrId) {
+        Record row = dsl.select()
+                .from(EHR_STATUS)
+                .where(field(name("ehr_id"), UUID.class).eq(ehrId))
+                .fetchOne();
+
+        if (row == null) {
+            return Optional.empty();
+        }
+
+        auditService.recordEvent("data_access", "ehr", ehrId, "read", null, null);
+        return Optional.of(mapToEhrStatus(row, ehrId));
     }
 
-    public Boolean fetchIsModifiable(UUID ehrId) {
-        Table<EhrStatusDataRecord> dataHead = tables.dataHead();
-        return context.select(jsonDataField(dataHead, IS_MODIFIABLE_JSON_PATH).cast(Boolean.class))
-                .from(dataHead)
-                .where(singleEhrStatusCondition(ehrId, dataHead))
-                .and(dataRootCondition(dataHead))
-                .fetchOptional()
-                .map(Record1::value1)
-                .orElse(null);
-    }
-
-    public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-        EhrStatusData dataHead = EHR_STATUS_DATA.as("d");
-        return context.select(dataHead.EHR_ID)
-                .from(dataHead)
-                .where(subjectCondition(subjectId, nameSpace, dataHead))
-                .and(dataRootCondition(dataHead))
-                .fetchOptional()
-                .map(Record1::value1);
-    }
-
-    Condition subjectCondition(String subjectId, String nameSpace, Table<EhrStatusDataRecord> dataTable) {
-        return dataRootCondition(dataTable)
-                .and(jsonDataField(dataTable, SUBJECT_ID_JSON_PATH).eq(subjectId))
-                .and(jsonDataField(dataTable, SUBJECT_NAMESPACE_JSON_PATH).eq(nameSpace));
-    }
-
-    public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, OffsetDateTime time) {
-        return findVersionByTime(
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                time);
-    }
-
-    public Optional<ObjectVersionId> findLatestVersion(UUID ehrId) {
-        return context.select(field(VERSION_PROTOTYPE.VO_ID), field(VERSION_PROTOTYPE.SYS_VERSION))
-                .from(tables.versionHead())
-                .where(singleEhrStatusCondition(ehrId, tables.versionHead()))
-                .fetchOptional()
-                .map(r -> buildObjectVersionId(r.value1(), r.value2(), systemService));
-    }
-
-    public Optional<EhrStatus> findHead(UUID ehrId) {
-        return findHead(singleEhrStatusCondition(ehrId, tables.dataHead()));
-    }
-
-    @Override
-    protected boolean isDeleted(Condition condition, Condition historyCondition, Integer version) {
-        return false;
-    }
-
-    public Optional<OriginalVersion<EhrStatus>> getOriginalVersionStatus(
-            UUID ehrId, UUID versionedObjectUid, int version) {
-
-        return getOriginalVersion(
-                        singleEhrStatusCondition(ehrId, tables.versionHead()),
-                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
+    public Optional<EhrStatus> findStatusByVersion(UUID ehrId, int version) {
+        Record row = dsl.resultQuery(
+                        "SELECT * FROM ehr_system.ehr_status WHERE ehr_id = ? AND sys_version = ?"
+                                + " UNION ALL"
+                                + " SELECT * FROM ehr_system.ehr_status_history WHERE ehr_id = ? AND sys_version = ?"
+                                + " LIMIT 1",
+                        ehrId,
+                        version,
+                        ehrId,
                         version)
-                .filter(e -> LocatableUtils.getUuid(e.getUid()).equals(versionedObjectUid));
+                .fetchOne();
+
+        if (row == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(mapToEhrStatus(row, ehrId));
     }
 
-    public RevisionHistory getRevisionHistory(UUID ehrId) {
-        return getRevisionHistory(
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()));
+    public boolean isModifiable(UUID ehrId) {
+        Record1<Boolean> result = dsl.select(field(name("is_modifiable"), Boolean.class))
+                .from(EHR)
+                .where(field(name("id"), UUID.class).eq(ehrId))
+                .fetchOne();
+        return result != null && Boolean.TRUE.equals(result.value1());
     }
 
-    public OffsetDateTime findEhrCreationTime(UUID ehrId) {
-
-        return context.select(EHR_.CREATION_DATE)
-                .from(EHR_)
-                .where(EHR_.ID.eq(ehrId))
-                .fetchOne()
-                .value1();
+    public boolean ehrExists(UUID ehrId) {
+        return dsl.fetchExists(
+                dsl.selectOne().from(EHR).where(field(name("id"), UUID.class).eq(ehrId)));
     }
 
-    public void adminDelete(UUID ehrId) {
-
-        context.deleteFrom(tables.versionHead())
-                .where(field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId))
-                .execute();
-        context.deleteFrom(tables.versionHistory())
-                .where(field(VERSION_HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
-                .execute();
-        context.deleteFrom(EHR_).where(EHR_.ID.eq(ehrId)).execute();
+    public Optional<UUID> findBySubject(String subjectId, String namespace) {
+        Record1<UUID> result = dsl.select(field(name("id"), UUID.class))
+                .from(EHR)
+                .where(field(name("subject_id"), String.class).eq(subjectId))
+                .and(field(name("subject_namespace"), String.class).eq(namespace))
+                .fetchOne();
+        return result != null ? Optional.of(result.value1()) : Optional.empty();
     }
 
-    @Transactional
-    public void update(UUID ehrId, EhrStatus ehrStatus, UUID contributionId, UUID auditId) {
-
-        update(
-                ehrId,
-                ehrStatus,
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                contributionId,
-                auditId,
-                r -> {},
-                (n, r) -> r.setEhrId(ehrId),
-                "No EHR_STATUS in ehr: %s".formatted(ehrId));
+    public Optional<OffsetDateTime> getCreationTime(UUID ehrId) {
+        Record1<OffsetDateTime> result = dsl.select(field(name("creation_date"), OffsetDateTime.class))
+                .from(EHR)
+                .where(field(name("id"), UUID.class).eq(ehrId))
+                .fetchOne();
+        return result != null ? Optional.of(result.value1()) : Optional.empty();
     }
 
-    public Optional<VersionedEhrStatus> getVersionedEhrStatus(UUID ehrId) {
-
-        return findRootRecordByVersion(
-                        singleEhrStatusCondition(ehrId, tables.versionHead()),
-                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                        1)
-                .map(root -> recordToVersionedEhrStatus(ehrId, root));
+    public Optional<Integer> getLatestStatusVersion(UUID ehrId) {
+        Record1<Integer> result = dsl.select(field(name("sys_version"), Integer.class))
+                .from(EHR_STATUS)
+                .where(field(name("ehr_id"), UUID.class).eq(ehrId))
+                .fetchOne();
+        return result != null ? Optional.of(result.value1()) : Optional.empty();
     }
 
-    private Condition singleEhrStatusCondition(UUID ehrId, Table<?> table) {
-
-        return table.field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId);
+    public void checkEhrExistsAndIsModifiable(UUID ehrId) {
+        if (!ehrExists(ehrId)) {
+            throw new ObjectNotFoundException("ehr", ehrId.toString());
+        }
+        if (!isModifiable(ehrId)) {
+            throw new StateConflictException("EHR with id %s is not modifiable".formatted(ehrId));
+        }
     }
 
-    @Override
-    protected Class<EhrStatus> getLocatableClass() {
-        return EhrStatus.class;
-    }
+    private EhrStatus mapToEhrStatus(Record row, UUID ehrId) {
+        EhrStatus status = new EhrStatus();
+        status.setArchetypeNodeId(row.get(field(name("archetype_node_id"), String.class)));
+        status.setName(new com.nedap.archie.rm.datavalues.DvText(row.get(field(name("name"), String.class))));
 
-    private static VersionedEhrStatus recordToVersionedEhrStatus(UUID ehrId, EhrStatusVersionHistoryRecord record) {
-        VersionedEhrStatus versionedComposition = new VersionedEhrStatus();
-        versionedComposition.setUid(new HierObjectId(record.getVoId().toString()));
-        versionedComposition.setOwnerId(new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
-        versionedComposition.setTimeCreated(new DvDateTime(record.getSysPeriodLower()));
-        return versionedComposition;
+        Boolean queryable = row.get(field(name("is_queryable"), Boolean.class));
+        Boolean modifiable = row.get(field(name("is_modifiable"), Boolean.class));
+        status.setQueryable(queryable != null ? queryable : true);
+        status.setModifiable(modifiable != null ? modifiable : true);
+
+        // Subject
+        String subjectId = row.get(field(name("subject_id"), String.class));
+        String subjectNamespace = row.get(field(name("subject_namespace"), String.class));
+        PartySelf subject = new PartySelf();
+        if (subjectId != null) {
+            subject.setExternalRef(new PartyRef(new HierObjectId(subjectId), subjectNamespace, "PERSON"));
+        }
+        status.setSubject(subject);
+
+        // UID
+        UUID statusId = row.get(field(name("id"), UUID.class));
+        Integer version = row.get(field(name("sys_version"), Integer.class));
+        if (statusId != null && version != null) {
+            status.setUid(new com.nedap.archie.rm.support.identification.ObjectVersionId(
+                    statusId.toString() + "::" + "local.ehrbase.org" + "::" + version));
+        }
+
+        return status;
     }
 }

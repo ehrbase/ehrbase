@@ -17,293 +17,196 @@
  */
 package org.ehrbase.service;
 
-import static org.ehrbase.repository.AbstractVersionedObjectRepository.buildObjectVersionId;
-
-import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.ArchetypeID;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.support.identification.PartyRef;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
-import org.ehrbase.api.util.LocatableUtils;
-import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
-import org.ehrbase.repository.CompositionRepository;
-import org.ehrbase.repository.EhrFolderRepository;
+import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrRepository;
-import org.ehrbase.repository.experimental.ItemTagRepository;
-import org.ehrbase.util.UuidGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
-@Service(value = "ehrService")
-@Transactional()
+/**
+ * Service for EHR and EHR_STATUS operations.
+ * Rewritten for the new normalized schema — no DbToRmFormat or JSONB dependencies.
+ */
+@Service
+@Transactional
 public class EhrServiceImp implements EhrService {
 
-    private final ValidationService validationService;
-
-    private final EhrFolderRepository ehrFolderRepository;
-    private final CompositionRepository compositionRepository;
-    private final ItemTagRepository itemTagRepository;
+    private static final Logger log = LoggerFactory.getLogger(EhrServiceImp.class);
 
     private final EhrRepository ehrRepository;
+    private final ContributionRepository contributionRepository;
+    private final ValidationService validationService;
     private final SystemService systemService;
 
-    @Autowired
     public EhrServiceImp(
-            ValidationService validationService,
-            SystemService systemService,
-            EhrFolderRepository ehrFolderRepository,
-            CompositionRepository compositionRepository,
             EhrRepository ehrRepository,
-            ItemTagRepository itemTagRepository) {
-
-        this.validationService = validationService;
-
-        this.ehrFolderRepository = ehrFolderRepository;
-        this.compositionRepository = compositionRepository;
+            ContributionRepository contributionRepository,
+            ValidationService validationService,
+            SystemService systemService) {
         this.ehrRepository = ehrRepository;
-        this.itemTagRepository = itemTagRepository;
-
+        this.contributionRepository = contributionRepository;
+        this.validationService = validationService;
         this.systemService = systemService;
     }
 
     @Override
-    public UUID create(UUID ehrId, EhrStatus statusToCreate) {
-        if (ehrId == null) {
-            ehrId = UuidGenerator.randomUUID();
-        }
-        // status always gets a new UUID
-        ObjectVersionId statusVersionId = buildObjectVersionId(UuidGenerator.randomUUID(), 1, systemService);
-
-        EhrStatus status;
-        if (statusToCreate == null) { // in case of new status with default values
-            status = new EhrStatus(
-                    statusVersionId,
-                    "openEHR-EHR-EHR_STATUS.generic.v1",
-                    new DvText("EHR Status"),
-                    new Archetyped(new ArchetypeID("openEHR-EHR-EHR_STATUS.generic.v1"), RmConstants.RM_VERSION_1_0_4),
-                    null,
-                    null,
-                    null,
-                    null,
-                    new PartySelf(),
-                    true,
-                    true,
-                    null);
-        } else {
-            status = statusToCreate;
-            status.setUid(statusVersionId);
-            // pre-step: validate
-            validateEhrStatus(status);
-        }
-        try {
-            ehrRepository.commit(ehrId, status, null, null);
-        } catch (DuplicateKeyException e) {
-            checkEhrExistForParty(e, status);
-            if (hasEhr(ehrId)) {
-                throw new StateConflictException("EHR with id %s already exists.".formatted(ehrId));
-            } else {
-                throw e;
-            }
+    public UUID create(UUID ehrId, EhrStatus status) {
+        if (status == null) {
+            status = createDefaultEhrStatus();
         }
 
-        return ehrId;
+        validationService.check(status);
+
+        UUID contributionId =
+                contributionRepository.createContribution(ehrId != null ? ehrId : UUID.randomUUID(), "ehr", "creation");
+
+        UUID createdEhrId = ehrRepository.createEhr(ehrId, status, contributionId);
+        log.debug("Created EHR: id={}", createdEhrId);
+        return createdEhrId;
     }
 
     @Override
     public EhrStatus updateStatus(
-            UUID ehrId, EhrStatus ehrStatus, ObjectVersionId ifMatch, UUID contributionId, UUID audit) {
+            UUID ehrId, EhrStatus status, ObjectVersionId targetObjId, UUID contribution, UUID audit) {
+        Objects.requireNonNull(ehrId, "ehrId must not be null");
+        Objects.requireNonNull(status, "status must not be null");
 
-        UUID ehrStatusId = UUID.fromString(ifMatch.getObjectId().getValue());
-        int version = LocatableUtils.getUidVersion(ifMatch);
+        checkEhrExistsAndIsModifiable(ehrId);
+        validationService.check(status);
 
-        // set correct next id with incremented version
-        ObjectVersionId statusVersionId = buildObjectVersionId(ehrStatusId, version + 1, systemService);
-        ehrStatus.setUid(statusVersionId);
+        int expectedVersion = extractVersion(targetObjId);
 
-        validateEhrStatus(ehrStatus);
-
-        try {
-            ehrRepository.update(ehrId, ehrStatus, contributionId, audit);
-        } catch (DuplicateKeyException e) {
-            checkEhrExistForParty(e, ehrStatus);
-            throw e;
+        if (contribution == null) {
+            contribution = contributionRepository.createContribution(ehrId, "ehr", "modification");
         }
 
-        return getEhrStatus(ehrId);
+        ehrRepository.updateEhrStatus(ehrId, status, expectedVersion, contribution);
+
+        return ehrRepository
+                .findCurrentStatus(ehrId)
+                .orElseThrow(() -> new ObjectNotFoundException("ehr_status", ehrId.toString()));
     }
 
     @Override
-    public EhrStatus getEhrStatus(UUID ehrId) {
-        return ehrRepository.findHead(ehrId).orElseThrow(() -> ehrNotFoundException(ehrId));
+    public EhrStatus getEhrStatus(UUID ehrUuid) {
+        checkEhrExists(ehrUuid);
+        return ehrRepository
+                .findCurrentStatus(ehrUuid)
+                .orElseThrow(() -> new ObjectNotFoundException("ehr_status", ehrUuid.toString()));
     }
 
     @Override
     public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(
-            UUID ehrId, UUID versionedObjectUid, int version) {
-        // pre-step: check for valid ehrId
-        ensureEhrExist(ehrId);
-
-        return ehrRepository.getOriginalVersionStatus(ehrId, versionedObjectUid, version);
-    }
-
-    private void checkEhrExistForParty(DuplicateKeyException e, EhrStatus status) throws StateConflictException {
-        if (e.getMessage().contains("\"ehr_status_subject_idx\"")) {
-            PartyRef pRef = status.getSubject().getExternalRef();
-            throw new StateConflictException(
-                    "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s]."
-                            .formatted(pRef.getId().getValue(), pRef.getNamespace()));
-        }
-    }
-
-    private void validateEhrStatus(EhrStatus status) {
-        try {
-            validationService.check(status);
-        } catch (UnprocessableEntityException | ValidationException | InternalServerException e) {
-            throw e;
-        } catch (RuntimeException e) {
-            throw new InternalServerException(e.getMessage(), e);
-        }
+            UUID ehrUuid, UUID versionedObjectUid, int version) {
+        // TODO: build OriginalVersion wrapper
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public Optional<UUID> findBySubject(String subjectId, String nameSpace) {
-
         return ehrRepository.findBySubject(subjectId, nameSpace);
     }
 
     @Override
-    public ObjectVersionId getEhrStatusVersionByTimestamp(UUID ehrId, OffsetDateTime timestamp) {
-        // pre-step: check for valid ehrId
-        ensureEhrExist(ehrId);
-
-        return ehrRepository
-                .findVersionByTime(ehrId, timestamp)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "ehr_status", "No EHR_STATUS with given timestamp: %s".formatted(timestamp)));
-    }
-
     public ObjectVersionId getLatestVersionUidOfStatus(UUID ehrId) {
-        // pre-step: check for valid ehrId
-        ensureEhrExist(ehrId);
-
-        return ehrRepository.findLatestVersion(ehrId).orElseThrow();
+        checkEhrExists(ehrId);
+        int version = ehrRepository
+                .getLatestStatusVersion(ehrId)
+                .orElseThrow(() -> new ObjectNotFoundException("ehr_status", ehrId.toString()));
+        return new ObjectVersionId(ehrId.toString() + "::" + systemService.getSystemId() + "::" + version);
     }
 
-    public DvDateTime getCreationTime(UUID ehrId) {
-        // pre-step: check for valid ehrId
-        ensureEhrExist(ehrId);
+    @Override
+    public ObjectVersionId getEhrStatusVersionByTimestamp(UUID ehrUid, OffsetDateTime timestamp) {
+        // TODO: temporal query on ehr_status + history
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 
-        return new DvDateTime(ehrRepository.findEhrCreationTime(ehrId));
+    @Override
+    public DvDateTime getCreationTime(UUID ehrId) {
+        OffsetDateTime creationTime = ehrRepository
+                .getCreationTime(ehrId)
+                .orElseThrow(() -> new ObjectNotFoundException("ehr", ehrId.toString()));
+        return new DvDateTime(creationTime);
     }
 
     @Override
     public boolean hasEhr(UUID ehrId) {
-        if (isIsRollbackOnly()) {
-            return ehrRepository.hasEhrNewTransaction(ehrId);
-        } else {
-            return ehrRepository.hasEhr(ehrId);
-        }
-    }
-
-    private static boolean isIsRollbackOnly() {
-        try {
-            return TransactionAspectSupport.currentTransactionStatus().isRollbackOnly();
-        } catch (NoTransactionException _) {
-            return false;
-        }
+        return ehrRepository.ehrExists(ehrId);
     }
 
     @Override
     public VersionedEhrStatus getVersionedEhrStatus(UUID ehrId) {
-        return ehrRepository.getVersionedEhrStatus(ehrId).orElseThrow(() -> ehrNotFoundException(ehrId));
+        // TODO: build VersionedEhrStatus
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
-    public RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrUid) {
-
-        RevisionHistory revisionHistory = ehrRepository.getRevisionHistory(ehrUid);
-
-        if (revisionHistory.getItems().isEmpty()) {
-            throw ehrNotFoundException(ehrUid);
-        }
-        return revisionHistory;
+    public RevisionHistory getRevisionHistoryOfVersionedEhrStatus(UUID ehrId) {
+        // TODO: build from ehr_status_history
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @PreAuthorize("hasRole('ADMIN')")
     @Override
     public void adminDeleteEhr(UUID ehrId) {
-
-        ehrFolderRepository.adminDelete(ehrId, null);
-        compositionRepository.adminDeleteAll(ehrId);
-        itemTagRepository.adminDeleteAll(ehrId);
-        ehrRepository.adminDelete(ehrId);
+        // TODO: admin physical delete
+        throw new UnsupportedOperationException("Admin delete not yet implemented");
     }
 
     @Override
     public String getSubjectExtRef(String ehrId) {
-        EhrStatus ehrStatus = getEhrStatus(UUID.fromString(ehrId));
-        return Optional.of(ehrStatus.getSubject())
-                .map(PartyProxy::getExternalRef)
-                .map(ObjectRef::getId)
-                .map(ObjectId::getValue)
-                .orElse(null);
+        EhrStatus status = getEhrStatus(UUID.fromString(ehrId));
+        if (status.getSubject() instanceof PartySelf self
+                && self.getExternalRef() != null
+                && self.getExternalRef().getId() != null) {
+            return self.getExternalRef().getId().getValue();
+        }
+        return null;
     }
 
     @Override
     public void checkEhrExists(UUID ehrId) {
-        if (ehrId == null || !hasEhr(ehrId)) {
-            throw new ObjectNotFoundException("EHR", String.format("EHR with id %s not found", ehrId));
+        if (!ehrRepository.ehrExists(ehrId)) {
+            throw new ObjectNotFoundException("ehr", ehrId.toString());
         }
     }
 
     @Override
     public void checkEhrExistsAndIsModifiable(UUID ehrId) {
-
-        boolean modifiable = Optional.ofNullable(ehrRepository.fetchIsModifiable(ehrId))
-                .orElseThrow(
-                        () -> new ObjectNotFoundException("EHR", String.format("EHR with id %s not found", ehrId)));
-
-        if (!modifiable) {
-            throw new StateConflictException(String.format("EHR with id %s does not allow modification", ehrId));
-        }
+        ehrRepository.checkEhrExistsAndIsModifiable(ehrId);
     }
 
-    private void ensureEhrExist(UUID ehrId) {
-        // pre-step: check for valid ehrId
-        if (!hasEhr(ehrId)) {
-            throw ehrNotFoundException(ehrId);
-        }
+    private EhrStatus createDefaultEhrStatus() {
+        EhrStatus status = new EhrStatus();
+        status.setArchetypeNodeId("openEHR-EHR-EHR_STATUS.generic.v1");
+        status.setName(new DvText("EHR Status"));
+        status.setSubject(new PartySelf());
+        status.setQueryable(true);
+        status.setModifiable(true);
+        return status;
     }
 
-    private static ObjectNotFoundException ehrNotFoundException(UUID ehrId) {
-        return new ObjectNotFoundException("ehr", String.format("No EHR found with given ID: %s", ehrId));
+    private static int extractVersion(ObjectVersionId versionId) {
+        if (versionId == null) return 1;
+        String id = versionId.getValue();
+        int lastSep = id.lastIndexOf("::");
+        return lastSep > 0 ? Integer.parseInt(id.substring(lastSep + 2)) : 1;
     }
 }

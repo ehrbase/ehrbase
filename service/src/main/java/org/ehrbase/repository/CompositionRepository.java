@@ -17,308 +17,316 @@
  */
 package org.ehrbase.repository;
 
-import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
-import static org.ehrbase.jooq.pg.Tables.COMP_DATA_HISTORY;
-import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
-import static org.ehrbase.jooq.pg.Tables.COMP_VERSION_HISTORY;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.table;
 
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
-import com.nedap.archie.rm.ehr.VersionedComposition;
-import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.HierObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
-import org.ehrbase.api.service.SystemService;
-import org.ehrbase.api.util.LocatableUtils;
-import org.ehrbase.jooq.pg.enums.ContributionChangeType;
-import org.ehrbase.jooq.pg.tables.CompVersion;
-import org.ehrbase.jooq.pg.tables.CompVersionHistory;
-import org.ehrbase.jooq.pg.tables.records.CompDataHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompDataRecord;
-import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
-import org.ehrbase.jooq.pg.tables.records.CompVersionRecord;
-import org.ehrbase.openehr.aqlengine.asl.model.AslRmTypeAndConcept;
-import org.ehrbase.service.TimeProvider;
-import org.jooq.Condition;
+import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.repository.composition.CompositionMetadata;
+import org.ehrbase.repository.composition.DynamicCompositionReader;
+import org.ehrbase.repository.composition.DynamicCompositionWriter;
+import org.ehrbase.repository.schema.TemplateSchemaResolver;
+import org.ehrbase.repository.schema.TemplateTableMetadata;
+import org.ehrbase.repository.versioning.VersioningEngine;
+import org.ehrbase.service.AuditEventService;
+import org.ehrbase.service.RequestContext;
+import org.ehrbase.service.TenantGuard;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.jooq.Record1;
-import org.jooq.Table;
-import org.jooq.TableField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Repository for composition CRUD operations using normalized template tables.
+ * Replaces the legacy JSONB-based CompositionRepository.
+ *
+ * <p>Uses {@link VersioningEngine} for explicit app-code versioning,
+ * {@link DynamicCompositionWriter}/{@link DynamicCompositionReader} for clinical data,
+ * and {@link TemplateSchemaResolver} for dynamic table resolution.
+ */
 @Repository
-public class CompositionRepository
-        extends AbstractVersionedObjectRepository<
-                CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, CompDataHistoryRecord, Composition> {
+public class CompositionRepository {
 
-    private final KnowledgeCacheService knowledgeCache;
+    private static final Logger log = LoggerFactory.getLogger(CompositionRepository.class);
+
+    private static final org.jooq.Table<?> COMPOSITION = table(name("ehr_system", "composition"));
+    private static final org.jooq.Table<?> COMPOSITION_HISTORY = table(name("ehr_system", "composition_history"));
+
+    private final DSLContext dsl;
+    private final VersioningEngine versioningEngine;
+    private final DynamicCompositionWriter writer;
+    private final DynamicCompositionReader reader;
+    private final TemplateSchemaResolver schemaResolver;
+    private final AuditEventService auditService;
+    private final TenantGuard tenantGuard;
+    private final RequestContext requestContext;
 
     public CompositionRepository(
-            DSLContext context,
-            ContributionRepository contributionRepository,
-            SystemService systemService,
-            KnowledgeCacheService knowledgeCache,
-            TimeProvider timeProvider) {
-        super(
-                AuditDetailsTargetType.COMPOSITION,
-                COMP_VERSION,
-                COMP_DATA,
-                COMP_VERSION_HISTORY,
-                COMP_DATA_HISTORY,
-                context,
-                contributionRepository,
-                systemService,
-                timeProvider);
-        this.knowledgeCache = knowledgeCache;
-    }
-
-    @Override
-    protected Class<Composition> getLocatableClass() {
-        return Composition.class;
-    }
-
-    @Override
-    protected List<TableField<CompVersionRecord, ?>> getVersionDataJoinFields() {
-        return List.of(COMP_VERSION.VO_ID);
+            DSLContext dsl,
+            VersioningEngine versioningEngine,
+            DynamicCompositionWriter writer,
+            DynamicCompositionReader reader,
+            TemplateSchemaResolver schemaResolver,
+            AuditEventService auditService,
+            TenantGuard tenantGuard,
+            RequestContext requestContext) {
+        this.dsl = dsl;
+        this.versioningEngine = versioningEngine;
+        this.writer = writer;
+        this.reader = reader;
+        this.schemaResolver = schemaResolver;
+        this.auditService = auditService;
+        this.tenantGuard = tenantGuard;
+        this.requestContext = requestContext;
     }
 
     @Transactional
-    public void commit(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
-        UUID templateId = Optional.of(composition)
-                .map(LocatableUtils::getTemplateId)
-                .flatMap(knowledgeCache::findUuidByTemplateId)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
+    public CompositionMetadata create(
+            UUID ehrId,
+            Composition composition,
+            UUID templateUuid,
+            String templateId,
+            UUID contributionId,
+            WebTemplate webTemplate) {
 
-        String rootConcept = AslRmTypeAndConcept.toEntityConcept(composition.getArchetypeNodeId());
+        TemplateTableMetadata tableMeta = schemaResolver.resolve(templateId);
 
-        commitHead(
+        CompositionMetadata result = versioningEngine.createComposition(
                 ehrId,
                 composition,
+                templateUuid,
+                templateId,
                 contributionId,
-                auditId,
-                ContributionChangeType.creation,
-                r -> {
-                    r.setTemplateId(templateId);
-                    r.setRootConcept(rootConcept);
-                },
-                (n, r) -> {});
+                requestContext.getUserId(),
+                requestContext.getUserId(),
+                requestContext.getTenantId(),
+                webTemplate,
+                tableMeta);
+
+        auditService.recordEvent("data_modify", "composition", result.id(), "create", null, null);
+        return result;
+    }
+
+    public Optional<Composition> findHead(UUID ehrId, UUID compositionId) {
+        CompositionMetadata meta = fetchCompositionMetadata(compositionId);
+        if (meta == null) {
+            return Optional.empty();
+        }
+        tenantGuard.assertTenantMatch(meta.sysTenant());
+
+        TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
+        WebTemplate webTemplate = null; // TODO: resolve from KnowledgeCacheService
+        auditService.recordEvent("data_access", "composition", compositionId, "read", null, null);
+        return reader.readCurrent(compositionId, tableMeta, webTemplate, meta);
+    }
+
+    public Optional<Composition> findByVersion(UUID ehrId, UUID compositionId, int version) {
+        CompositionMetadata meta = fetchCompositionMetadataForVersion(compositionId, version);
+        if (meta == null) {
+            return Optional.empty();
+        }
+        tenantGuard.assertTenantMatch(meta.sysTenant());
+
+        TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
+        WebTemplate webTemplate = null; // TODO: resolve from KnowledgeCacheService
+        auditService.recordEvent("data_access", "composition", compositionId, "read", null, null);
+        return reader.readVersion(compositionId, version, tableMeta, webTemplate, meta);
+    }
+
+    public Optional<Composition> findAtTime(UUID ehrId, UUID compositionId, OffsetDateTime timestamp) {
+        CompositionMetadata meta = fetchCompositionMetadataAtTime(compositionId, timestamp);
+        if (meta == null) {
+            return Optional.empty();
+        }
+        tenantGuard.assertTenantMatch(meta.sysTenant());
+
+        TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
+        WebTemplate webTemplate = null; // TODO: resolve from KnowledgeCacheService
+        auditService.recordEvent("data_access", "composition", compositionId, "read", null, null);
+        return reader.readAtTime(compositionId, timestamp, tableMeta, webTemplate, meta);
     }
 
     @Transactional
-    public void delete(UUID ehrId, UUID compId, int version, UUID contributionId, UUID auditId) {
+    public CompositionMetadata update(
+            UUID ehrId,
+            UUID compositionId,
+            Composition composition,
+            UUID templateUuid,
+            String templateId,
+            UUID contributionId,
+            int expectedVersion,
+            WebTemplate webTemplate) {
 
-        delete(
+        TemplateTableMetadata tableMeta = schemaResolver.resolve(templateId);
+
+        CompositionMetadata result = versioningEngine.updateComposition(
+                compositionId,
                 ehrId,
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                version,
+                expectedVersion,
+                composition,
+                templateUuid,
+                templateId,
                 contributionId,
-                auditId,
-                "No Composition found with: %s ".formatted(compId));
+                requestContext.getUserId(),
+                requestContext.getUserId(),
+                requestContext.getTenantId(),
+                webTemplate,
+                tableMeta);
+
+        auditService.recordEvent("data_modify", "composition", compositionId, "update", null, null);
+        return result;
     }
 
-    public boolean isTemplateUsed(String templateId) {
-        Optional<UUID> templateUuid = knowledgeCache.findUuidByTemplateId(templateId);
-        if (templateUuid.isEmpty()) {
+    @Transactional
+    public void delete(UUID ehrId, UUID compositionId, int expectedVersion, UUID contributionId) {
+        CompositionMetadata meta = fetchCompositionMetadata(compositionId);
+        if (meta == null) {
+            throw new org.ehrbase.api.exception.ObjectNotFoundException("composition", compositionId.toString());
+        }
+        tenantGuard.assertTenantMatch(meta.sysTenant());
+
+        TemplateTableMetadata tableMeta = schemaResolver.resolveByUuid(meta.templateId());
+
+        versioningEngine.deleteComposition(
+                compositionId,
+                ehrId,
+                expectedVersion,
+                contributionId,
+                requestContext.getUserId(),
+                requestContext.getUserId(),
+                requestContext.getTenantId(),
+                tableMeta);
+
+        auditService.recordEvent("data_modify", "composition", compositionId, "delete", null, null);
+    }
+
+    public boolean exists(UUID compositionId) {
+        return dsl.fetchExists(dsl.selectOne()
+                .from(COMPOSITION)
+                .where(field(name("id"), UUID.class).eq(compositionId)));
+    }
+
+    public Optional<Integer> getLatestVersionNumber(UUID compositionId) {
+        Record1<Integer> result = dsl.select(field(name("sys_version"), Integer.class))
+                .from(COMPOSITION)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .fetchOne();
+
+        if (result != null) {
+            return Optional.of(result.value1());
+        }
+
+        // Check history for deleted compositions
+        result = dsl.select(field(name("sys_version"), Integer.class))
+                .from(COMPOSITION_HISTORY)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .orderBy(field(name("sys_version")).desc())
+                .limit(1)
+                .fetchOne();
+
+        return result != null ? Optional.of(result.value1()) : Optional.empty();
+    }
+
+    public boolean isDeleted(UUID ehrId, UUID compositionId, Integer version) {
+        // A composition is deleted if it's not in the current table
+        // but exists in history with change_type='deleted'
+        boolean inCurrent = exists(compositionId);
+        if (inCurrent) {
             return false;
         }
 
-        CompVersion vTable = COMP_VERSION.as("v");
-        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
-
-        return context.select(vTable.VO_ID)
-                .from(vTable)
-                .where(vTable.TEMPLATE_ID.eq(templateUuid.get()))
-                .limit(1)
-                .unionAll(context.select(hTable.VO_ID)
-                        .from(hTable)
-                        .where(hTable.TEMPLATE_ID.eq(templateUuid.get()))
-                        .limit(1))
-                .limit(1)
-                .fetchOptional()
-                .isPresent();
+        return dsl.fetchExists(dsl.selectOne()
+                .from(COMPOSITION_HISTORY)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .and(field(name("change_type"), String.class).eq("deleted")));
     }
 
-    @Transactional
-    public void update(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
-
-        UUID rootId = LocatableUtils.getUuid(composition);
-
-        UUID templateId = Optional.of(composition)
-                .map(LocatableUtils::getTemplateId)
-                .flatMap(knowledgeCache::findUuidByTemplateId)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
-
-        String rootConcept = AslRmTypeAndConcept.toEntityConcept(composition.getArchetypeNodeId());
-
-        update(
-                ehrId,
-                composition,
-                singleCompositionInEhrCondition(ehrId, rootId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, rootId, tables.versionHistory()),
-                contributionId,
-                auditId,
-                r -> {
-                    r.setTemplateId(templateId);
-                    r.setRootConcept(rootConcept);
-                },
-                (n, r) -> {},
-                "No COMPOSITION with given id: %s".formatted(rootId));
+    public boolean isTemplateUsed(String templateId) {
+        return dsl.fetchExists(dsl.selectOne()
+                .from(COMPOSITION)
+                .join(table(name("ehr_system", "template")))
+                .on(field(name("ehr_system", "composition", "template_id"), UUID.class)
+                        .eq(field(name("ehr_system", "template", "id"), UUID.class)))
+                .where(field(name("ehr_system", "template", "template_id"), String.class)
+                        .eq(templateId)));
     }
 
-    public RevisionHistory getRevisionHistory(UUID ehrId, UUID compositionId) {
-        return getRevisionHistory(
-                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compositionId, tables.versionHistory()));
+    public Optional<UUID> getEhrIdForComposition(UUID compositionId) {
+        Record1<UUID> result = dsl.select(field(name("ehr_id"), UUID.class))
+                .from(COMPOSITION)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .fetchOne();
+        return result != null ? Optional.of(result.value1()) : Optional.empty();
     }
 
-    public boolean exists(UUID compId) {
-
-        return context.selectOne()
-                        .from(COMP_VERSION)
-                        .where(COMP_VERSION.VO_ID.eq(compId))
-                        .unionAll(context.selectOne()
-                                .from(COMP_VERSION_HISTORY)
-                                .where(COMP_VERSION_HISTORY.VO_ID.eq(compId)))
-                        .fetchAny()
-                != null;
+    private CompositionMetadata fetchCompositionMetadata(UUID compositionId) {
+        Record row = dsl.select()
+                .from(COMPOSITION)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .fetchOne();
+        return row != null ? mapToCompositionMetadata(row) : null;
     }
 
-    public Optional<Integer> getLatestVersionNumber(UUID compId) {
-        return context.select(COMP_VERSION.SYS_VERSION)
-                .from(COMP_VERSION)
-                .where(COMP_VERSION.VO_ID.eq(compId))
-                .unionAll(context.select(COMP_VERSION_HISTORY.SYS_VERSION)
-                        .from(COMP_VERSION_HISTORY)
-                        .where(COMP_VERSION_HISTORY.VO_ID.eq(compId)))
-                .orderBy(COMP_VERSION.SYS_VERSION.desc())
-                .limit(1)
-                .fetchOptional(Record1::value1);
+    private CompositionMetadata fetchCompositionMetadataForVersion(UUID compositionId, int version) {
+        // Check current first
+        Record row = dsl.select()
+                .from(COMPOSITION)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .and(field(name("sys_version"), Integer.class).eq(version))
+                .fetchOne();
+        if (row != null) {
+            return mapToCompositionMetadata(row);
+        }
+        // Check history
+        row = dsl.select()
+                .from(COMPOSITION_HISTORY)
+                .where(field(name("id"), UUID.class).eq(compositionId))
+                .and(field(name("sys_version"), Integer.class).eq(version))
+                .fetchOne();
+        return row != null ? mapToCompositionMetadata(row) : null;
     }
 
-    public Optional<Integer> getLatestVersionNumber(UUID ehrId, UUID compId) {
-        return context.select(COMP_VERSION.SYS_VERSION)
-                .from(COMP_VERSION)
-                .where(COMP_VERSION.EHR_ID.eq(ehrId).and(COMP_VERSION.VO_ID.eq(compId)))
-                .unionAll(context.select(COMP_VERSION_HISTORY.SYS_VERSION)
-                        .from(COMP_VERSION_HISTORY)
-                        .where(COMP_VERSION_HISTORY.EHR_ID.eq(ehrId).and(COMP_VERSION_HISTORY.VO_ID.eq(compId))))
-                .orderBy(COMP_VERSION.SYS_VERSION.desc())
-                .limit(1)
-                .fetchOptional(Record1::value1);
+    private CompositionMetadata fetchCompositionMetadataAtTime(UUID compositionId, OffsetDateTime timestamp) {
+        Record row = dsl.resultQuery(
+                        "SELECT * FROM ehr_system.composition WHERE id = ? AND valid_period @> ?::timestamptz"
+                                + " UNION ALL"
+                                + " SELECT * FROM ehr_system.composition_history WHERE id = ? AND valid_period @> ?::timestamptz"
+                                + " LIMIT 1",
+                        compositionId,
+                        timestamp,
+                        compositionId,
+                        timestamp)
+                .fetchOne();
+        return row != null ? mapToCompositionMetadata(row) : null;
     }
 
-    public boolean isDeleted(UUID ehrId, UUID compId, Integer version) {
-        return isDeleted(
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHistory()),
-                version);
-    }
-
-    private Condition singleCompositionInEhrCondition(UUID ehrId, UUID compId, Table<?> versionTable) {
-
-        return versionTable
-                .field(VERSION_PROTOTYPE.EHR_ID)
-                .eq(ehrId)
-                .and(versionTable.field(VERSION_PROTOTYPE.VO_ID).eq(compId));
-    }
-
-    public Optional<Composition> findByVersion(UUID ehrId, UUID compId, int version) {
-
-        return findByVersion(
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHistory()),
-                version);
-    }
-
-    public Optional<Composition> findHead(UUID ehrId, UUID compId) {
-        return findHead(singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()));
-    }
-
-    private Optional<CompVersionHistoryRecord> findRootRecordByVersion(UUID ehrId, UUID compId, int version) {
-        return findRootRecordByVersion(
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrId, compId, tables.versionHistory()),
-                version);
-    }
-
-    public Optional<VersionedComposition> getVersionedComposition(UUID ehrId, UUID composition) {
-        return findRootRecordByVersion(ehrId, composition, 1).map(root -> {
-            VersionedComposition versionedComposition = new VersionedComposition();
-            versionedComposition.setUid(new HierObjectId(root.getVoId().toString()));
-            versionedComposition.setOwnerId(new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
-            versionedComposition.setTimeCreated(new DvDateTime(root.getSysPeriodLower()));
-            return versionedComposition;
-        });
-    }
-
-    public Optional<String> findTemplateId(UUID compId) {
-        CompVersion vTable = COMP_VERSION.as("v");
-        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
-        return context.select(vTable.TEMPLATE_ID)
-                .from(vTable)
-                .where(vTable.VO_ID.eq(compId))
-                .unionAll(context.select(hTable.TEMPLATE_ID)
-                        .from(hTable)
-                        .where(hTable.VO_ID.eq(compId))
-                        .orderBy(hTable.SYS_VERSION.desc())
-                        .limit(1))
-                .limit(1)
-                .fetchOptional(Record1::value1)
-                .flatMap(knowledgeCache::findTemplateIdByUuid);
-    }
-
-    public Optional<UUID> findEHRforComposition(UUID compId) {
-        return context.select(COMP_VERSION.EHR_ID)
-                .from(tables.versionHead())
-                .where(COMP_VERSION.VO_ID.eq(compId))
-                .limit(1)
-                .unionAll(context.select(COMP_VERSION_HISTORY.EHR_ID)
-                        .from(COMP_VERSION_HISTORY)
-                        .where(COMP_VERSION_HISTORY.VO_ID.eq(compId))
-                        .limit(1))
-                .limit(1)
-                .fetchOptional()
-                .map(Record1::value1);
-    }
-
-    public Optional<OriginalVersion<Composition>> getOriginalVersionComposition(
-            UUID ehrUid, UUID versionedObjectUid, int version) {
-
-        return getOriginalVersion(
-                singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.versionHead()),
-                singleCompositionInEhrCondition(ehrUid, versionedObjectUid, tables.versionHistory()),
-                version);
-    }
-
-    public Optional<Integer> findVersionByTime(UUID compositionId, OffsetDateTime time) {
-
-        return findVersionByTime(
-                        COMP_VERSION.VO_ID.eq(compositionId), COMP_VERSION_HISTORY.VO_ID.eq(compositionId), time)
-                .map(LocatableUtils::getUidVersion);
-    }
-
-    @Transactional
-    public void adminDelete(UUID compId) {
-        context.delete(COMP_VERSION_HISTORY)
-                .where(COMP_VERSION_HISTORY.VO_ID.eq(compId))
-                .execute();
-        context.delete(COMP_VERSION).where(COMP_VERSION.VO_ID.eq(compId)).execute();
-    }
-
-    @Transactional
-    public void adminDeleteAll(UUID ehrId) {
-        context.delete(COMP_VERSION_HISTORY)
-                .where(COMP_VERSION_HISTORY.EHR_ID.eq(ehrId))
-                .execute();
-        context.delete(COMP_VERSION).where(COMP_VERSION.EHR_ID.eq(ehrId)).execute();
+    private CompositionMetadata mapToCompositionMetadata(Record row) {
+        return new CompositionMetadata(
+                row.get(field(name("id"), UUID.class)),
+                row.get(field(name("ehr_id"), UUID.class)),
+                row.get(field(name("template_id"), UUID.class)),
+                row.get(field(name("archetype_id"), String.class)),
+                row.get(field(name("template_name"), String.class)),
+                row.get(field(name("composer_name"), String.class)),
+                row.get(field(name("composer_id"), String.class)),
+                row.get(field(name("language"), String.class)),
+                row.get(field(name("territory"), String.class)),
+                row.get(field(name("category_code"), String.class)),
+                null, // feederAudit
+                null, // participations
+                row.get(field(name("sys_version"), Integer.class)),
+                row.get(field(name("contribution_id"), UUID.class)),
+                row.get(field(name("change_type"), String.class)),
+                row.get(field(name("committed_at"), OffsetDateTime.class)),
+                row.get(field(name("committer_name"), String.class)),
+                row.get(field(name("committer_id"), String.class)),
+                row.get(field(name("sys_tenant"), Short.class)));
     }
 }
