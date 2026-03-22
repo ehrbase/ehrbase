@@ -22,7 +22,6 @@ import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.springframework.cache.Cache;
 
@@ -33,7 +32,6 @@ public interface CacheProvider {
     EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
     EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
             new EhrBaseCache<>("externalFhirTerminologyCache");
-    EhrBaseCache<String, QueryDefinitionResultDto> STORED_QUERY_CACHE = new EhrBaseCache<>("StoredQueryCache");
 
     static Supplier<InternalServerException> getExceptionSupplier(EhrBaseCache<?, ?> cache) {
         return () -> new InternalServerException("Non existing cache : %s".formatted(cache.name()));

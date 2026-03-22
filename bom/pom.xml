@@ -172,27 +172,12 @@
             <!-- modules -->
             <dependency>
                 <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>rm-db-format</artifactId>
-                <version>${ehrbase.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
                 <artifactId>schema-generator</artifactId>
                 <version>${ehrbase.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.ehrbase.openehr</groupId>
                 <artifactId>service</artifactId>
-                <version>${ehrbase.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>rest-ehr-scape</artifactId>
-                <version>${ehrbase.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>rest-openehr</artifactId>
                 <version>${ehrbase.version}</version>
             </dependency>
             <dependency>
@@ -230,20 +215,6 @@
                 <artifactId>plugin</artifactId>
                 <version>${ehrbase.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>aql-engine</artifactId>
-                <version>${ehrbase.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>aql-engine</artifactId>
-                <classifier>tests</classifier>
-                <type>test-jar</type>
-                <scope>test</scope>
-                <version>${ehrbase.version}</version>
-            </dependency>
-
             <!-- Exclude Jackson 3 (spring-boot-jackson) — use Jackson 2 (spring-boot-jackson2) instead -->
             <!-- See: https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring -->
             <dependency>
