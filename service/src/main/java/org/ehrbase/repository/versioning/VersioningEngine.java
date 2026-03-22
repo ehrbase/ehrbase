@@ -289,7 +289,8 @@ public class VersioningEngine {
         // Step 1: Archive current to _history with closed period
         archiveCompositionToHistory(compositionId);
 
-        // Step 2: INSERT deletion marker into _history
+        // Step 2: INSERT deletion marker into _history.
+        // Uses tstzrange(now(), NULL) — an open-ended range starting at deletion time.
         int deletionVersion = expectedVersion + 1;
         dsl.execute(
                 "INSERT INTO ehr_system.composition_history "
@@ -297,7 +298,7 @@ public class VersioningEngine {
                         + "composer_name, composer_id, valid_period, sys_version, contribution_id, change_type, "
                         + "committed_at, committer_name, committer_id, sys_tenant) "
                         + "SELECT id, ehr_id, template_id, archetype_id, template_name, composer_name, composer_id, "
-                        + "tstzrange(now(), now()), ?, ?, 'deleted', now(), ?, ?, sys_tenant "
+                        + "tstzrange(now(), NULL), ?, ?, 'deleted', now(), ?, ?, sys_tenant "
                         + "FROM ehr_system.composition WHERE id = ?",
                 deletionVersion,
                 contributionId,
