@@ -19,8 +19,10 @@ package org.ehrbase.rest.api.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
@@ -30,6 +32,7 @@ import org.ehrbase.rest.api.dto.TemplateResponseDto;
 import org.ehrbase.rest.api.media.EhrMediaType;
 import org.ehrbase.service.RequestContext;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
+import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -75,9 +78,18 @@ public class TemplateController extends BaseApiController {
             summary = "Upload ADL 1.4 OPT XML template",
             description = "Stores template, generates normalized tables in ehr_data, creates views in ehr_views, "
                     + "registers in schema_registry and view_catalog, refreshes GraphQL schema")
-    public ResponseEntity<java.util.Map<String, Object>> uploadAdl14(@RequestBody OPERATIONALTEMPLATE template) {
+    public ResponseEntity<java.util.Map<String, Object>> uploadAdl14(InputStream body) {
 
-        // 1. Store template in knowledge cache
+        // 1. Parse OPT XML using XmlBeans (not Jackson)
+        OPERATIONALTEMPLATE template;
+        try {
+            TemplateDocument document = TemplateDocument.Factory.parse(body);
+            template = document.getTemplate();
+        } catch (Exception e) {
+            throw new InvalidApiParameterException("Invalid OPT XML: " + e.getMessage());
+        }
+
+        // 2. Store template in knowledge cache
         String templateId = knowledgeCache.addOperationalTemplate(template);
         requestContext.setTemplateId(templateId);
 
@@ -90,7 +102,7 @@ public class TemplateController extends BaseApiController {
         String tableName =
                 schemaExecutor.executeSchemaGeneration(templateId, templateUuid, requestContext.getTenantId());
 
-        URI location = locationUri("api", "v1", "templates", "adl1.4", templateId);
+        URI location = locationUri("api", "v2", "templates", "adl1.4", templateId);
 
         OPERATIONALTEMPLATE stored = knowledgeCache
                 .retrieveOperationalTemplate(templateId)

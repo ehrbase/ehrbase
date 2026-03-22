@@ -74,14 +74,18 @@ class TemplateControllerTest {
     // Migrated: createTemplateADL1_4 — successful upload
     @Test
     void uploadAdl14() {
-        var opt = mock(OPERATIONALTEMPLATE.class);
-        when(mockKnowledgeCache.addOperationalTemplate(opt)).thenReturn("test-template");
+        when(mockKnowledgeCache.addOperationalTemplate(any(OPERATIONALTEMPLATE.class)))
+                .thenReturn("test-template");
         when(mockKnowledgeCache.findUuidByTemplateId("test-template")).thenReturn(Optional.of(UUID.randomUUID()));
         when(mockSchemaExecutor.executeSchemaGeneration(any(), any(), org.mockito.ArgumentMatchers.anyShort()))
                 .thenReturn("test_template");
-        when(mockKnowledgeCache.retrieveOperationalTemplate("test-template")).thenReturn(Optional.of(opt));
+        when(mockKnowledgeCache.retrieveOperationalTemplate("test-template"))
+                .thenReturn(Optional.of(mock(OPERATIONALTEMPLATE.class)));
 
-        var response = spyController.uploadAdl14(opt);
+        // Provide a minimal valid OPT XML as InputStream
+        var xml =
+                "<template xmlns=\"http://schemas.openehr.org/v1\"><template_id><value>test-template</value></template_id><concept>Test</concept><definition><rm_type_name>COMPOSITION</rm_type_name><node_id>openEHR-EHR-COMPOSITION.minimal.v1</node_id><occurrence><lower>1</lower><upper>1</upper></occurrence></definition></template>";
+        var response = spyController.uploadAdl14(new java.io.ByteArrayInputStream(xml.getBytes()));
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).containsKey("templateId");
         assertThat(response.getBody().get("templateId")).isEqualTo("test-template");

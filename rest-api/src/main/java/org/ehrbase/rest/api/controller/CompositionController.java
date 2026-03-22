@@ -111,7 +111,7 @@ public class CompositionController extends BaseApiController {
 
         requestContext.setCompositionId(compositionId);
         String versionUid = compositionId + "::" + systemService.getSystemId() + "::1";
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString(), "compositions", versionUid);
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString(), "compositions", versionUid);
 
         if (preferRepresentation(prefer)) {
             StructuredString serialized = compositionService.serialize(composition, sdkFormat);
@@ -232,7 +232,7 @@ public class CompositionController extends BaseApiController {
 
         int newVersion = extractVersion(cleanIfMatch) + 1;
         String etag = resultId + "::" + systemService.getSystemId() + "::" + newVersion;
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString(), "compositions", etag);
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString(), "compositions", etag);
 
         if (preferRepresentation(prefer)) {
             StructuredString serialized = compositionService.serialize(composition, sdkFormat);
@@ -265,7 +265,7 @@ public class CompositionController extends BaseApiController {
 
         int deletedVersion = extractVersion(clean) + 1;
         String etag = compositionId + "::" + systemService.getSystemId() + "::" + deletedVersion;
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString(), "compositions", etag);
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString(), "compositions", etag);
 
         return ResponseEntity.noContent()
                 .eTag("\"" + etag + "\"")

@@ -67,7 +67,7 @@ public class EhrController extends BaseApiController {
         UUID ehrId = ehrService.create(null, status);
         requestContext.setEhrId(ehrId);
 
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString());
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString());
         EhrStatus createdStatus = ehrService.getEhrStatus(ehrId);
         String etag = ehrService.getLatestVersionUidOfStatus(ehrId).getValue();
 
@@ -88,7 +88,7 @@ public class EhrController extends BaseApiController {
         ehrService.create(ehrId, status);
         requestContext.setEhrId(ehrId);
 
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString());
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString());
         EhrStatus createdStatus = ehrService.getEhrStatus(ehrId);
         String etag = ehrService.getLatestVersionUidOfStatus(ehrId).getValue();
 

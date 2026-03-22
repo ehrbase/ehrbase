@@ -116,7 +116,7 @@ public class EhrStatusController extends BaseApiController {
 
         EhrStatus updated = ehrService.updateStatus(ehrId, status, targetObjId, null, null);
         String etag = ehrService.getLatestVersionUidOfStatus(ehrId).getValue();
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString(), "ehr_status", etag);
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString(), "ehr_status", etag);
 
         if (preferRepresentation(prefer)) {
             return ok(etag).location(location).body(updated);

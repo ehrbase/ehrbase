@@ -66,7 +66,7 @@ public class ContributionController extends BaseApiController {
         requestContext.setEhrId(ehrId);
 
         UUID contributionId = contributionRepository.createContribution(ehrId, contributionType, changeType);
-        URI location = locationUri("api", "v1", "ehrs", ehrId.toString(), "contributions", contributionId.toString());
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString(), "contributions", contributionId.toString());
 
         ContributionRepository.ContributionRecord record = contributionRepository
                 .findById(contributionId)
