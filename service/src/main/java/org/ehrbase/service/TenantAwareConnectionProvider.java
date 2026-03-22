@@ -50,7 +50,7 @@ public class TenantAwareConnectionProvider extends DataSourceConnectionProvider 
         if (tenantInfo != null) {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("SET LOCAL ehrbase.current_tenant = " + tenantInfo.tenantId());
-                stmt.execute("SET LOCAL ehrbase.current_user = '" + escapeSql(tenantInfo.userId()) + "'");
+                stmt.execute("SET LOCAL ehrbase.current_user_id = '" + escapeSql(tenantInfo.userId()) + "'");
                 stmt.execute("SET LOCAL ehrbase.user_role = '" + escapeSql(tenantInfo.userRole()) + "'");
                 stmt.execute("SET LOCAL ehrbase.actor_id = '" + escapeSql(tenantInfo.userId()) + "'");
             } catch (SQLException e) {

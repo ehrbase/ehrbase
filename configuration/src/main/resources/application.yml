@@ -202,8 +202,8 @@ management:
       access: none
     # Health endpoint - Shows information on system status
     health:
-      # Enable / disable health endpoint
-      access: none
+      # Health endpoint accessible for Docker healthcheck
+      access: read_only
       # Show components in health endpoint. Can be "never", "when-authorized" or "always"
       show-components: 'when-authorized'
       # Show details in health endpoint. Can be "never", "when-authorized" or "always"
