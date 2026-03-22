@@ -31,6 +31,7 @@ import org.ehrbase.schemagen.model.TableDescriptor;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Record3;
+import org.jooq.Record4;
 import org.jooq.Result;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,10 +172,11 @@ public class TemplateSchemaResolver {
     }
 
     private List<ColumnMetadata> queryColumns(String schemaName, String tableName) {
-        Result<Record3<String, String, String>> rows = dsl.select(
+        Result<Record4<String, String, String, String>> rows = dsl.select(
                         field(name("column_name"), String.class),
                         field(name("data_type"), String.class),
-                        field(name("is_nullable"), String.class))
+                        field(name("is_nullable"), String.class),
+                        field(name("is_generated"), String.class))
                 .from(INFO_COLUMNS)
                 .where(field(name("table_schema"), String.class).eq(schemaName))
                 .and(field(name("table_name"), String.class).eq(tableName))
@@ -182,7 +184,8 @@ public class TemplateSchemaResolver {
                 .fetch();
 
         return rows.stream()
-                .map(r -> ColumnMetadata.fromInformationSchema(r.value1(), r.value2(), "YES".equals(r.value3())))
+                .map(r -> ColumnMetadata.fromInformationSchema(
+                        r.value1(), r.value2(), "YES".equals(r.value3()), !"NEVER".equals(r.value4())))
                 .toList();
     }
 

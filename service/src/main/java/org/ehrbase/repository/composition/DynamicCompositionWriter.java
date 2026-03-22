@@ -21,6 +21,7 @@ import com.nedap.archie.rm.composition.Composition;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.repository.schema.ColumnMetadata;
 import org.ehrbase.repository.schema.DynamicTable;
@@ -37,7 +38,9 @@ import org.springframework.stereotype.Component;
  * Writes RM Composition clinical data to auto-generated {@code ehr_data} template tables.
  * Uses JOOQ dynamic queries (no codegen for ehr_data schema).
  *
- * <p>Called AFTER composition metadata is inserted into {@code ehr_system.composition}.
+ * <p>All timestamp handling uses PostgreSQL's {@code now()} via column defaults,
+ * which is transaction-scoped and consistent across all statements within a
+ * {@code @Transactional} method. No Java-level timestamps are passed.
  */
 @Component
 public class DynamicCompositionWriter {
@@ -71,11 +74,9 @@ public class DynamicCompositionWriter {
 
         CompositionTableData data = RmTreeWalker.extract(composition, webTemplate, metadata);
 
-        // INSERT main table
         UUID rowId = insertRow(compositionId, ehrId, tenantId, data.mainTableValues(), metadata);
         log.debug("Inserted main table row: {} -> id={}", metadata.fqn(), rowId);
 
-        // INSERT child tables
         for (TemplateTableMetadata childMeta : metadata.childTables()) {
             List<Map<String, Object>> childRows =
                     data.childTableValues().getOrDefault(childMeta.tableName(), List.of());
@@ -95,7 +96,6 @@ public class DynamicCompositionWriter {
      * Deletes child tables first (FK constraint order), then main table.
      */
     public void deleteByCompositionId(UUID compositionId, TemplateTableMetadata metadata) {
-        // Delete children first
         for (TemplateTableMetadata child : metadata.childTables()) {
             int deleted = dsl.deleteFrom(DynamicTable.table(child))
                     .where(DynamicTable.field(child, "composition_id", UUID.class)
@@ -106,7 +106,6 @@ public class DynamicCompositionWriter {
             }
         }
 
-        // Delete main table
         int deleted = dsl.deleteFrom(DynamicTable.table(metadata))
                 .where(DynamicTable.field(metadata, "composition_id", UUID.class)
                         .eq(compositionId))
@@ -116,27 +115,27 @@ public class DynamicCompositionWriter {
 
     /**
      * Archives clinical data to history tables (for versioning).
-     * Closes valid_period and copies rows to _history tables.
+     * Uses {@link TemplateTableMetadata#storedColumns()} to build an explicit column list,
+     * excluding PostgreSQL GENERATED ALWAYS columns that cannot be inserted explicitly.
+     * Deletes the archived rows from the current table after copying.
      */
     public void archiveByCompositionId(UUID compositionId, TemplateTableMetadata metadata) {
-        // Archive children first
         for (TemplateTableMetadata child : metadata.childTables()) {
             archiveTable(compositionId, child);
         }
-        // Archive main table
         archiveTable(compositionId, metadata);
     }
 
     private void archiveTable(UUID compositionId, TemplateTableMetadata meta) {
-        // Build explicit column list (excludes PostgreSQL generated columns like search_vector, *_search)
-        String columnList = meta.columns().stream()
+        String columnList = meta.storedColumns().stream()
                 .map(ColumnMetadata::columnName)
-                .collect(java.util.stream.Collectors.joining(", "));
-        // Copy current rows to history table
+                .collect(Collectors.joining(", "));
+
         dsl.execute(
-                "INSERT INTO " + meta.historyFqn() + " (" + columnList + ") SELECT " + columnList + " FROM " + meta.fqn() + " WHERE composition_id = ?",
+                "INSERT INTO %s (%s) SELECT %s FROM %s WHERE composition_id = ?"
+                        .formatted(meta.historyFqn(), columnList, columnList, meta.fqn()),
                 compositionId);
-        // Delete from current
+
         dsl.deleteFrom(DynamicTable.table(meta))
                 .where(DynamicTable.field(meta, "composition_id", UUID.class).eq(compositionId))
                 .execute();
@@ -155,7 +154,6 @@ public class DynamicCompositionWriter {
                 .set(DynamicTable.col("sys_tenant"), (Object) tenantId)
                 .set(DynamicTable.col("sys_version"), (Object) 1);
 
-        // Set clinical columns
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             step = step.set(DynamicTable.col(entry.getKey()), entry.getValue());
         }

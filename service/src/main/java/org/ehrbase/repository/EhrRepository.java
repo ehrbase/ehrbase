@@ -169,7 +169,6 @@ public class EhrRepository {
 
     @Transactional
     public void updateEhrStatus(UUID ehrId, EhrStatus status, int expectedVersion, UUID contributionId) {
-        OffsetDateTime now = timeProvider.getNow();
         short tenantId = requestContext.getTenantId();
         String committerName = requestContext.getUserId();
 
@@ -187,13 +186,18 @@ public class EhrRepository {
 
         int newVersion = expectedVersion + 1;
 
-        // Archive old to _history
+        // Archive old to _history with closed valid_period using now() (transaction-scoped).
+        // Single INSERT with inline period closure avoids temporary constraint violations
+        // from the WITHOUT OVERLAPS exclusion constraint on ehr_status_history.
         dsl.execute(
-                "INSERT INTO ehr_system.ehr_status_history SELECT * FROM ehr_system.ehr_status WHERE ehr_id = ?",
-                ehrId);
-        dsl.execute(
-                "UPDATE ehr_system.ehr_status_history SET valid_period = tstzrange(lower(valid_period), ?::timestamptz) WHERE ehr_id = ? AND upper(valid_period) IS NULL",
-                now,
+                "INSERT INTO ehr_system.ehr_status_history "
+                        + "(id, ehr_id, valid_period, is_queryable, is_modifiable, subject_id, subject_namespace, "
+                        + "archetype_node_id, name, sys_version, contribution_id, change_type, committed_at, "
+                        + "committer_name, committer_id, sys_tenant) "
+                        + "SELECT id, ehr_id, tstzrange(lower(valid_period), now()), is_queryable, is_modifiable, "
+                        + "subject_id, subject_namespace, archetype_node_id, name, sys_version, contribution_id, "
+                        + "change_type, committed_at, committer_name, committer_id, sys_tenant "
+                        + "FROM ehr_system.ehr_status WHERE ehr_id = ?",
                 ehrId);
 
         // Delete old from current
@@ -211,10 +215,10 @@ public class EhrRepository {
             subjectNamespace = self.getExternalRef().getNamespace();
         }
 
-        boolean isQueryable = Boolean.TRUE.equals(status.isQueryable());
-        boolean isModifiable = Boolean.TRUE.equals(status.isModifiable());
+        boolean isQueryable = status.isQueryable();
+        boolean isModifiable = status.isModifiable();
 
-        // INSERT new version
+        // INSERT new version — valid_period defaults to tstzrange(now(), NULL)
         dsl.insertInto(EHR_STATUS)
                 .set(field(name("ehr_id"), UUID.class), ehrId)
                 .set(field(name("is_queryable"), Boolean.class), isQueryable)
@@ -232,7 +236,6 @@ public class EhrRepository {
                 .set(field(name("sys_version"), Integer.class), newVersion)
                 .set(field(name("contribution_id"), UUID.class), contributionId)
                 .set(field(name("change_type"), String.class), "modification")
-                .set(field(name("committed_at"), OffsetDateTime.class), now)
                 .set(field(name("committer_name"), String.class), committerName)
                 .set(field(name("committer_id"), String.class), committerName)
                 .set(field(name("sys_tenant"), Short.class), tenantId)

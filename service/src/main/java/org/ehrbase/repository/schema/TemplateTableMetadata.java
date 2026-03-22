@@ -68,6 +68,15 @@ public record TemplateTableMetadata(
     }
 
     /**
+     * Returns only stored (non-generated) columns.
+     * Excludes PostgreSQL GENERATED ALWAYS columns (e.g., search_vector, *_search).
+     * Used for INSERT INTO ... SELECT operations where generated columns cannot be written.
+     */
+    public List<ColumnMetadata> storedColumns() {
+        return columns.stream().filter(c -> !c.generated()).toList();
+    }
+
+    /**
      * Whether this is a child table (has parent).
      */
     public boolean isChildTable() {

@@ -42,6 +42,11 @@ import org.springframework.transaction.annotation.Transactional;
  * Explicit app-code versioning engine for compositions and EHR status.
  * NO database triggers. PG18 {@code WITHOUT OVERLAPS} is a safety net only.
  *
+ * <p>All versioning methods are {@link Transactional}, which means PostgreSQL's {@code now()}
+ * returns the same transaction-scoped timestamp for every statement within a single
+ * create/update/delete operation. This guarantees temporal continuity in {@code valid_period}
+ * ranges without passing timestamps between Java and SQL.
+ *
  * <p>Handles the full versioning lifecycle:
  * <ul>
  *   <li>CREATE: INSERT new version (sys_version=1, open-ended valid_period)</li>
@@ -55,7 +60,17 @@ public class VersioningEngine {
     private static final Logger log = LoggerFactory.getLogger(VersioningEngine.class);
 
     private static final org.jooq.Table<?> COMPOSITION = table(name("ehr_system", "composition"));
-    private static final org.jooq.Table<?> COMPOSITION_HISTORY = table(name("ehr_system", "composition_history"));
+
+    /**
+     * Columns in ehr_system.composition / composition_history (explicit list for INSERT ... SELECT).
+     * Using explicit columns avoids issues with column default mismatches and ensures the
+     * archive INSERT can transform valid_period inline.
+     */
+    private static final String COMPOSITION_COLUMNS =
+            "id, ehr_id, template_id, valid_period, archetype_id, template_name, "
+                    + "composer_name, composer_id, language, territory, category_code, feeder_audit, "
+                    + "participations, sys_version, contribution_id, change_type, committed_at, "
+                    + "committer_name, committer_id, sys_tenant";
 
     private final DSLContext dsl;
     private final DynamicCompositionWriter writer;
@@ -69,6 +84,7 @@ public class VersioningEngine {
 
     /**
      * CREATE a new composition version (sys_version=1).
+     * The column default {@code tstzrange(now(), NULL)} sets valid_period automatically.
      */
     @Transactional
     public CompositionMetadata createComposition(
@@ -85,14 +101,11 @@ public class VersioningEngine {
 
         OffsetDateTime now = timeProvider.getNow();
         String archetypeId = composition.getArchetypeNodeId();
-        String composerName =
-                composition.getComposer() != null ? composition.getComposer().toString() : "unknown";
         String language =
                 composition.getLanguage() != null ? composition.getLanguage().getCodeString() : null;
         String territory =
                 composition.getTerritory() != null ? composition.getTerritory().getCodeString() : null;
 
-        // INSERT into ehr_system.composition
         Record1<UUID> result = dsl.insertInto(COMPOSITION)
                 .set(field(name("ehr_id"), UUID.class), ehrId)
                 .set(field(name("template_id"), UUID.class), templateUuid)
@@ -117,7 +130,6 @@ public class VersioningEngine {
             throw new IllegalStateException("Failed to create composition: no ID returned");
         }
 
-        // INSERT clinical data into ehr_data template tables
         writer.write(compositionId, ehrId, tenantId, composition, webTemplate, tableMeta);
 
         log.debug("Created composition: id={} ehr={} template={} version=1", compositionId, ehrId, templateId);
@@ -146,6 +158,10 @@ public class VersioningEngine {
 
     /**
      * UPDATE a composition: archive old version to _history, insert new version.
+     *
+     * <p>All SQL uses {@code now()} for timestamps. Since this method is {@link Transactional},
+     * {@code now()} returns the same value for every statement, guaranteeing that the history
+     * row's upper bound equals the new row's lower bound with zero gaps or overlaps.
      */
     @Transactional
     public CompositionMetadata updateComposition(
@@ -162,8 +178,6 @@ public class VersioningEngine {
             WebTemplate webTemplate,
             TemplateTableMetadata tableMeta) {
 
-        OffsetDateTime now = timeProvider.getNow();
-
         // Optimistic locking: verify current version matches expected
         Record currentRow = dsl.select()
                 .from(COMPOSITION)
@@ -178,26 +192,18 @@ public class VersioningEngine {
 
         int newVersion = expectedVersion + 1;
 
-        // Step 1: Archive current composition metadata to _history
-        dsl.execute(
-                "INSERT INTO ehr_system.composition_history SELECT * FROM ehr_system.composition WHERE id = ?",
-                compositionId);
+        // Step 1: Archive current row to _history with closed valid_period
+        archiveCompositionToHistory(compositionId);
 
-        // Step 2: Close valid_period on the history row
-        dsl.execute(
-                "UPDATE ehr_system.composition_history SET valid_period = tstzrange(lower(valid_period), ?::timestamptz) WHERE id = ? AND upper(valid_period) IS NULL",
-                now,
-                compositionId);
-
-        // Step 3: Archive clinical data BEFORE deleting composition (FK constraint)
+        // Step 2: Archive clinical data BEFORE deleting composition (FK constraint)
         writer.archiveByCompositionId(compositionId, tableMeta);
 
-        // Step 4: Delete old row from current table
+        // Step 3: Delete old row from current table
         dsl.deleteFrom(COMPOSITION)
                 .where(field(name("id"), UUID.class).eq(compositionId))
                 .execute();
 
-        // Step 5: INSERT new version with open-ended valid_period
+        // Step 4: INSERT new version — valid_period starts at now() (same transaction timestamp)
         String archetypeId = newComposition.getArchetypeNodeId();
         String language = newComposition.getLanguage() != null
                 ? newComposition.getLanguage().getCodeString()
@@ -206,30 +212,32 @@ public class VersioningEngine {
                 ? newComposition.getTerritory().getCodeString()
                 : null;
 
-        dsl.insertInto(COMPOSITION)
-                .set(field(name("id"), UUID.class), compositionId)
-                .set(field(name("ehr_id"), UUID.class), ehrId)
-                .set(field(name("template_id"), UUID.class), templateUuid)
-                .set(field(name("archetype_id"), String.class), archetypeId)
-                .set(field(name("template_name"), String.class), templateId)
-                .set(field(name("composer_name"), String.class), committerName)
-                .set(field(name("composer_id"), String.class), committerId)
-                .set(field(name("language"), String.class), language)
-                .set(field(name("territory"), String.class), territory)
-                .set(field(name("sys_version"), Integer.class), newVersion)
-                .set(field(name("contribution_id"), UUID.class), contributionId)
-                .set(field(name("change_type"), String.class), "modification")
-                .set(field(name("committed_at"), OffsetDateTime.class), now)
-                .set(field(name("committer_name"), String.class), committerName)
-                .set(field(name("committer_id"), String.class), committerId)
-                .set(field(name("sys_tenant"), Short.class), tenantId)
-                .execute();
+        dsl.execute(
+                "INSERT INTO ehr_system.composition "
+                        + "(" + COMPOSITION_COLUMNS + ") "
+                        + "VALUES (?, ?, ?, tstzrange(now(), NULL), ?, ?, ?, ?, ?, ?, NULL, NULL, '[]'::jsonb, ?, ?, ?, now(), ?, ?, ?)",
+                compositionId,
+                ehrId,
+                templateUuid,
+                archetypeId,
+                templateId,
+                committerName,
+                committerId,
+                language,
+                territory,
+                newVersion,
+                contributionId,
+                "modification",
+                committerName,
+                committerId,
+                tenantId);
 
-        // Step 6: Insert new clinical data
+        // Step 5: Insert new clinical data (valid_period defaults to tstzrange(now(), NULL))
         writer.write(compositionId, ehrId, tenantId, newComposition, webTemplate, tableMeta);
 
         log.debug("Updated composition: id={} version={}->{}", compositionId, expectedVersion, newVersion);
 
+        OffsetDateTime now = timeProvider.getNow();
         return new CompositionMetadata(
                 compositionId,
                 ehrId,
@@ -266,8 +274,6 @@ public class VersioningEngine {
             short tenantId,
             TemplateTableMetadata tableMeta) {
 
-        OffsetDateTime now = timeProvider.getNow();
-
         // Optimistic locking
         Record currentRow = dsl.select()
                 .from(COMPOSITION)
@@ -281,28 +287,20 @@ public class VersioningEngine {
         }
 
         // Step 1: Archive current to _history with closed period
-        dsl.execute(
-                "INSERT INTO ehr_system.composition_history SELECT * FROM ehr_system.composition WHERE id = ?",
-                compositionId);
-        dsl.execute(
-                "UPDATE ehr_system.composition_history SET valid_period = tstzrange(lower(valid_period), ?::timestamptz) WHERE id = ? AND upper(valid_period) IS NULL",
-                now,
-                compositionId);
+        archiveCompositionToHistory(compositionId);
 
         // Step 2: INSERT deletion marker into _history
         int deletionVersion = expectedVersion + 1;
         dsl.execute(
-                "INSERT INTO ehr_system.composition_history (id, ehr_id, template_id, archetype_id, template_name, "
+                "INSERT INTO ehr_system.composition_history "
+                        + "(id, ehr_id, template_id, archetype_id, template_name, "
                         + "composer_name, composer_id, valid_period, sys_version, contribution_id, change_type, "
                         + "committed_at, committer_name, committer_id, sys_tenant) "
                         + "SELECT id, ehr_id, template_id, archetype_id, template_name, composer_name, composer_id, "
-                        + "tstzrange(?::timestamptz, ?::timestamptz), ?, ?, 'deleted', ?::timestamptz, ?, ?, sys_tenant "
+                        + "tstzrange(now(), now()), ?, ?, 'deleted', now(), ?, ?, sys_tenant "
                         + "FROM ehr_system.composition WHERE id = ?",
-                now,
-                now,
                 deletionVersion,
                 contributionId,
-                now,
                 committerName,
                 committerId,
                 compositionId);
@@ -316,5 +314,21 @@ public class VersioningEngine {
                 .execute();
 
         log.debug("Deleted composition: id={} version={}", compositionId, deletionVersion);
+    }
+
+    /**
+     * Archives the current composition row to composition_history with a closed valid_period.
+     * Uses {@code now()} (transaction-scoped) to close the period, ensuring temporal continuity
+     * with any subsequent INSERT that also uses {@code now()} as the start of its valid_period.
+     */
+    private void archiveCompositionToHistory(UUID compositionId) {
+        dsl.execute(
+                "INSERT INTO ehr_system.composition_history (" + COMPOSITION_COLUMNS + ") "
+                        + "SELECT id, ehr_id, template_id, tstzrange(lower(valid_period), now()), "
+                        + "archetype_id, template_name, composer_name, composer_id, language, territory, "
+                        + "category_code, feeder_audit, participations, sys_version, contribution_id, "
+                        + "change_type, committed_at, committer_name, committer_id, sys_tenant "
+                        + "FROM ehr_system.composition WHERE id = ?",
+                compositionId);
     }
 }

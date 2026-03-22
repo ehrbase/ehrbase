@@ -44,10 +44,11 @@ class TemplateSchemaResolverTest {
                 "blood_pressure_history",
                 java.util.List.of(
                         new ColumnMetadata(
-                                "systolic_magnitude", "numeric", false, false, "/data/systolic", "DV_QUANTITY"),
-                        new ColumnMetadata("systolic_units", "text", false, false, "/data/systolic", "DV_QUANTITY"),
+                                "systolic_magnitude", "numeric", false, false, false, "/data/systolic", "DV_QUANTITY"),
                         new ColumnMetadata(
-                                "diastolic_magnitude", "numeric", true, false, "/data/diastolic", "DV_QUANTITY")),
+                                "systolic_units", "text", false, false, false, "/data/systolic", "DV_QUANTITY"),
+                        new ColumnMetadata(
+                                "diastolic_magnitude", "numeric", true, false, false, "/data/diastolic", "DV_QUANTITY")),
                 java.util.List.of(),
                 null);
 
@@ -57,39 +58,73 @@ class TemplateSchemaResolverTest {
         assertThat(meta.columns().get(0).pgType()).isEqualTo("numeric");
         assertThat(meta.columns().get(0).nullable()).isFalse();
         assertThat(meta.columns().get(0).isSystemColumn()).isFalse();
+        assertThat(meta.columns().get(0).generated()).isFalse();
         assertThat(meta.columns().get(2).nullable()).isTrue();
     }
 
     @Test
     void columnMetadataRecord() {
-        var col = new ColumnMetadata("blood_pressure_systolic", "numeric", false, false, "/data/bp", "DV_QUANTITY");
+        var col =
+                new ColumnMetadata("blood_pressure_systolic", "numeric", false, false, false, "/data/bp", "DV_QUANTITY");
         assertThat(col.columnName()).isEqualTo("blood_pressure_systolic");
         assertThat(col.pgType()).isEqualTo("numeric");
         assertThat(col.nullable()).isFalse();
         assertThat(col.isSystemColumn()).isFalse();
+        assertThat(col.generated()).isFalse();
         assertThat(col.rmPath()).isEqualTo("/data/bp");
         assertThat(col.rmType()).isEqualTo("DV_QUANTITY");
     }
 
     @Test
     void columnMetadataFromInformationSchema() {
-        var col = ColumnMetadata.fromInformationSchema("ehr_id", "uuid", false);
+        var col = ColumnMetadata.fromInformationSchema("ehr_id", "uuid", false, false);
         assertThat(col.columnName()).isEqualTo("ehr_id");
         assertThat(col.isSystemColumn()).isTrue();
+        assertThat(col.generated()).isFalse();
         assertThat(col.rmPath()).isNull();
     }
 
     @Test
+    void generatedColumnDetection() {
+        var generated = ColumnMetadata.fromInformationSchema("search_vector", "tsvector", true, true);
+        assertThat(generated.generated()).isTrue();
+        assertThat(generated.isSystemColumn()).isFalse();
+
+        var stored = ColumnMetadata.fromInformationSchema("name_val", "text", true, false);
+        assertThat(stored.generated()).isFalse();
+    }
+
+    @Test
+    void storedColumnsExcludesGenerated() {
+        var meta = new TemplateTableMetadata(
+                "ehr_data",
+                "test_table",
+                "test_table_history",
+                java.util.List.of(
+                        new ColumnMetadata("id", "uuid", false, true, false, null, null),
+                        new ColumnMetadata("name_val", "text", true, false, false, "/name", "DV_TEXT"),
+                        new ColumnMetadata("name_val_search", "text", true, false, true, null, null),
+                        new ColumnMetadata("search_vector", "tsvector", true, false, true, null, null)),
+                java.util.List.of(),
+                null);
+
+        assertThat(meta.columns()).hasSize(4);
+        assertThat(meta.storedColumns()).hasSize(2);
+        assertThat(meta.storedColumns().stream().map(ColumnMetadata::columnName).toList())
+                .containsExactly("id", "name_val");
+    }
+
+    @Test
     void systemColumnDetection() {
-        assertThat(ColumnMetadata.fromInformationSchema("id", "uuid", false).isSystemColumn())
+        assertThat(ColumnMetadata.fromInformationSchema("id", "uuid", false, false).isSystemColumn())
                 .isTrue();
-        assertThat(ColumnMetadata.fromInformationSchema("composition_id", "uuid", false)
+        assertThat(ColumnMetadata.fromInformationSchema("composition_id", "uuid", false, false)
                         .isSystemColumn())
                 .isTrue();
-        assertThat(ColumnMetadata.fromInformationSchema("sys_version", "int", false)
+        assertThat(ColumnMetadata.fromInformationSchema("sys_version", "int", false, false)
                         .isSystemColumn())
                 .isTrue();
-        assertThat(ColumnMetadata.fromInformationSchema("systolic_magnitude", "numeric", true)
+        assertThat(ColumnMetadata.fromInformationSchema("systolic_magnitude", "numeric", true, false)
                         .isSystemColumn())
                 .isFalse();
     }

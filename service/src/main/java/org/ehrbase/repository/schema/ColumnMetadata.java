@@ -26,6 +26,7 @@ import org.springframework.lang.Nullable;
  * @param pgType         PostgreSQL type (e.g., "DOUBLE PRECISION", "TEXT")
  * @param nullable        whether the column allows NULL values
  * @param isSystemColumn  true for id, composition_id, ehr_id, valid_period, sys_version, sys_tenant
+ * @param generated       true for PostgreSQL GENERATED ALWAYS columns (virtual or stored)
  * @param rmPath          openEHR RM path for this column (used by writer/reader mapping)
  * @param rmType          openEHR RM type name (e.g., "DV_QUANTITY", "DV_CODED_TEXT")
  */
@@ -34,6 +35,7 @@ public record ColumnMetadata(
         String pgType,
         boolean nullable,
         boolean isSystemColumn,
+        boolean generated,
         @Nullable String rmPath,
         @Nullable String rmType) {
 
@@ -42,16 +44,24 @@ public record ColumnMetadata(
 
     /**
      * Creates a ColumnMetadata from a schema-generator {@link org.ehrbase.schemagen.model.ColumnDescriptor}.
+     * Columns from the schema generator are never generated — generated columns are added at DDL level.
      */
     public static ColumnMetadata fromColumnDescriptor(org.ehrbase.schemagen.model.ColumnDescriptor cd) {
         return new ColumnMetadata(
-                cd.name(), cd.pgType(), cd.nullable(), SYSTEM_COLUMNS.contains(cd.name()), null, null);
+                cd.name(), cd.pgType(), cd.nullable(), SYSTEM_COLUMNS.contains(cd.name()), false, null, null);
     }
 
     /**
      * Creates a ColumnMetadata from information_schema query results.
+     *
+     * @param columnName  the column name
+     * @param dataType    PostgreSQL data type
+     * @param isNullable  whether the column allows NULL
+     * @param isGenerated true if the column is a GENERATED ALWAYS column
      */
-    public static ColumnMetadata fromInformationSchema(String columnName, String dataType, boolean isNullable) {
-        return new ColumnMetadata(columnName, dataType, isNullable, SYSTEM_COLUMNS.contains(columnName), null, null);
+    public static ColumnMetadata fromInformationSchema(
+            String columnName, String dataType, boolean isNullable, boolean isGenerated) {
+        return new ColumnMetadata(
+                columnName, dataType, isNullable, SYSTEM_COLUMNS.contains(columnName), isGenerated, null, null);
     }
 }
