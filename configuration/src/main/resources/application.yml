@@ -34,7 +34,6 @@ spring:
     name: ehrbase
 
   graphql:
-    path: /api/v1/graphql
     graphiql:
       enabled: true
       path: /api/v1/graphiql
@@ -43,6 +42,8 @@ spring:
       connection-init-timeout: 60s
     schema:
       locations: classpath:graphql/
+    http:
+      path: /api/v1/graphql
 
   cache:
     # change to type redis if usage of redis distributed cache is intended. Also turn on management.health.redis.enabled
@@ -76,17 +77,13 @@ spring:
       connection-init-sql: "SET timezone = 'UTC'"
 
   flyway:
-    driver-class-name: org.postgresql.Driver
-    # v2 rewrite: new schema in ehr/v2/, old legacy in ehr/v1/
-    ehr-schema: ehr_system
-    ehr-location: classpath:db/migration/ehr/v2
-    ehr-strategy: MIGRATE
-    # ext extensions now in createdb-docker.sql, no separate migration needed
-    ext-schema: ext
-    ext-location: classpath:db/migration/ext/v1
-    ext-strategy: MIGRATE
+    # Standard Spring Boot 4.0 Flyway auto-configuration
+    # Extensions (btree_gist, ltree, pgcrypto) are created by Docker init SQL
+    locations: classpath:db/migration/ehr/v2
+    schemas: ehr_system
     user: ehrbase
     password: ehrbase
+    baseline-on-migrate: true
 
   jooq:
     sql-dialect: POSTGRES

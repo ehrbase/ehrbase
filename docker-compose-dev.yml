@@ -55,13 +55,8 @@ services:
       DB_PASS: ehrbase
       SERVER_NODENAME: local.ehrbase.org
       SECURITY_AUTHTYPE: NONE
-      SPRING_FLYWAY_LOCATIONS: classpath:db/migration/ext,classpath:db/migration/ehr/v2
-      SPRING_FLYWAY_SCHEMAS: ext,ehr_system
-      SPRINGDOC_API_DOCS_ENABLED: "false"
-      SPRINGDOC_SWAGGER_UI_ENABLED: "false"
       MANAGEMENT_ENDPOINTS_WEB_ACCESS: PUBLIC
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
-      EHRBASE_REST_EXPERIMENTAL_TAGS_ENABLED: "true"
       EHRBASE_FEATURES_ADMIN_API: "true"
       EHRBASE_FEATURES_ITEM_TAGS: "true"
     depends_on:

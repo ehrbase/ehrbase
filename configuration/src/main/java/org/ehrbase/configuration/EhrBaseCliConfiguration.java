@@ -18,10 +18,9 @@
 package org.ehrbase.configuration;
 
 import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.configuration.config.flyway.MigrationStrategyConfig;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import({ServiceModuleConfiguration.class, MigrationStrategyConfig.class})
+@Import({ServiceModuleConfiguration.class})
 public class EhrBaseCliConfiguration {}

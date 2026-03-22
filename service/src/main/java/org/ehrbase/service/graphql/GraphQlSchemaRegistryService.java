@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
  * <p>Feeds the generated SDL to Spring for GraphQL's {@code GraphQlSource}.
  */
 @Service
+@org.springframework.context.annotation.DependsOn("flyway")
 public class GraphQlSchemaRegistryService {
 
     private static final Logger log = LoggerFactory.getLogger(GraphQlSchemaRegistryService.class);

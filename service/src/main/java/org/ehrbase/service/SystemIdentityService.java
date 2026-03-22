@@ -41,6 +41,7 @@ import org.springframework.stereotype.Component;
  * </ol>
  */
 @Component
+@org.springframework.context.annotation.DependsOn("flyway")
 public class SystemIdentityService {
 
     private static final Logger log = LoggerFactory.getLogger(SystemIdentityService.class);

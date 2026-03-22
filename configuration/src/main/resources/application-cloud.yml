@@ -8,7 +8,7 @@ spring:
       max-lifetime: 1800000
       minimum-idle: 10
   flyway:
-    schemas: ehr
+    schemas: ehr_system
     user: ehrbase
     password: ehrbase
 

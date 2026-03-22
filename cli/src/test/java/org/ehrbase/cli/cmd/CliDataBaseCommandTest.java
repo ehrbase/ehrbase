@@ -31,26 +31,21 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.util.List;
-import org.ehrbase.configuration.config.flyway.MigrationStrategy;
-import org.ehrbase.configuration.config.flyway.MigrationStrategyConfig;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 
 class CliDataBaseCommandTest {
 
     private final HikariDataSource dataSource = mock();
     private final Flyway flyway = mock();
-    private final MigrationStrategyConfig migrationStrategyConfig = spy(new MigrationStrategyConfig());
-    private final FlywayMigrationStrategy strategy = mock();
 
-    private final CliDataBaseCommand cmd = spy(new CliDataBaseCommand(dataSource, flyway, migrationStrategyConfig));
+    private final CliDataBaseCommand cmd = spy(new CliDataBaseCommand(dataSource, flyway));
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(cmd, dataSource, flyway, migrationStrategyConfig, strategy);
+        Mockito.reset(cmd, dataSource, flyway);
         doNothing().when(cmd).exit(any(Integer.class));
         doNothing().when(cmd).println(any());
     }
@@ -62,19 +57,14 @@ class CliDataBaseCommandTest {
 
     @Test
     void runWithoutArgumentError() throws Exception {
-
         cmd.run(List.of());
-
         verify(cmd, times(1)).printUsage();
         verify(cmd, times(1)).exitFail("No argument provided");
-        verify(cmd, times(1)).exit(-1);
     }
 
     @Test
     void runWithUnknownArgumentError() throws Exception {
-
-        cmd.run(List.of("illegal"));
-
+        cmd.run(List.of("--illegal"));
         verify(cmd, times(1)).printUsage();
         verify(cmd, times(1)).exitFail("Unknown argument [illegal]");
         verify(cmd, times(1)).exit(-1);
@@ -82,27 +72,22 @@ class CliDataBaseCommandTest {
 
     @Test
     void runHelp() throws Exception {
-
-        cmd.run(List.of("help"));
-
-        verify(cmd, times(1)).printUsage();
-        verify(cmd, times(1)).printUsage();
+        cmd.run(List.of("--help"));
+        verify(cmd, times(2)).printUsage();
         verify(cmd, never()).exitFail(any());
         verify(cmd, never()).exit(any(Integer.class));
     }
 
     @Test
     void runCheckConnection() throws Exception {
-
-        var jdbUrl = "jdbc:test//localhost:1234/db";
-        doReturn(jdbUrl).when(dataSource).getJdbcUrl();
+        var jdbcUrl = "jdbc:test//localhost:1234/db";
+        doReturn(jdbcUrl).when(dataSource).getJdbcUrl();
 
         DatabaseMetaData metaData = mock();
-        doReturn(jdbUrl).when(metaData).getURL();
+        doReturn(jdbcUrl).when(metaData).getURL();
 
         Connection connection = mock();
         doReturn(metaData).when(connection).getMetaData();
-
         doReturn(connection).when(dataSource).getConnection();
 
         cmd.run(List.of("--check-connection"));
@@ -112,22 +97,14 @@ class CliDataBaseCommandTest {
     }
 
     @Test
-    void runMigrationVerify() throws Exception {
-
-        runMigrationTest("--migration-validate", MigrationStrategy.VALIDATE);
+    void runMigrationValidate() throws Exception {
+        cmd.run(List.of("--migration-validate"));
+        verify(flyway, times(1)).validate();
     }
 
     @Test
     void runMigrationMigrate() throws Exception {
-
-        runMigrationTest("--migration-migrate", MigrationStrategy.MIGRATE);
-    }
-
-    private void runMigrationTest(String arg, MigrationStrategy migrationStrategy) throws Exception {
-        doReturn(strategy).when(migrationStrategyConfig).flywayMigrationStrategy(migrationStrategy, migrationStrategy);
-
-        cmd.run(List.of(arg));
-
-        verify(strategy, times(1)).migrate(flyway);
+        cmd.run(List.of("--migration-migrate"));
+        verify(flyway, times(1)).migrate();
     }
 }

@@ -21,68 +21,56 @@ import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
 import java.util.List;
 import javax.sql.DataSource;
-import org.ehrbase.configuration.config.flyway.MigrationStrategy;
-import org.ehrbase.configuration.config.flyway.MigrationStrategyConfig;
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.stereotype.Component;
 
 @Component
 public class CliDataBaseCommand extends CliCommand {
 
     protected final DataSource dataSource;
-
     protected final Flyway flyway;
 
-    protected final MigrationStrategyConfig migrationStrategyConfig;
-
-    public CliDataBaseCommand(DataSource dataSource, Flyway flyway, MigrationStrategyConfig migrationStrategyConfig) {
+    public CliDataBaseCommand(DataSource dataSource, Flyway flyway) {
         super("database");
         this.dataSource = dataSource;
         this.flyway = flyway;
-        this.migrationStrategyConfig = migrationStrategyConfig;
     }
 
     @Override
     public void run(List<String> args) throws Exception {
-
         consumeArgs(args, arg -> switch (arg.key()) {
-            case "check-connection":
-                yield executeCheckConnection();
-            case "migration-validate":
-                yield executeMigration(MigrationStrategy.VALIDATE);
-            case "migration-migrate":
-                yield executeMigration(MigrationStrategy.MIGRATE);
-            default:
-                yield Result.Unknown;
+            case "check-connection" -> executeCheckConnection();
+            case "migration-validate" -> executeValidate();
+            case "migration-migrate" -> executeMigrate();
+            default -> Result.Unknown;
         });
     }
 
     protected Result executeCheckConnection() {
-
-        printStep("executing Database connection check: %s".formatted(jdbUrl()));
-
+        printStep("executing Database connection check: %s".formatted(jdbcUrl()));
         try (Connection connection = dataSource.getConnection()) {
             String url = connection.getMetaData().getURL();
             println("Connection established to %s".formatted(url));
             return Result.OK;
         } catch (Exception e) {
-            exitFail("Failed to open connection %s".formatted(jdbUrl()));
+            exitFail("Failed to open connection %s".formatted(jdbcUrl()));
             return Result.Unknown;
         }
     }
 
-    protected Result executeMigration(MigrationStrategy migrationStrategy) {
-
-        printStep("executing Flyway with strategy: %s".formatted(migrationStrategy));
-
-        FlywayMigrationStrategy strategy =
-                migrationStrategyConfig.flywayMigrationStrategy(migrationStrategy, migrationStrategy);
-        strategy.migrate(flyway);
+    protected Result executeValidate() {
+        printStep("executing Flyway validate");
+        flyway.validate();
         return Result.OK;
     }
 
-    protected String jdbUrl() {
+    protected Result executeMigrate() {
+        printStep("executing Flyway migrate");
+        flyway.migrate();
+        return Result.OK;
+    }
+
+    protected String jdbcUrl() {
         return ((HikariDataSource) dataSource).getJdbcUrl();
     }
 

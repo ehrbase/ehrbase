@@ -17,19 +17,26 @@
  */
 package org.ehrbase.application.server;
 
-import org.ehrbase.configuration.EhrBaseServerConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration;
-import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @EnableScheduling
-@SpringBootApplication(exclude = {ManagementWebSecurityAutoConfiguration.class, SecurityAutoConfiguration.class})
-@Import({EhrBaseServerConfiguration.class})
+@SpringBootApplication(
+        scanBasePackages = {
+            "org.ehrbase.application",
+            "org.ehrbase.configuration",
+            "org.ehrbase.service",
+            "org.ehrbase.cache",
+            "org.ehrbase.repository",
+            "org.ehrbase.rest.api",
+            "org.ehrbase.plugin"
+        },
+        exclude = {ManagementWebSecurityAutoConfiguration.class, SecurityAutoConfiguration.class})
 @SuppressWarnings("java:S1118")
 public class EhrBaseServer {
 
