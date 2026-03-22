@@ -42,10 +42,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for folder/directory operations using ltree paths.
+ * REST API v2 controller for folder/directory operations using ltree paths.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs/{ehr_id}/directory")
+@RequestMapping("/api/v2/ehrs/{ehr_id}/directory")
 @Tag(name = "Directory", description = "Folder hierarchy operations with ltree path queries")
 public class DirectoryController extends BaseApiController {
 

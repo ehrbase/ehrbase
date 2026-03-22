@@ -41,10 +41,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for EHR lifecycle operations.
+ * REST API v2 controller for EHR lifecycle operations.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs")
+@RequestMapping("/api/v2/ehrs")
 @Tag(name = "EHR", description = "EHR lifecycle: create, retrieve, find by subject")
 public class EhrController extends BaseApiController {
 

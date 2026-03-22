@@ -50,12 +50,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for composition CRUD.
+ * REST API v2 controller for composition CRUD.
  * Supports all 4 openEHR formats: Canonical JSON, Canonical XML, Flat (simSDT), Structured (structSDT).
  * Content negotiation via Content-Type, Accept headers, and {@code ?format=} query parameter.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs/{ehr_id}/compositions")
+@RequestMapping("/api/v2/ehrs/{ehr_id}/compositions")
 @Tag(name = "Composition", description = "Composition CRUD with multi-format support and versioning")
 public class CompositionController extends BaseApiController {
 

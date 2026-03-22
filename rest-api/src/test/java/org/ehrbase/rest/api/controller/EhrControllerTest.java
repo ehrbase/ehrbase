@@ -67,7 +67,7 @@ class EhrControllerTest {
     void setUp() {
         Mockito.reset(mockEhrService, mockSystemService, mockRequestContext, spyController);
         when(mockSystemService.getSystemId()).thenReturn(SYSTEM_ID);
-        doReturn(URI.create("https://test.ehr.controller/api/v1/ehrs"))
+        doReturn(URI.create("https://test.ehr.controller/api/v2/ehrs"))
                 .when(spyController)
                 .locationUri(any(String[].class));
     }

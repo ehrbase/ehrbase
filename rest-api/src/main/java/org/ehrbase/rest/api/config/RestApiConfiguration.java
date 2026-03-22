@@ -21,7 +21,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Configuration for the EHRbase REST API v1 module.
+ * Configuration for the EHRbase REST API v2 module.
  * Scans the {@code org.ehrbase.rest.api} package for controllers and components.
  */
 @Configuration

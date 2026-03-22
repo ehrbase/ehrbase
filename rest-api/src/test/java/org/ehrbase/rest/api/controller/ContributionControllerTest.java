@@ -58,7 +58,7 @@ class ContributionControllerTest {
     @BeforeEach
     void setUp() {
         Mockito.reset(mockRepo, mockEhrService, mockRequestContext, spyController);
-        doReturn(URI.create("https://test/api/v1/ehrs/" + EHR_ID + "/contributions"))
+        doReturn(URI.create("https://test/api/v2/ehrs/" + EHR_ID + "/contributions"))
                 .when(spyController)
                 .locationUri(any(String[].class));
     }

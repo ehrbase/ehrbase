@@ -37,10 +37,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for versioned composition container operations.
+ * REST API v2 controller for versioned composition container operations.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs/{ehr_id}/versioned_composition/{versioned_object_uid}")
+@RequestMapping("/api/v2/ehrs/{ehr_id}/versioned_composition/{versioned_object_uid}")
 @Tag(name = "Versioned Composition", description = "Versioned composition container metadata and history")
 public class VersionedCompositionController extends BaseApiController {
 

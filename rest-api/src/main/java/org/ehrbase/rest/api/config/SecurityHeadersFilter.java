@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Adds security headers to all {@code /api/v1/**} responses.
+ * Adds security headers to all {@code /api/v2/**} responses.
  * HSTS, X-Content-Type-Options, X-Frame-Options, CSP, Referrer-Policy.
  */
 @Component
@@ -48,6 +48,6 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !path.startsWith("/api/v1/") && !path.startsWith("/api/docs");
+        return !path.startsWith("/api/v2/") && !path.startsWith("/api/docs");
     }
 }

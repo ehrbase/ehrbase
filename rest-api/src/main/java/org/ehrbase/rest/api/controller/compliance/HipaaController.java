@@ -41,11 +41,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for HIPAA compliance.
+ * REST API v2 controller for HIPAA compliance.
  * Provides accounting of disclosures — who accessed which patient data and when.
  */
 @RestController
-@RequestMapping("/api/v1/hipaa")
+@RequestMapping("/api/v2/hipaa")
 @Tag(name = "HIPAA Compliance", description = "Accounting of disclosures per patient")
 @ConditionalOnProperty(name = "ehrbase.features.hipaa", havingValue = "true")
 public class HipaaController extends BaseApiController {

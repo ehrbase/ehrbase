@@ -42,7 +42,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for bulk composition operations.
+ * REST API v2 controller for bulk composition operations.
  * Returns 207 Multi-Status with per-item success/failure.
  */
 @RestController
@@ -67,7 +67,7 @@ public class BulkCompositionController extends BaseApiController {
 
     @SuppressWarnings("deprecation")
     @PostMapping(
-            value = "/api/v1/ehrs/{ehr_id}/compositions/bulk",
+            value = "/api/v2/ehrs/{ehr_id}/compositions/bulk",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Create multiple compositions", description = "Returns 207 Multi-Status with per-item results")
@@ -98,7 +98,7 @@ public class BulkCompositionController extends BaseApiController {
     }
 
     @PatchMapping(
-            value = "/api/v1/compositions/bulk",
+            value = "/api/v2/compositions/bulk",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Update multiple compositions")
@@ -114,7 +114,7 @@ public class BulkCompositionController extends BaseApiController {
     }
 
     @DeleteMapping(
-            value = "/api/v1/compositions/bulk",
+            value = "/api/v2/compositions/bulk",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Delete multiple compositions")

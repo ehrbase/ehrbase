@@ -61,7 +61,7 @@ class TemplateControllerTest {
     @BeforeEach
     void setUp() {
         Mockito.reset(mockKnowledgeCache, mockTemplateService, mockSchemaExecutor, mockRequestContext, spyController);
-        doReturn(URI.create("https://test/api/v1/templates"))
+        doReturn(URI.create("https://test/api/v2/templates"))
                 .when(spyController)
                 .locationUri(any(String[].class));
     }

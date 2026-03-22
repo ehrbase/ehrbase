@@ -48,14 +48,14 @@ springdoc:
   graphql:
     graphiql:
       enabled: true
-      path: /api/v1/graphiql
+      path: /api/v2/graphiql
     websocket:
-      path: /api/v1/graphql/ws
+      path: /api/v2/graphql/ws
       connection-init-timeout: 60s
     schema:
       locations: classpath:graphql/
     http:
-      path: /api/v1/graphql
+      path: /api/v2/graphql
 
   cache:
     # change to type redis if usage of redis distributed cache is intended. Also turn on management.health.redis.enabled

@@ -28,7 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * OpenAPI 3.1 configuration for the EHRbase REST API v1.
+ * OpenAPI 3.1 configuration for the EHRbase REST API v2.
  * Swagger UI available at /api/docs.
  */
 @Configuration
@@ -39,7 +39,7 @@ public class OpenApiConfiguration {
         return new OpenAPI()
                 .info(new Info()
                         .title("EHRbase REST API")
-                        .version("v1")
+                        .version("v2")
                         .description(
                                 "openEHR Clinical Data Repository — REST API with normalized PostgreSQL 18+ storage, "
                                         + "SQL views, GraphQL, and full healthcare compliance (GDPR, HIPAA, IHE)")
@@ -63,10 +63,10 @@ public class OpenApiConfiguration {
     }
 
     @Bean
-    public GroupedOpenApi restApiV1() {
+    public GroupedOpenApi restApiV2() {
         return GroupedOpenApi.builder()
-                .group("EHRbase REST API v1")
-                .pathsToMatch("/api/v1/**")
+                .group("EHRbase REST API v2")
+                .pathsToMatch("/api/v2/**")
                 .build();
     }
 }

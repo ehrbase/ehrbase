@@ -42,10 +42,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for item tags (experimental, behind feature flag).
+ * REST API v2 controller for item tags (experimental, behind feature flag).
  */
 @RestController
-@RequestMapping("/api/v1/tags")
+@RequestMapping("/api/v2/tags")
 @ConditionalOnProperty(name = "ehrbase.features.item-tags", havingValue = "true")
 @Tag(name = "Item Tags (Experimental)", description = "Key-value tagging on compositions and EHRs")
 public class ItemTagController extends BaseApiController {

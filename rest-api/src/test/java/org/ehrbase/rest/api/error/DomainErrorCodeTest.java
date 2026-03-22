@@ -55,7 +55,7 @@ class DomainErrorCodeTest {
 
     @Test
     void toProblemDetailWithInstance() {
-        URI instance = URI.create("/api/v1/test/resource");
+        URI instance = URI.create("/api/v2/test/resource");
         ProblemDetail pd = DomainErrorCode.EHR_NOT_FOUND.toProblemDetail("msg", instance);
         assertThat(pd.getInstance()).isEqualTo(instance);
     }

@@ -13,7 +13,7 @@
 
   <artifactId>rest-api</artifactId>
   <name>EHRbase openEHR REST v2</name>
-  <description>Fresh REST API at /api/v1/ with RFC 7807, OpenAPI 3.1, and all openEHR formats</description>
+  <description>REST API at /api/v2/ with RFC 7807, OpenAPI 3.1, and all openEHR formats</description>
 
   <dependencies>
     <!-- EHRbase modules -->

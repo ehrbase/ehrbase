@@ -63,7 +63,7 @@ class EhrStatusControllerTest {
     @BeforeEach
     void setUp() {
         Mockito.reset(mockEhrService, mockRequestContext, spyController);
-        doReturn(URI.create("https://test/api/v1/ehrs/" + EHR_ID + "/ehr_status"))
+        doReturn(URI.create("https://test/api/v2/ehrs/" + EHR_ID + "/ehr_status"))
                 .when(spyController)
                 .locationUri(any(String[].class));
     }

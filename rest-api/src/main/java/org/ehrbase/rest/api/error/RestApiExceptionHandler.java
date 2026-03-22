@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Global exception handler for the REST API v1.
+ * Global exception handler for the REST API v2.
  * Maps all domain exceptions to RFC 7807 ProblemDetail responses.
  */
 @RestControllerAdvice(basePackages = "org.ehrbase.rest.api")

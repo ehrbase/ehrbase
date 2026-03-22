@@ -38,11 +38,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for emergency/break-glass access.
+ * REST API v2 controller for emergency/break-glass access.
  * Overrides normal access control with mandatory justification and full audit trail.
  */
 @RestController
-@RequestMapping("/api/v1/emergency")
+@RequestMapping("/api/v2/emergency")
 @Tag(name = "Emergency Access", description = "Break-glass access with mandatory justification and audit")
 @ConditionalOnProperty(name = "ehrbase.features.emergency-access", havingValue = "true")
 public class EmergencyAccessController extends BaseApiController {

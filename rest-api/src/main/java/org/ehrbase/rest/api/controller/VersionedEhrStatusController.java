@@ -36,10 +36,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for versioned EHR_STATUS container operations.
+ * REST API v2 controller for versioned EHR_STATUS container operations.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs/{ehr_id}/versioned_ehr_status")
+@RequestMapping("/api/v2/ehrs/{ehr_id}/versioned_ehr_status")
 @Tag(name = "Versioned EHR Status", description = "Versioned EHR_STATUS container metadata and history")
 public class VersionedEhrStatusController extends BaseApiController {
 

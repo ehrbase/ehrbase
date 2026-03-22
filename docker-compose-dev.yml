@@ -7,9 +7,9 @@
 #   docker compose -f docker-compose-dev.yml logs -f ehrbase  # Watch app logs
 #
 # Endpoints:
-#   http://localhost:8080/ehrbase/api/v1/templates     # Template list
-#   http://localhost:8080/ehrbase/api/v1/ehrs          # EHR operations
-#   http://localhost:8080/ehrbase/api/v1/graphiql       # GraphiQL IDE
+#   http://localhost:8080/ehrbase/api/v2/templates     # Template list
+#   http://localhost:8080/ehrbase/api/v2/ehrs          # EHR operations
+#   http://localhost:8080/ehrbase/api/v2/graphiql       # GraphiQL IDE
 #
 # Stop:
 #   docker compose -f docker-compose-dev.yml down -v  # Stop + remove volumes
@@ -59,10 +59,10 @@ services:
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
       EHRBASE_FEATURES_ADMIN_API: "true"
       EHRBASE_FEATURES_ITEM_TAGS: "true"
-      EHRBASE_FEATURES_EMERGENCY_ACCESS: "true"
-      EHRBASE_FEATURES_GDPR: "true"
-      EHRBASE_FEATURES_HIPAA: "true"
-      EHRBASE_FEATURES_IHE: "true"
+      EHRBASE_FEATURES_EMERGENCY_ACCESS: "false"
+      EHRBASE_FEATURES_GDPR: "false"
+      EHRBASE_FEATURES_HIPAA: "false"
+      EHRBASE_FEATURES_IHE: "false"
     depends_on:
       ehrdb:
         condition: service_healthy

@@ -39,7 +39,7 @@ import org.springframework.http.ProblemDetail;
 class RestApiExceptionHandlerTest {
 
     private final RestApiExceptionHandler handler = new RestApiExceptionHandler();
-    private final HttpServletRequest request = mockRequest("/api/v1/test");
+    private final HttpServletRequest request = mockRequest("/api/v2/test");
 
     private static HttpServletRequest mockRequest(String uri) {
         HttpServletRequest r = mock(HttpServletRequest.class);
@@ -142,7 +142,7 @@ class RestApiExceptionHandlerTest {
         assertThat(pd.getType()).isNotNull();
         assertThat(pd.getTitle()).isNotNull();
         assertThat(pd.getDetail()).isEqualTo("No EHR found with ID: abc");
-        assertThat(pd.getInstance().toString()).isEqualTo("/api/v1/test");
+        assertThat(pd.getInstance().toString()).isEqualTo("/api/v2/test");
         assertThat(pd.getProperties()).containsKey("code");
         assertThat(pd.getProperties().get("code")).isEqualTo("EHR_NOT_FOUND");
     }

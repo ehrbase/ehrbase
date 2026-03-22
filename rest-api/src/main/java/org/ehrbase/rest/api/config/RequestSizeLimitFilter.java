@@ -55,6 +55,6 @@ public class RequestSizeLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !request.getRequestURI().startsWith("/api/v1/");
+        return !request.getRequestURI().startsWith("/api/v2/");
     }
 }

@@ -41,10 +41,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for EHR_STATUS operations.
+ * REST API v2 controller for EHR_STATUS operations.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs/{ehr_id}/ehr_status")
+@RequestMapping("/api/v2/ehrs/{ehr_id}/ehr_status")
 @Tag(name = "EHR Status", description = "EHR_STATUS versioned operations")
 public class EhrStatusController extends BaseApiController {
 

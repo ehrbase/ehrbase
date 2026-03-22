@@ -70,7 +70,7 @@ class CompositionControllerTest {
         Mockito.reset(
                 mockCompositionService, mockEhrService, mockSystemService, mockRequestContext, mockDsl, spyController);
         when(mockSystemService.getSystemId()).thenReturn(SYSTEM_ID);
-        doReturn(URI.create("https://test/api/v1/ehrs/" + EHR_ID + "/compositions"))
+        doReturn(URI.create("https://test/api/v2/ehrs/" + EHR_ID + "/compositions"))
                 .when(spyController)
                 .locationUri(any(String[].class));
     }

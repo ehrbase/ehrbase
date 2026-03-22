@@ -44,11 +44,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for GDPR compliance operations.
+ * REST API v2 controller for GDPR compliance operations.
  * Supports data export, pseudonymization, and consent management.
  */
 @RestController
-@RequestMapping("/api/v1/gdpr")
+@RequestMapping("/api/v2/gdpr")
 @Tag(name = "GDPR Compliance", description = "Data subject access, pseudonymization, and consent management")
 @ConditionalOnProperty(name = "ehrbase.features.gdpr", havingValue = "true")
 public class GdprController extends BaseApiController {

@@ -41,11 +41,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for template management.
+ * REST API v2 controller for template management.
  * Supports ADL 1.4 OPT XML upload/retrieval and ADL 2.4 stubs (501).
  */
 @RestController
-@RequestMapping("/api/v1/templates")
+@RequestMapping("/api/v2/templates")
 @Tag(name = "Template", description = "Template upload, listing, retrieval, and deletion")
 public class TemplateController extends BaseApiController {
 

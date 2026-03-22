@@ -33,11 +33,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for template introspection.
+ * REST API v2 controller for template introspection.
  * Provides schema, GraphQL fragment, WebTemplate, and example generation.
  */
 @RestController
-@RequestMapping("/api/v1/templates/{template_id}")
+@RequestMapping("/api/v2/templates/{template_id}")
 @Tag(name = "Template Introspection", description = "Inspect generated schemas, GraphQL types, and examples")
 public class TemplateIntrospectionController extends BaseApiController {
 
@@ -84,7 +84,7 @@ public class TemplateIntrospectionController extends BaseApiController {
     public ResponseEntity<String> getGraphQlFragment(@PathVariable("template_id") String templateId) {
         requestContext.setTemplateId(templateId);
         return ResponseEntity.ok("# GraphQL fragment for template: " + templateId
-                + "\n# Use the full schema at /api/v1/graphql for introspection");
+                + "\n# Use the full schema at /api/v2/graphql for introspection");
     }
 
     @GetMapping(value = "/openapi", produces = MediaType.APPLICATION_JSON_VALUE)

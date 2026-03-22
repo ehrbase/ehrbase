@@ -36,10 +36,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for contribution operations.
+ * REST API v2 controller for contribution operations.
  */
 @RestController
-@RequestMapping("/api/v1/ehrs/{ehr_id}/contributions")
+@RequestMapping("/api/v2/ehrs/{ehr_id}/contributions")
 @Tag(name = "Contribution", description = "Contribution lifecycle: create, retrieve, list")
 public class ContributionController extends BaseApiController {
 

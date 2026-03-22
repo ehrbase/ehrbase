@@ -29,12 +29,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for IHE profile integration stubs.
+ * REST API v2 controller for IHE profile integration stubs.
  * ATNA (Audit Trail and Node Authentication) and PIX/PDQ (Patient Identity).
  * Full integration deferred — stubs return 501 with descriptive messages.
  */
 @RestController
-@RequestMapping("/api/v1/ihe")
+@RequestMapping("/api/v2/ihe")
 @Tag(name = "IHE Profiles", description = "ATNA audit export and PIX/PDQ patient identity stubs")
 @ConditionalOnProperty(name = "ehrbase.features.ihe", havingValue = "true")
 public class IheController extends BaseApiController {

@@ -29,10 +29,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 controller for listing available views from the view catalog.
+ * REST API v2 controller for listing available views from the view catalog.
  */
 @RestController
-@RequestMapping("/api/v1/query")
+@RequestMapping("/api/v2/query")
 @Tag(name = "View Catalog", description = "List available views from ehr_system.view_catalog")
 public class QueryController extends BaseApiController {
 

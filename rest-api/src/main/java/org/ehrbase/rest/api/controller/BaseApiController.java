@@ -27,12 +27,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
- * Base controller with shared utility methods for all REST API v1 controllers.
+ * Base controller with shared utility methods for all REST API v2 controllers.
  * All controllers extend this to get consistent UUID parsing, URI building, and header handling.
  */
 public abstract class BaseApiController {
 
-    protected static final String API_V1 = "/api/v1";
+    protected static final String API_V2 = "/api/v2";
     protected static final String PREFER_RETURN_REPRESENTATION = "return=representation";
     protected static final String PREFER_RETURN_MINIMAL = "return=minimal";
 

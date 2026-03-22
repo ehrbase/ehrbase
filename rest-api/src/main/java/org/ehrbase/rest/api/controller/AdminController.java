@@ -32,11 +32,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST API v1 admin endpoints for system management.
+ * REST API v2 admin endpoints for system management.
  * Behind {@code ehrbase.features.admin-api} feature flag.
  */
 @RestController
-@RequestMapping("/api/v1/admin")
+@RequestMapping("/api/v2/admin")
 @ConditionalOnProperty(name = "ehrbase.features.admin-api", havingValue = "true")
 @Tag(name = "Admin", description = "Administrative operations: health, schema refresh, migration")
 public class AdminController extends BaseApiController {
