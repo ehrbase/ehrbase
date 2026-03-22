@@ -2,9 +2,7 @@
 -- Creates schemas and extensions needed for Flyway v2 migrations
 -- Runs inside docker-entrypoint-initdb.d on postgres:18
 
-\c ehrbase
-
--- Schemas
+-- Schemas (POSTGRES_DB=ehrbase is already selected by docker-entrypoint)
 CREATE SCHEMA IF NOT EXISTS ext;
 CREATE SCHEMA IF NOT EXISTS ehr_system;
 CREATE SCHEMA IF NOT EXISTS ehr_data;

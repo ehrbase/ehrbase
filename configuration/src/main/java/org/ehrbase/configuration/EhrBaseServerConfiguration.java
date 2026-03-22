@@ -18,7 +18,6 @@
 package org.ehrbase.configuration;
 
 import org.ehrbase.ServiceModuleConfiguration;
-import org.ehrbase.rest.RestModuleConfiguration;
 import org.ehrbase.rest.api.config.RestApiConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +27,6 @@ import org.springframework.context.annotation.Import;
 @ComponentScan
 @Import({
     ServiceModuleConfiguration.class,
-    RestModuleConfiguration.class,
     RestApiConfiguration.class,
 })
 public class EhrBaseServerConfiguration {}

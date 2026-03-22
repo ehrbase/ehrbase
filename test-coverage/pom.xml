@@ -55,11 +55,6 @@
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>aql-engine</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ehrbase.openehr</groupId>
       <artifactId>configuration</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -70,17 +65,27 @@
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rest-ehr-scape</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rest-openehr</artifactId>
+      <artifactId>rest-api</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>plugin</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>schema-generator</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.ehrbase.openehr</groupId>
+      <artifactId>cli</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

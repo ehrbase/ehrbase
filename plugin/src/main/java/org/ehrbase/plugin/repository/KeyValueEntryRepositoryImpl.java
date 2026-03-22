@@ -17,21 +17,25 @@
  */
 package org.ehrbase.plugin.repository;
 
-import static org.ehrbase.jooq.pg.tables.Plugin.PLUGIN;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
+import static org.jooq.impl.DSL.table;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.ehrbase.api.repository.KeyValuePair;
 import org.ehrbase.api.repository.KeyValuePairRepository;
-import org.ehrbase.jooq.pg.tables.records.PluginRecord;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.springframework.stereotype.Component;
 
 @Component
 public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
+
+    private static final org.jooq.Table<?> PLUGIN_CONFIG = table(name("ehr_system", "plugin_config"));
+
     private final DSLContext ctx;
 
     public KeyValueEntryRepositoryImpl(DSLContext ctx) {
@@ -40,40 +44,59 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
 
     @Override
     public List<KeyValuePair> findAllBy(String context) {
-        return ctx.fetchStream(PLUGIN, PLUGIN.PLUGINID.eq(context))
-                .map(rec -> toKvp.apply(rec))
+        return ctx.select()
+                .from(PLUGIN_CONFIG)
+                .where(field(name("pluginid"), String.class).eq(context))
+                .fetch()
+                .stream()
+                .map(this::toKvp)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<KeyValuePair> findBy(String context, String key) {
-        return ctx.fetchOptional(PLUGIN, PLUGIN.PLUGINID.eq(context).and(PLUGIN.KEY.eq(key)))
-                .map(rec -> toKvp.apply(rec));
+        Record rec = ctx.select()
+                .from(PLUGIN_CONFIG)
+                .where(field(name("pluginid"), String.class)
+                        .eq(context)
+                        .and(field(name("key"), String.class).eq(key)))
+                .fetchOne();
+        return Optional.ofNullable(rec).map(this::toKvp);
     }
 
     @Override
     public KeyValuePair save(KeyValuePair kve) {
-        PluginRecord rec = ctx.newRecord(PLUGIN);
-        rec.setId(kve.getId());
-        rec.setPluginid(kve.getContext());
-        rec.setKey(kve.getKey());
-        rec.setValue(kve.getValue());
-
-        rec.insert();
+        ctx.insertInto(PLUGIN_CONFIG)
+                .set(field(name("id"), UUID.class), kve.getId())
+                .set(field(name("pluginid"), String.class), kve.getContext())
+                .set(field(name("key"), String.class), kve.getKey())
+                .set(field(name("value"), String.class), kve.getValue())
+                .execute();
         return kve;
     }
 
     @Override
     public Optional<KeyValuePair> findBy(UUID uid) {
-        return ctx.fetchOptional(PLUGIN, PLUGIN.ID.eq(uid)).map(rec -> toKvp.apply(rec));
+        Record rec = ctx.select()
+                .from(PLUGIN_CONFIG)
+                .where(field(name("id"), UUID.class).eq(uid))
+                .fetchOne();
+        return Optional.ofNullable(rec).map(this::toKvp);
     }
 
     @Override
     public boolean deleteBy(UUID uid) {
-        int res = ctx.delete(PLUGIN).where(PLUGIN.ID.eq(uid)).execute();
+        int res = ctx.deleteFrom(PLUGIN_CONFIG)
+                .where(field(name("id"), UUID.class).eq(uid))
+                .execute();
         return res > 0;
     }
 
-    private Function<PluginRecord, KeyValuePair> toKvp =
-            rec -> KeyValuePair.of(rec.getId(), rec.getPluginid(), rec.getKey(), rec.getValue());
+    private KeyValuePair toKvp(Record rec) {
+        return KeyValuePair.of(
+                rec.get(field(name("id"), UUID.class)),
+                rec.get(field(name("pluginid"), String.class)),
+                rec.get(field(name("key"), String.class)),
+                rec.get(field(name("value"), String.class)));
+    }
 }

@@ -30,9 +30,7 @@ import org.ehrbase.configuration.config.plugin.PluginConfig;
 import org.ehrbase.configuration.config.security.SecurityConfiguration;
 import org.ehrbase.configuration.config.web.WebConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 
 /**
@@ -50,16 +48,8 @@ import org.springframework.boot.test.context.SpringBootTest;
             JacksonConfiguration.class,
             SwaggerConfiguration.class,
             PluginConfig.class,
-            // ValidationConfiguration.class, // <- needs CacheConfiguration
-            // CacheConfiguration.class
             WebConfiguration.class,
         },
         properties = {"spring.cache.type=simple"})
-@AutoConfigureMockMvc
-@EnableAutoConfiguration(
-        exclude = {
-            // prevent execution of flyway migrations during startup
-            FlywayAutoConfiguration.class
-        })
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@EnableAutoConfiguration(exclude = {FlywayAutoConfiguration.class})
 public @interface EhrbaseConfigurationIntegrationTest {}

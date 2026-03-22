@@ -57,10 +57,6 @@
 
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>rm-db-format</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ehrbase.openehr</groupId>
       <artifactId>api</artifactId>
     </dependency>
     <dependency>
@@ -70,10 +66,6 @@
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>plugin</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.ehrbase.openehr</groupId>
-      <artifactId>aql-engine</artifactId>
     </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>

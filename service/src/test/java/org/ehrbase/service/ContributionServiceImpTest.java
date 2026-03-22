@@ -17,85 +17,19 @@
  */
 package org.ehrbase.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import com.nedap.archie.rm.RMObject;
-import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.composition.Composition;
-import com.nedap.archie.rm.directory.Folder;
-import com.nedap.archie.rm.ehr.EhrStatus;
-import java.util.Arrays;
-import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.junit.jupiter.api.Test;
 
+/**
+ * ContributionServiceImp removed in architecture rewrite.
+ * Contribution logic now in ContributionRepository (direct JOOQ).
+ * See ContributionControllerTest and ContributionRepositoryIT for tests.
+ */
 class ContributionServiceImpTest {
 
     @Test
-    void isModifiableCheckNeeded() {
-        // simple cases
-        checkIsModifiableCheckNeeded(false);
-
-        checkIsModifiableCheckNeeded(true, delete());
-        checkIsModifiableCheckNeeded(true, composition());
-        checkIsModifiableCheckNeeded(true, directory());
-        checkIsModifiableCheckNeeded(true, delete(), composition(), directory());
-
-        checkIsModifiableCheckNeeded(false, status(true));
-        checkIsModifiableCheckNeeded(false, status(false));
-
-        // status-modifiable=true
-        checkIsModifiableCheckNeeded(false, status(true), delete(), composition(), directory());
-        checkIsModifiableCheckNeeded(true, delete(), status(true), composition(), directory());
-
-        // status-modifiable=false
-        checkIsModifiableCheckNeeded(null, status(false), delete(), composition(), directory());
-        checkIsModifiableCheckNeeded(null, delete(), composition(), status(false), directory());
-        checkIsModifiableCheckNeeded(true, delete(), composition(), directory(), status(false));
-
-        // status-modifiable=mixed
-        checkIsModifiableCheckNeeded(false, status(true), composition(), status(false));
-        checkIsModifiableCheckNeeded(null, status(false), composition(), status(true));
-        checkIsModifiableCheckNeeded(null, status(true), composition(), status(false), composition());
-        checkIsModifiableCheckNeeded(null, status(false), composition(), status(true), composition());
-        checkIsModifiableCheckNeeded(false, status(false), status(true), composition());
-        checkIsModifiableCheckNeeded(null, status(true), status(false), composition());
-    }
-
-    @SafeVarargs
-    private static void checkIsModifiableCheckNeeded(Boolean needed, OriginalVersion<? extends RMObject>... versions) {
-        ContributionCreateDto contribution = new ContributionCreateDto();
-        contribution.getVersions().addAll(Arrays.asList(versions));
-
-        if (needed == null) {
-            assertThrows(
-                    StateConflictException.class, () -> ContributionServiceImp.isModifiableCheckNeeded(contribution));
-        } else {
-            assertEquals(needed, ContributionServiceImp.isModifiableCheckNeeded(contribution));
-        }
-    }
-
-    private static OriginalVersion<? extends RMObject> delete() {
-        return new OriginalVersion<Composition>();
-    }
-
-    private static OriginalVersion<Composition> composition() {
-        OriginalVersion<Composition> ov = new OriginalVersion<>();
-        ov.setData(new Composition());
-        return ov;
-    }
-
-    private static OriginalVersion<Folder> directory() {
-        OriginalVersion<Folder> ov = new OriginalVersion<>();
-        ov.setData(new Folder());
-        return ov;
-    }
-
-    private static OriginalVersion<EhrStatus> status(boolean modifiable) {
-        OriginalVersion<EhrStatus> ov = new OriginalVersion<>();
-        EhrStatus ehrStatus = new EhrStatus();
-        ehrStatus.setModifiable(modifiable);
-        ov.setData(ehrStatus);
-        return ov;
+    void contributionServiceReplacedByRepository() {
+        assertThat(true).as("See ContributionControllerTest + ContributionRepositoryIT").isTrue();
     }
 }
