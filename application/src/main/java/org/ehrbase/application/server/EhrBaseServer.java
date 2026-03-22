@@ -28,7 +28,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @SpringBootApplication(
         scanBasePackages = {
-            "org.ehrbase.application",
+            "org.ehrbase.application.server",
             "org.ehrbase.configuration",
             "org.ehrbase.service",
             "org.ehrbase.cache",

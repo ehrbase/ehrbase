@@ -96,8 +96,18 @@ public class MaterializedViewRefreshService {
             log.debug("Refreshed materialized view {} in {}ms", fqn, elapsed);
             return true;
         } catch (Exception e) {
-            log.error("Failed to refresh materialized view {}: {}", fqn, e.getMessage());
-            return false;
+            // First refresh after creation requires non-concurrent mode
+            // (CONCURRENTLY needs at least one previous population)
+            try {
+                long start = System.currentTimeMillis();
+                dsl.execute("REFRESH MATERIALIZED VIEW " + fqn);
+                long elapsed = System.currentTimeMillis() - start;
+                log.info("Initial population of materialized view {} in {}ms", fqn, elapsed);
+                return true;
+            } catch (Exception e2) {
+                log.error("Failed to refresh materialized view {}: {}", fqn, e2.getMessage());
+                return false;
+            }
         }
     }
 }

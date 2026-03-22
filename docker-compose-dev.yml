@@ -7,9 +7,9 @@
 #   docker compose -f docker-compose-dev.yml logs -f ehrbase  # Watch app logs
 #
 # Endpoints:
-#   http://localhost:8080/api/v1/templates           # Template list
-#   http://localhost:8080/api/v1/ehrs                # EHR operations
-#   http://localhost:8080/api/v1/graphiql            # GraphiQL IDE
+#   http://localhost:8080/ehrbase/api/v1/templates     # Template list
+#   http://localhost:8080/ehrbase/api/v1/ehrs          # EHR operations
+#   http://localhost:8080/ehrbase/api/v1/graphiql       # GraphiQL IDE
 #
 # Stop:
 #   docker compose -f docker-compose-dev.yml down -v  # Stop + remove volumes
@@ -62,6 +62,13 @@ services:
     depends_on:
       ehrdb:
         condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -sf http://localhost:8080/ehrbase/management/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    restart: unless-stopped
     ports:
       - "8080:8080"
     networks:
