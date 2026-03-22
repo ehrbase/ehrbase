@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.repository.schema.ColumnMetadata;
 import org.ehrbase.repository.schema.DynamicTable;
 import org.ehrbase.repository.schema.TemplateTableMetadata;
 import org.jooq.DSLContext;
@@ -127,9 +128,13 @@ public class DynamicCompositionWriter {
     }
 
     private void archiveTable(UUID compositionId, TemplateTableMetadata meta) {
+        // Build explicit column list (excludes PostgreSQL generated columns like search_vector, *_search)
+        String columnList = meta.columns().stream()
+                .map(ColumnMetadata::columnName)
+                .collect(java.util.stream.Collectors.joining(", "));
         // Copy current rows to history table
         dsl.execute(
-                "INSERT INTO " + meta.historyFqn() + " SELECT * FROM " + meta.fqn() + " WHERE composition_id = ?",
+                "INSERT INTO " + meta.historyFqn() + " (" + columnList + ") SELECT " + columnList + " FROM " + meta.fqn() + " WHERE composition_id = ?",
                 compositionId);
         // Delete from current
         dsl.deleteFrom(DynamicTable.table(meta))

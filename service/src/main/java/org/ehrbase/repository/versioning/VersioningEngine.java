@@ -185,16 +185,19 @@ public class VersioningEngine {
 
         // Step 2: Close valid_period on the history row
         dsl.execute(
-                "UPDATE ehr_system.composition_history SET valid_period = tstzrange(lower(valid_period), ?) WHERE id = ? AND upper(valid_period) IS NULL",
+                "UPDATE ehr_system.composition_history SET valid_period = tstzrange(lower(valid_period), ?::timestamptz) WHERE id = ? AND upper(valid_period) IS NULL",
                 now,
                 compositionId);
 
-        // Step 3: Delete old row from current table
+        // Step 3: Archive clinical data BEFORE deleting composition (FK constraint)
+        writer.archiveByCompositionId(compositionId, tableMeta);
+
+        // Step 4: Delete old row from current table
         dsl.deleteFrom(COMPOSITION)
                 .where(field(name("id"), UUID.class).eq(compositionId))
                 .execute();
 
-        // Step 4: INSERT new version with open-ended valid_period
+        // Step 5: INSERT new version with open-ended valid_period
         String archetypeId = newComposition.getArchetypeNodeId();
         String language = newComposition.getLanguage() != null
                 ? newComposition.getLanguage().getCodeString()
@@ -221,9 +224,6 @@ public class VersioningEngine {
                 .set(field(name("committer_id"), String.class), committerId)
                 .set(field(name("sys_tenant"), Short.class), tenantId)
                 .execute();
-
-        // Step 5: Archive clinical data to _history, delete from current
-        writer.archiveByCompositionId(compositionId, tableMeta);
 
         // Step 6: Insert new clinical data
         writer.write(compositionId, ehrId, tenantId, newComposition, webTemplate, tableMeta);
@@ -285,7 +285,7 @@ public class VersioningEngine {
                 "INSERT INTO ehr_system.composition_history SELECT * FROM ehr_system.composition WHERE id = ?",
                 compositionId);
         dsl.execute(
-                "UPDATE ehr_system.composition_history SET valid_period = tstzrange(lower(valid_period), ?) WHERE id = ? AND upper(valid_period) IS NULL",
+                "UPDATE ehr_system.composition_history SET valid_period = tstzrange(lower(valid_period), ?::timestamptz) WHERE id = ? AND upper(valid_period) IS NULL",
                 now,
                 compositionId);
 
@@ -296,7 +296,7 @@ public class VersioningEngine {
                         + "composer_name, composer_id, valid_period, sys_version, contribution_id, change_type, "
                         + "committed_at, committer_name, committer_id, sys_tenant) "
                         + "SELECT id, ehr_id, template_id, archetype_id, template_name, composer_name, composer_id, "
-                        + "tstzrange(?, ?), ?, ?, 'deleted', ?, ?, ?, sys_tenant "
+                        + "tstzrange(?::timestamptz, ?::timestamptz), ?, ?, 'deleted', ?::timestamptz, ?, ?, sys_tenant "
                         + "FROM ehr_system.composition WHERE id = ?",
                 now,
                 now,
@@ -307,13 +307,13 @@ public class VersioningEngine {
                 committerId,
                 compositionId);
 
-        // Step 3: Delete from current table
+        // Step 3: Archive + delete clinical data BEFORE deleting composition (FK constraint)
+        writer.archiveByCompositionId(compositionId, tableMeta);
+
+        // Step 4: Delete from current table
         dsl.deleteFrom(COMPOSITION)
                 .where(field(name("id"), UUID.class).eq(compositionId))
                 .execute();
-
-        // Step 4: Archive + delete clinical data
-        writer.archiveByCompositionId(compositionId, tableMeta);
 
         log.debug("Deleted composition: id={} version={}", compositionId, deletionVersion);
     }

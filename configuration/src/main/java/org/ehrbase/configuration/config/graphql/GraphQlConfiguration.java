@@ -19,13 +19,15 @@ package org.ehrbase.configuration.config.graphql;
 
 import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
+import org.ehrbase.service.graphql.GraphQlSchemaRegistryService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.graphql.autoconfigure.GraphQlSourceBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
  * GraphQL configuration for EHRbase.
- * Configures query depth limiting and other GraphQL infrastructure.
+ * Configures query depth limiting and registers dynamically generated template schemas.
  */
 @Configuration
 public class GraphQlConfiguration {
@@ -33,5 +35,10 @@ public class GraphQlConfiguration {
     @Bean
     public Instrumentation maxQueryDepthInstrumentation(@Value("${ehrbase.graphql.max-query-depth:10}") int maxDepth) {
         return new MaxQueryDepthInstrumentation(maxDepth);
+    }
+
+    @Bean
+    public GraphQlSourceBuilderCustomizer dynamicSchemaCustomizer(GraphQlSchemaRegistryService schemaRegistry) {
+        return builder -> builder.schemaResources(schemaRegistry.getGeneratedSchemaResource());
     }
 }

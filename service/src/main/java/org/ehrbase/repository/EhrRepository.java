@@ -192,7 +192,7 @@ public class EhrRepository {
                 "INSERT INTO ehr_system.ehr_status_history SELECT * FROM ehr_system.ehr_status WHERE ehr_id = ?",
                 ehrId);
         dsl.execute(
-                "UPDATE ehr_system.ehr_status_history SET valid_period = tstzrange(lower(valid_period), ?) WHERE ehr_id = ? AND upper(valid_period) IS NULL",
+                "UPDATE ehr_system.ehr_status_history SET valid_period = tstzrange(lower(valid_period), ?::timestamptz) WHERE ehr_id = ? AND upper(valid_period) IS NULL",
                 now,
                 ehrId);
 
