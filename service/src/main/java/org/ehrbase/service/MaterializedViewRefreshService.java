@@ -82,8 +82,7 @@ public class MaterializedViewRefreshService {
     }
 
     /**
-     * Refreshes a specific materialized view by name.
-     * Tries non-concurrent first (always works), then concurrent for subsequent refreshes.
+     * Refreshes a specific materialized view concurrently by name.
      *
      * @return true if refresh succeeded, false on error
      */
@@ -91,7 +90,7 @@ public class MaterializedViewRefreshService {
         String fqn = schema + "." + viewName;
         try {
             long start = System.currentTimeMillis();
-            dsl.execute("REFRESH MATERIALIZED VIEW " + fqn);
+            dsl.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY " + fqn);
             long elapsed = System.currentTimeMillis() - start;
             log.debug("Refreshed materialized view {} in {}ms", fqn, elapsed);
             return true;

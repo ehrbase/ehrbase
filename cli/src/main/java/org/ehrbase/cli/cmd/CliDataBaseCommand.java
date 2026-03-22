@@ -38,7 +38,14 @@ public class CliDataBaseCommand extends CliCommand {
 
     @Override
     public void run(List<String> args) throws Exception {
+        if (args.stream().anyMatch(a -> a.equals("--help") || a.equals("help"))) {
+            printUsage();
+        }
         consumeArgs(args, arg -> switch (arg.key()) {
+            case "help" -> {
+                printUsage();
+                yield Result.OK;
+            }
             case "check-connection" -> executeCheckConnection();
             case "migration-validate" -> executeValidate();
             case "migration-migrate" -> executeMigrate();

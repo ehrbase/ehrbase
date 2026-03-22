@@ -106,7 +106,7 @@ public abstract class CliCommand {
 
             Result result = consumer.apply(arg);
             if (result instanceof Result.Unknown) {
-                exitFail("Unknown argument [%s]".formatted(arg.arg()));
+                exitFail("Unknown argument [%s]".formatted(arg.key()));
             }
         }
     }
