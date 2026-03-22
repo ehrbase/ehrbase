@@ -118,13 +118,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Jackson 2 BOM — must come BEFORE SDK to override 2.19 → 2.21.1 (has JsonSerializeAs) -->
+            <!-- Jackson 2 annotations 2.21+ needed by Jackson 3 databind for initialization -->
+            <!-- jackson-databind stays at SDK's 2.19.x for PropertyNamingStrategy.SNAKE_CASE -->
             <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>2.21.1</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.21</version>
             </dependency>
             <!-- SDK pulls in slf4j 1.7.x, but Spring needs 2.0.x -->
             <dependency>
@@ -243,6 +242,20 @@
                 <type>test-jar</type>
                 <scope>test</scope>
                 <version>${ehrbase.version}</version>
+            </dependency>
+
+            <!-- Exclude Jackson 3 (spring-boot-jackson) — use Jackson 2 (spring-boot-jackson2) instead -->
+            <!-- See: https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-jackson</artifactId>
+                <version>${spring-boot.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.boot</groupId>
+                        <artifactId>spring-boot-jackson</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>

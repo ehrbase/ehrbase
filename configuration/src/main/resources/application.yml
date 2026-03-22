@@ -33,6 +33,17 @@ spring:
   application:
     name: ehrbase
 
+  # Use Jackson 2 until openEHR SDK migrates to Jackson 3
+  # See: https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+
+# SpringDoc disabled until compatibility with Spring Boot 4.0.4 is verified
+springdoc:
+  api-docs:
+    enabled: false
+
   graphql:
     graphiql:
       enabled: true
@@ -79,11 +90,13 @@ spring:
   flyway:
     # Standard Spring Boot 4.0 Flyway auto-configuration
     # Extensions (btree_gist, ltree, pgcrypto) are created by Docker init SQL
-    locations: classpath:db/migration/ehr/v2
+    locations: classpath:db/migration/ehr
     schemas: ehr_system
     user: ehrbase
     password: ehrbase
     baseline-on-migrate: true
+    # Skip default SQL callbacks (beforeValidate.sql in legacy ehr/v1 and ext/v1 dirs)
+    skip-default-callbacks: true
 
   jooq:
     sql-dialect: POSTGRES

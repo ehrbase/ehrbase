@@ -164,21 +164,12 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
 
             var ds = new SingleConnectionDataSource(conn);
 
-            // Migrate ext schema (extensions and aggregate functions)
-            Flyway.configure()
-                    .dataSource(ds)
-                    .schemas("ext")
-                    .placeholders(Map.of("ehrSchema", "ext", "extSchema", "ext"))
-                    .locations("classpath:db/migration/ext")
-                    .load()
-                    .migrate();
-
-            // Migrate ehr_system schema (new v2 architecture only)
+            // Migrate ehr_system schema
             Flyway.configure()
                     .dataSource(ds)
                     .schemas("ehr_system")
                     .placeholders(Map.of("ehrSchema", "ehr_system"))
-                    .locations("classpath:db/migration/ehr/v2")
+                    .locations("classpath:db/migration/ehr")
                     .load()
                     .migrate();
         } catch (SQLException e) {

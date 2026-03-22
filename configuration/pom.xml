@@ -102,6 +102,12 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-flyway</artifactId>
     </dependency>
+    <!-- Jackson 2 auto-configuration (SDK depends on Jackson 2, not 3 yet) -->
+    <!-- See: https://spring.io/blog/2025/10/07/introducing-jackson-3-support-in-spring -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-jackson2</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.ehrbase.openehr</groupId>
       <artifactId>service</artifactId>

@@ -135,30 +135,6 @@
         </dependencies>
         <executions>
           <execution>
-            <id>ext</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>migrate</goal>
-            </goals>
-            <configuration>
-              <failOnMissingLocations>true</failOnMissingLocations>
-              <locations>
-                <location>filesystem:src/main/resources/db/migration/ext</location>
-              </locations>
-              <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
-              <driver>org.postgresql.Driver</driver>
-              <user>${database.user}</user>
-              <password>${database.pass}</password>
-              <defaultSchema>ext</defaultSchema>
-              <schemas>
-                <schema>ext</schema>
-              </schemas>
-              <placeholders>
-                <extSchema>ext</extSchema>
-              </placeholders>
-            </configuration>
-          </execution>
-          <execution>
             <id>ehr</id>
             <phase>generate-sources</phase>
             <goals>
@@ -167,7 +143,7 @@
             <configuration>
               <failOnMissingLocations>true</failOnMissingLocations>
               <locations>
-                <location>filesystem:src/main/resources/db/migration/ehr/v2</location>
+                <location>filesystem:src/main/resources/db/migration/ehr</location>
               </locations>
               <url>jdbc:postgresql://${database.host}:${database.port}/${database.name}</url>
               <driver>org.postgresql.Driver</driver>
