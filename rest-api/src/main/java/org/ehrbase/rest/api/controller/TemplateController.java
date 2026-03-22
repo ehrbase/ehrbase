@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
+import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.KnowledgeCacheService;
@@ -142,13 +143,11 @@ public class TemplateController extends BaseApiController {
 
     @GetMapping(value = "/adl1.4/{template_id}", produces = MediaType.APPLICATION_XML_VALUE)
     @Operation(summary = "Get ADL 1.4 template as OPT XML")
-    public ResponseEntity<OPERATIONALTEMPLATE> getAdl14AsXml(@PathVariable("template_id") String templateId) {
+    public ResponseEntity<String> getAdl14AsXml(@PathVariable("template_id") String templateId) {
         requestContext.setTemplateId(templateId);
 
-        OPERATIONALTEMPLATE opt = knowledgeCache
-                .retrieveOperationalTemplate(templateId)
-                .orElseThrow(() -> new ObjectNotFoundException("template", templateId));
-        return ResponseEntity.ok(opt);
+        String xml = templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+        return ResponseEntity.ok(xml);
     }
 
     @GetMapping(value = "/adl1.4/{template_id}", produces = EhrMediaType.APPLICATION_WT_JSON_VALUE)

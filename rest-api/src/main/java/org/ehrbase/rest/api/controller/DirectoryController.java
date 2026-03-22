@@ -92,16 +92,19 @@ public class DirectoryController extends BaseApiController {
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
         requestContext.setEhrId(ehrId);
 
-        String folderName = (String) body.get("name");
-        String path = (String) body.getOrDefault("path", "root." + folderName);
+        String folderName = extractName(body.get("name"));
+        String archetypeNodeId = (String) body.get("archetype_node_id");
+        String pathLabel = folderName.replaceAll("[^a-zA-Z0-9_]", "_");
+        String path = (String) body.getOrDefault("path", "root." + pathLabel);
         String committerName = requestContext.getUserId();
 
         dsl.execute(
-                "INSERT INTO ehr_system.ehr_folder (ehr_id, path, name, committer_name, committer_id, sys_tenant) "
-                        + "VALUES (?, ?::ltree, ?, ?, ?, ?)",
+                "INSERT INTO ehr_system.ehr_folder (ehr_id, path, name, archetype_node_id, committer_name, committer_id, sys_tenant) "
+                        + "VALUES (?, ?::ltree, ?, ?, ?, ?, ?)",
                 ehrId,
                 path,
                 folderName,
+                archetypeNodeId,
                 committerName,
                 committerName,
                 requestContext.getTenantId());
@@ -196,5 +199,19 @@ public class DirectoryController extends BaseApiController {
                 .execute();
 
         return ResponseEntity.noContent().build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String extractName(Object nameField) {
+        if (nameField instanceof String s) {
+            return s;
+        }
+        if (nameField instanceof Map<?, ?> map) {
+            Object value = map.get("value");
+            if (value instanceof String s) {
+                return s;
+            }
+        }
+        throw new IllegalArgumentException("Invalid 'name' field: expected String or {\"value\": \"...\"}");
     }
 }

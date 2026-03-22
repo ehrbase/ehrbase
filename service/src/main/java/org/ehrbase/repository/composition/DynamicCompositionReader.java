@@ -24,7 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.repository.schema.ColumnMetadata;
 import org.ehrbase.repository.schema.DynamicTable;
 import org.ehrbase.repository.schema.TemplateTableMetadata;
 import org.jooq.DSLContext;
@@ -37,6 +39,10 @@ import org.springframework.stereotype.Component;
 /**
  * Reads RM Composition clinical data from auto-generated {@code ehr_data} template tables
  * and reconstructs Archie RM objects via {@link RmReconstructor}.
+ *
+ * <p>UNION queries between main and history tables use explicit stored column lists
+ * (via {@link TemplateTableMetadata#storedColumns()}) to exclude PostgreSQL GENERATED ALWAYS
+ * columns that may differ between the two tables.
  */
 @Component
 public class DynamicCompositionReader {
@@ -75,7 +81,7 @@ public class DynamicCompositionReader {
 
     /**
      * Reads a specific version of clinical data.
-     * Searches both current and _history tables using UNION.
+     * Searches both current and _history tables using UNION with explicit column lists.
      */
     public Optional<Composition> readVersion(
             UUID compositionId,
@@ -84,12 +90,12 @@ public class DynamicCompositionReader {
             WebTemplate webTemplate,
             CompositionMetadata compositionMeta) {
 
-        // UNION current + history, filter by sys_version
+        String cols = storedColumnList(metadata);
         Map<String, Object> row = dsl.resultQuery(
-                        "SELECT * FROM " + metadata.fqn()
+                        "SELECT " + cols + " FROM " + metadata.fqn()
                                 + " WHERE composition_id = ? AND sys_version = ?"
                                 + " UNION ALL"
-                                + " SELECT * FROM " + metadata.historyFqn()
+                                + " SELECT " + cols + " FROM " + metadata.historyFqn()
                                 + " WHERE composition_id = ? AND sys_version = ?"
                                 + " LIMIT 1",
                         compositionId,
@@ -118,11 +124,12 @@ public class DynamicCompositionReader {
             WebTemplate webTemplate,
             CompositionMetadata compositionMeta) {
 
+        String cols = storedColumnList(metadata);
         Map<String, Object> row = dsl.resultQuery(
-                        "SELECT * FROM " + metadata.fqn()
+                        "SELECT " + cols + " FROM " + metadata.fqn()
                                 + " WHERE composition_id = ? AND valid_period @> ?::timestamptz"
                                 + " UNION ALL"
-                                + " SELECT * FROM " + metadata.historyFqn()
+                                + " SELECT " + cols + " FROM " + metadata.historyFqn()
                                 + " WHERE composition_id = ? AND valid_period @> ?::timestamptz"
                                 + " LIMIT 1",
                         compositionId,
@@ -135,14 +142,12 @@ public class DynamicCompositionReader {
             return Optional.empty();
         }
 
-        // For point-in-time, we need child rows that match the same temporal range
         Map<String, List<Map<String, Object>>> childRows = readChildTablesAtTime(compositionId, timestamp, metadata);
 
         return Optional.of(RmReconstructor.reconstruct(row, childRows, webTemplate, compositionMeta));
     }
 
     private Map<String, List<Map<String, Object>>> readChildTables(UUID compositionId, TemplateTableMetadata metadata) {
-
         Map<String, List<Map<String, Object>>> childRows = new HashMap<>();
         for (TemplateTableMetadata child : metadata.childTables()) {
             Result<Record> rows = dsl.select()
@@ -164,11 +169,12 @@ public class DynamicCompositionReader {
 
         Map<String, List<Map<String, Object>>> childRows = new HashMap<>();
         for (TemplateTableMetadata child : metadata.childTables()) {
+            String cols = storedColumnList(child);
             Result<Record> rows = dsl.resultQuery(
-                            "SELECT * FROM " + child.fqn()
+                            "SELECT " + cols + " FROM " + child.fqn()
                                     + " WHERE composition_id = ? AND sys_version = ?"
                                     + " UNION ALL"
-                                    + " SELECT * FROM " + child.historyFqn()
+                                    + " SELECT " + cols + " FROM " + child.historyFqn()
                                     + " WHERE composition_id = ? AND sys_version = ?",
                             compositionId,
                             version,
@@ -189,11 +195,12 @@ public class DynamicCompositionReader {
 
         Map<String, List<Map<String, Object>>> childRows = new HashMap<>();
         for (TemplateTableMetadata child : metadata.childTables()) {
+            String cols = storedColumnList(child);
             Result<Record> rows = dsl.resultQuery(
-                            "SELECT * FROM " + child.fqn()
+                            "SELECT " + cols + " FROM " + child.fqn()
                                     + " WHERE composition_id = ? AND valid_period @> ?::timestamptz"
                                     + " UNION ALL"
-                                    + " SELECT * FROM " + child.historyFqn()
+                                    + " SELECT " + cols + " FROM " + child.historyFqn()
                                     + " WHERE composition_id = ? AND valid_period @> ?::timestamptz",
                             compositionId,
                             timestamp,
@@ -207,5 +214,16 @@ public class DynamicCompositionReader {
             }
         }
         return childRows;
+    }
+
+    /**
+     * Returns comma-separated stored column names for a table.
+     * Excludes PostgreSQL GENERATED ALWAYS columns (search_vector, *_search)
+     * to ensure UNION compatibility between main and history tables.
+     */
+    private static String storedColumnList(TemplateTableMetadata metadata) {
+        return metadata.storedColumns().stream()
+                .map(ColumnMetadata::columnName)
+                .collect(Collectors.joining(", "));
     }
 }
