@@ -64,6 +64,9 @@ spring:
     active: local
 
   datasource:
+    url: jdbc:postgresql://localhost:5432/ehrbase
+    username: ehrbase
+    password: ehrbase
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10

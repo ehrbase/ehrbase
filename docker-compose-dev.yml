@@ -1,22 +1,36 @@
 #
-# Development setup: PostgreSQL 18 only
-# Usage: docker compose -f docker-compose-dev.yml up -d
+# Full development setup: PostgreSQL 18 + EHRbase application
+#
+# Usage:
+#   mvn install -DskipTests                                   # Build the jar first
+#   docker compose -f docker-compose-dev.yml up -d --build    # Build image + start
+#   docker compose -f docker-compose-dev.yml logs -f ehrbase  # Watch app logs
+#
+# Endpoints:
+#   http://localhost:8080/api/v1/templates           # Template list
+#   http://localhost:8080/api/v1/ehrs                # EHR operations
+#   http://localhost:8080/api/v1/graphiql            # GraphiQL IDE
+#
+# Stop:
+#   docker compose -f docker-compose-dev.yml down -v  # Stop + remove volumes
 #
 services:
 
+  #
+  # PostgreSQL 18 with schemas, extensions, and roles pre-configured
+  #
   ehrdb:
     image: postgres:18
+    container_name: ehrbase-pg18-dev
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      EHRBASE_USER_ADMIN: ehrbase
-      EHRBASE_PASSWORD_ADMIN: ehrbase
-      EHRBASE_USER: ehrbase_restricted
-      EHRBASE_PASSWORD: ehrbase_restricted
+      POSTGRES_DB: ehrbase
+      POSTGRES_USER: ehrbase
+      POSTGRES_PASSWORD: ehrbase
     volumes:
-      - ./createdb-docker.sql:/docker-entrypoint-initdb.d/01-createdb.sql
+      - ./jooq-pg/src/main/resources/jooq-init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ehrbase-pgdata:/var/lib/postgresql
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      test: [ "CMD-SHELL", "pg_isready -U ehrbase -d ehrbase" ]
       interval: 5s
       timeout: 5s
       retries: 12
@@ -24,6 +38,42 @@ services:
       - "5432:5432"
     networks:
       - ehrbase-dev
+
+  #
+  # EHRbase application (built from local jar via Dockerfile)
+  #
+  ehrbase:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ehrbase-app-dev
+    environment:
+      DB_URL: jdbc:postgresql://ehrdb:5432/ehrbase
+      DB_USER_ADMIN: ehrbase
+      DB_PASS_ADMIN: ehrbase
+      DB_USER: ehrbase
+      DB_PASS: ehrbase
+      SERVER_NODENAME: local.ehrbase.org
+      SECURITY_AUTHTYPE: NONE
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration/ext,classpath:db/migration/ehr/v2
+      SPRING_FLYWAY_SCHEMAS: ext,ehr_system
+      SPRINGDOC_API_DOCS_ENABLED: "false"
+      SPRINGDOC_SWAGGER_UI_ENABLED: "false"
+      MANAGEMENT_ENDPOINTS_WEB_ACCESS: PUBLIC
+      MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
+      EHRBASE_REST_EXPERIMENTAL_TAGS_ENABLED: "true"
+      EHRBASE_FEATURES_ADMIN_API: "true"
+      EHRBASE_FEATURES_ITEM_TAGS: "true"
+    depends_on:
+      ehrdb:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    networks:
+      - ehrbase-dev
+
+volumes:
+  ehrbase-pgdata:
 
 networks:
   ehrbase-dev: { }

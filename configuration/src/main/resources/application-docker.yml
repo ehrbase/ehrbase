@@ -25,7 +25,6 @@ spring:
       minimum-idle: 10
       connection-init-sql: "SET timezone = 'UTC'"
   flyway:
-    schemas: ehr_system
     user: ${DB_USER_ADMIN}
     password: ${DB_PASS_ADMIN}
 

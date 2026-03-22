@@ -49,7 +49,13 @@ public class GraphQlSchemaRegistryService {
 
     @PostConstruct
     void init() {
-        regenerate();
+        try {
+            regenerate();
+        } catch (Exception e) {
+            log.warn(
+                    "GraphQL schema generation skipped at startup (database may not be fully migrated yet): {}",
+                    e.getMessage());
+        }
     }
 
     /**
