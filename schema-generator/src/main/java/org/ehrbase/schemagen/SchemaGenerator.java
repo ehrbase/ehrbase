@@ -89,16 +89,19 @@ public class SchemaGenerator {
         // PG18 temporal primary key
         sb.append("    , PRIMARY KEY (id, valid_period WITHOUT OVERLAPS)\n");
 
-        // PG18 temporal foreign key to composition (skip for child tables with parent_id)
+        // PG18 temporal foreign keys
         if (table.getParentTableName() == null) {
+            // Root table → temporal FK to ehr_system.composition
             sb.append("    , FOREIGN KEY (composition_id, PERIOD valid_period)\n");
             sb.append("        REFERENCES ehr_system.composition (id, PERIOD valid_period)\n");
         } else {
-            sb.append("    , FOREIGN KEY (parent_id) REFERENCES ");
+            // Child table → temporal FK to parent template table
+            sb.append("    , FOREIGN KEY (parent_id, PERIOD valid_period)\n");
+            sb.append("        REFERENCES ");
             sb.append(table.getSchema())
                     .append(".")
                     .append(table.getParentTableName())
-                    .append(" (id)\n");
+                    .append(" (id, PERIOD valid_period)\n");
         }
 
         sb.append(");\n\n");

@@ -83,7 +83,7 @@ public class MaterializedViewRefreshService {
 
     /**
      * Refreshes a specific materialized view by name.
-     * Uses CONCURRENTLY to avoid blocking readers (requires a unique index on the view).
+     * Tries non-concurrent first (always works), then concurrent for subsequent refreshes.
      *
      * @return true if refresh succeeded, false on error
      */
@@ -91,23 +91,13 @@ public class MaterializedViewRefreshService {
         String fqn = schema + "." + viewName;
         try {
             long start = System.currentTimeMillis();
-            dsl.execute("REFRESH MATERIALIZED VIEW CONCURRENTLY " + fqn);
+            dsl.execute("REFRESH MATERIALIZED VIEW " + fqn);
             long elapsed = System.currentTimeMillis() - start;
             log.debug("Refreshed materialized view {} in {}ms", fqn, elapsed);
             return true;
         } catch (Exception e) {
-            // First refresh after creation requires non-concurrent mode
-            // (CONCURRENTLY needs at least one previous population)
-            try {
-                long start = System.currentTimeMillis();
-                dsl.execute("REFRESH MATERIALIZED VIEW " + fqn);
-                long elapsed = System.currentTimeMillis() - start;
-                log.info("Initial population of materialized view {} in {}ms", fqn, elapsed);
-                return true;
-            } catch (Exception e2) {
-                log.error("Failed to refresh materialized view {}: {}", fqn, e2.getMessage());
-                return false;
-            }
+            log.error("Failed to refresh materialized view {}: {}", fqn, e.getMessage());
+            return false;
         }
     }
 }
