@@ -76,13 +76,15 @@ public class EhrRepository {
         this.requestContext = requestContext;
     }
 
+    /**
+     * Insert the EHR row only (no ehr_status yet).
+     * Must be called before creating the contribution so the FK is satisfied.
+     */
     @Transactional
-    public UUID createEhr(UUID ehrId, EhrStatus status, UUID contributionId) {
+    public UUID insertEhrRow(UUID ehrId, EhrStatus status) {
         OffsetDateTime now = timeProvider.getNow();
         short tenantId = requestContext.getTenantId();
-        String committerName = requestContext.getUserId();
 
-        // Extract subject info from EhrStatus
         String subjectId = null;
         String subjectNamespace = null;
         if (status.getSubject() instanceof PartySelf self && self.getExternalRef() != null) {
@@ -94,7 +96,6 @@ public class EhrRepository {
         boolean isQueryable = Boolean.TRUE.equals(status.isQueryable());
         boolean isModifiable = Boolean.TRUE.equals(status.isModifiable());
 
-        // INSERT into ehr_system.ehr
         if (ehrId == null) {
             Record1<UUID> result = dsl.insertInto(EHR)
                     .set(field(name("subject_id"), String.class), subjectId)
@@ -118,7 +119,29 @@ public class EhrRepository {
                     .execute();
         }
 
-        // INSERT into ehr_system.ehr_status (version 1)
+        return ehrId;
+    }
+
+    /**
+     * Insert the EHR_STATUS row (version 1) with the given contribution reference.
+     */
+    @Transactional
+    public void insertEhrStatus(UUID ehrId, EhrStatus status, UUID contributionId) {
+        OffsetDateTime now = timeProvider.getNow();
+        short tenantId = requestContext.getTenantId();
+        String committerName = requestContext.getUserId();
+
+        String subjectId = null;
+        String subjectNamespace = null;
+        if (status.getSubject() instanceof PartySelf self && self.getExternalRef() != null) {
+            PartyRef ref = self.getExternalRef();
+            subjectId = ref.getId() != null ? ref.getId().getValue() : null;
+            subjectNamespace = ref.getNamespace();
+        }
+
+        boolean isQueryable = Boolean.TRUE.equals(status.isQueryable());
+        boolean isModifiable = Boolean.TRUE.equals(status.isModifiable());
+
         String archetypeNodeId =
                 status.getArchetypeNodeId() != null ? status.getArchetypeNodeId() : "openEHR-EHR-EHR_STATUS.generic.v1";
         String statusName = status.getName() != null ? status.getName().getValue() : "EHR Status";
@@ -141,8 +164,7 @@ public class EhrRepository {
                 .execute();
 
         auditService.recordEvent("data_modify", "ehr", ehrId, "create", null, null);
-        log.debug("Created EHR: id={}", ehrId);
-        return ehrId;
+        log.debug("Created EHR: id={}, status version=1", ehrId);
     }
 
     @Transactional

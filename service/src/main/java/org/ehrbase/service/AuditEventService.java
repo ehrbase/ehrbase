@@ -88,7 +88,6 @@ public class AuditEventService {
                 .set(field(name("actor_id"), String.class), requestContext.getUserId())
                 .set(field(name("actor_role"), String.class), requestContext.getUserRole())
                 .set(field(name("tenant_id"), Short.class), requestContext.getTenantId())
-                .set(field(name("ip_address"), String.class), requestContext.getIpAddress())
                 .set(field(name("user_agent"), String.class), requestContext.getUserAgent())
                 .set(field(name("justification"), String.class), justification)
                 .set(field(name("details"), JSONB.class), detailsJsonb)

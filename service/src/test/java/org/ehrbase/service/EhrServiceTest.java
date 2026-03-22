@@ -109,14 +109,14 @@ class EhrServiceTest {
         UUID ehrId = UUID.fromString("64aa777e-942c-45c0-97c9-835a5371025a");
 
         stubContributionCreation(ehrId);
-        doReturn(ehrId).when(ehrRepository).createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+        doReturn(ehrId).when(ehrRepository).insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         UUID createdEhrId = service().create(ehrId, null);
 
         // New implementation always validates (even default status)
         verify(validationService, times(1)).check(any(EhrStatus.class));
         verify(contributionRepository, times(1)).createContribution(eq(ehrId), anyString(), anyString());
-        verify(ehrRepository, times(1)).createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+        verify(ehrRepository, times(1)).insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         assertThat(createdEhrId).isEqualTo(ehrId);
     }
@@ -130,13 +130,13 @@ class EhrServiceTest {
                 new PartySelf(new PartyRef(new HierObjectId("42"), "some:external_id", "my_type")));
 
         stubContributionCreation(ehrId);
-        doReturn(ehrId).when(ehrRepository).createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+        doReturn(ehrId).when(ehrRepository).insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         UUID createdEhrId = service().create(ehrId, ehrStatusDto);
 
         verify(validationService, times(1)).check(any(EhrStatus.class));
         verify(contributionRepository, times(1)).createContribution(eq(ehrId), anyString(), anyString());
-        verify(ehrRepository, times(1)).createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+        verify(ehrRepository, times(1)).insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         assertThat(createdEhrId).isEqualTo(ehrId);
     }
@@ -148,7 +148,7 @@ class EhrServiceTest {
         EhrStatus ehrStatusDto = ehrStatus(new HierObjectId("invalid"), null);
 
         stubContributionCreation(ehrId);
-        doReturn(ehrId).when(ehrRepository).createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+        doReturn(ehrId).when(ehrRepository).insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         UUID createdEhrId = service().create(ehrId, ehrStatusDto);
 
@@ -162,7 +162,7 @@ class EhrServiceTest {
         EhrStatus ehrStatusDto = ehrStatus(new HierObjectId("invalid"), null);
 
         stubContributionCreation(ehrId);
-        doReturn(ehrId).when(ehrRepository).createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+        doReturn(ehrId).when(ehrRepository).insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         UUID createdEhrId = service().create(ehrId, ehrStatusDto);
 
@@ -180,7 +180,7 @@ class EhrServiceTest {
         stubContributionCreation(ehrId);
         doThrow(new DuplicateKeyException("\"ehr_status_subject_idx\""))
                 .when(ehrRepository)
-                .createEhr(eq(ehrId), any(EhrStatus.class), any(UUID.class));
+                .insertEhrRow(eq(ehrId), any(EhrStatus.class));
 
         assertThatThrownBy(() -> service().create(ehrId, ehrStatusDto)).isInstanceOf(DuplicateKeyException.class);
     }

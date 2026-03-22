@@ -76,10 +76,15 @@ public class EhrServiceImp implements EhrService {
 
         validationService.check(status);
 
-        UUID contributionId =
-                contributionRepository.createContribution(ehrId != null ? ehrId : UUID.randomUUID(), "ehr", "creation");
+        // Insert EHR row first (so FK from contribution → ehr is satisfied)
+        UUID createdEhrId = ehrRepository.insertEhrRow(ehrId, status);
 
-        UUID createdEhrId = ehrRepository.createEhr(ehrId, status, contributionId);
+        // Now create the contribution (EHR row exists, FK is valid)
+        UUID contributionId = contributionRepository.createContribution(createdEhrId, "ehr", "creation");
+
+        // Insert EHR_STATUS with the contribution reference
+        ehrRepository.insertEhrStatus(createdEhrId, status, contributionId);
+
         log.debug("Created EHR: id={}", createdEhrId);
         return createdEhrId;
     }
