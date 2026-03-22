@@ -17,12 +17,18 @@
  */
 package org.ehrbase.service;
 
+import com.nedap.archie.rm.archetyped.Archetyped;
+import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.composition.ContentItem;
+import com.nedap.archie.rm.composition.Entry;
 import com.nedap.archie.rm.ehr.VersionedComposition;
 import com.nedap.archie.rm.generic.RevisionHistory;
+import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
+import com.nedap.archie.rm.archetyped.TemplateId;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -89,6 +95,7 @@ public class CompositionServiceImp implements CompositionService {
         Objects.requireNonNull(composition, "composition must not be null");
 
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
+        enrichArchetypeDetails(composition);
         validationService.check(composition);
 
         String templateId = resolveTemplateId(composition);
@@ -120,6 +127,7 @@ public class CompositionServiceImp implements CompositionService {
         Objects.requireNonNull(composition, "composition must not be null");
 
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
+        enrichArchetypeDetails(composition);
         validationService.check(composition);
 
         UUID compositionId = extractUuid(targetObjId);
@@ -294,5 +302,45 @@ public class CompositionServiceImp implements CompositionService {
         String id = versionId.getValue();
         int lastSep = id.lastIndexOf("::");
         return lastSep > 0 ? Integer.parseInt(id.substring(lastSep + 2)) : 1;
+    }
+
+    /**
+     * Enriches content nodes that are archetype roots but lack archetype_details.
+     * Clients often omit archetype_details on OBSERVATION/EVALUATION/etc. since
+     * they can be derived from archetype_node_id + template_id. The RM validator
+     * requires them, so we fill them in before validation.
+     */
+    private static void enrichArchetypeDetails(Composition composition) {
+        if (composition.getArchetypeDetails() == null || composition.getContent() == null) {
+            return;
+        }
+        TemplateId templateId = composition.getArchetypeDetails().getTemplateId();
+        String rmVersion = composition.getArchetypeDetails().getRmVersion();
+
+        for (ContentItem content : composition.getContent()) {
+            enrichLocatable(content, templateId, rmVersion);
+        }
+    }
+
+    private static void enrichLocatable(Locatable locatable, TemplateId templateId, String rmVersion) {
+        if (locatable.getArchetypeDetails() == null
+                && locatable.getArchetypeNodeId() != null
+                && locatable.getArchetypeNodeId().startsWith("openEHR-")) {
+            Archetyped details = new Archetyped();
+            details.setArchetypeId(new ArchetypeID(locatable.getArchetypeNodeId()));
+            details.setTemplateId(templateId);
+            details.setRmVersion(rmVersion != null ? rmVersion : "1.0.2");
+            locatable.setArchetypeDetails(details);
+        }
+
+        // Normalize encoding terminology: "Unicode" → "IANA_character-sets" (RM spec requirement)
+        if (locatable instanceof Entry entry
+                && entry.getEncoding() != null
+                && entry.getEncoding().getTerminologyId() != null
+                && "Unicode".equals(entry.getEncoding().getTerminologyId().getValue())) {
+            entry.getEncoding()
+                    .getTerminologyId()
+                    .setValue("IANA_character-sets");
+        }
     }
 }
