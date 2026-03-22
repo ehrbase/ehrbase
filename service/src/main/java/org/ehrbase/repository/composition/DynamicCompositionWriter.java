@@ -127,9 +127,8 @@ public class DynamicCompositionWriter {
     }
 
     private void archiveTable(UUID compositionId, TemplateTableMetadata meta) {
-        String columnList = meta.storedColumns().stream()
-                .map(ColumnMetadata::columnName)
-                .collect(Collectors.joining(", "));
+        String columnList =
+                meta.storedColumns().stream().map(ColumnMetadata::columnName).collect(Collectors.joining(", "));
 
         dsl.execute(
                 "INSERT INTO %s (%s) SELECT %s FROM %s WHERE composition_id = ?"

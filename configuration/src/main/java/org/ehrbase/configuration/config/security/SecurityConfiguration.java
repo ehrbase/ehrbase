@@ -88,8 +88,7 @@ public class SecurityConfiguration {
                 // Exclude apis from CSRF protection, to allow POST, PUT, DELETE, because there are used by client
                 // implementation and not only restricted to a browser access.
                 .csrf(csrf -> {
-                    csrf.ignoringRequestMatchers(
-                            "/rest/**", "/api/**", "/plugin/**", "/error/**");
+                    csrf.ignoringRequestMatchers("/rest/**", "/api/**", "/plugin/**", "/error/**");
                     // disable csrf in case 'management.endpoints.web.csrf-validation-enabled=false' is defined
                     if (!managementEndpointsCSRFValidationEnabled) {
                         logger.info("Management endpoint csrf security is disabled");

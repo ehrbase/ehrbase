@@ -30,6 +30,8 @@ class ContributionServiceImpTest {
 
     @Test
     void contributionServiceReplacedByRepository() {
-        assertThat(true).as("See ContributionControllerTest + ContributionRepositoryIT").isTrue();
+        assertThat(true)
+                .as("See ContributionControllerTest + ContributionRepositoryIT")
+                .isTrue();
     }
 }

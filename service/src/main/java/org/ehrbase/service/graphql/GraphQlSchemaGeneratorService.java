@@ -182,7 +182,6 @@ public class GraphQlSchemaGeneratorService {
         return sb.toString();
     }
 
-
     private List<ColumnInfo> queryViewColumns(String schema, String viewName) {
         var rows = dsl.select(field(name("column_name")), field(name("data_type")), field(name("is_nullable")))
                 .from(INFO_COLUMNS)

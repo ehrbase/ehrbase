@@ -48,7 +48,13 @@ class TemplateSchemaResolverTest {
                         new ColumnMetadata(
                                 "systolic_units", "text", false, false, false, "/data/systolic", "DV_QUANTITY"),
                         new ColumnMetadata(
-                                "diastolic_magnitude", "numeric", true, false, false, "/data/diastolic", "DV_QUANTITY")),
+                                "diastolic_magnitude",
+                                "numeric",
+                                true,
+                                false,
+                                false,
+                                "/data/diastolic",
+                                "DV_QUANTITY")),
                 java.util.List.of(),
                 null);
 
@@ -64,8 +70,8 @@ class TemplateSchemaResolverTest {
 
     @Test
     void columnMetadataRecord() {
-        var col =
-                new ColumnMetadata("blood_pressure_systolic", "numeric", false, false, false, "/data/bp", "DV_QUANTITY");
+        var col = new ColumnMetadata(
+                "blood_pressure_systolic", "numeric", false, false, false, "/data/bp", "DV_QUANTITY");
         assertThat(col.columnName()).isEqualTo("blood_pressure_systolic");
         assertThat(col.pgType()).isEqualTo("numeric");
         assertThat(col.nullable()).isFalse();
@@ -116,7 +122,8 @@ class TemplateSchemaResolverTest {
 
     @Test
     void systemColumnDetection() {
-        assertThat(ColumnMetadata.fromInformationSchema("id", "uuid", false, false).isSystemColumn())
+        assertThat(ColumnMetadata.fromInformationSchema("id", "uuid", false, false)
+                        .isSystemColumn())
                 .isTrue();
         assertThat(ColumnMetadata.fromInformationSchema("composition_id", "uuid", false, false)
                         .isSystemColumn())

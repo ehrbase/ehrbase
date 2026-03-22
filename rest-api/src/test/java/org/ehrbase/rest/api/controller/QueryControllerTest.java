@@ -39,8 +39,14 @@ class QueryControllerTest {
     void listViewsReturnsEntries() {
         when(mockRequestContext.getTenantId()).thenReturn((short) 1);
         var entry = new ViewCatalogService.ViewCatalogEntry(
-                UUID.randomUUID(), "v_blood_pressure", "ehr_views", "template", "blood_pressure.v1", "generated",
-                "Blood pressure view", false);
+                UUID.randomUUID(),
+                "v_blood_pressure",
+                "ehr_views",
+                "template",
+                "blood_pressure.v1",
+                "generated",
+                "Blood pressure view",
+                false);
         when(mockViewCatalog.listViews(null, (short) 1)).thenReturn(List.of(entry));
 
         ResponseEntity<List<ViewCatalogService.ViewCatalogEntry>> response = controller.listViews();

@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
+import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.composition.ContentItem;
@@ -28,7 +29,6 @@ import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import com.nedap.archie.rm.archetyped.TemplateId;
 import java.time.OffsetDateTime;
 import java.util.Objects;
 import java.util.Optional;
@@ -338,9 +338,7 @@ public class CompositionServiceImp implements CompositionService {
                 && entry.getEncoding() != null
                 && entry.getEncoding().getTerminologyId() != null
                 && "Unicode".equals(entry.getEncoding().getTerminologyId().getValue())) {
-            entry.getEncoding()
-                    .getTerminologyId()
-                    .setValue("IANA_character-sets");
+            entry.getEncoding().getTerminologyId().setValue("IANA_character-sets");
         }
     }
 }

@@ -69,9 +69,7 @@ public class GenericViewDataFetcher implements DataFetcher<Window<Map<String, Ob
 
     @SuppressWarnings("unchecked")
     public GenericViewDataFetcher(
-            org.jooq.DSLContext dsl,
-            GraphQlSchemaRegistryService schemaRegistry,
-            CursorStrategy<?> cursorStrategy) {
+            org.jooq.DSLContext dsl, GraphQlSchemaRegistryService schemaRegistry, CursorStrategy<?> cursorStrategy) {
         this.dsl = dsl;
         this.schemaRegistry = schemaRegistry;
         this.cursorStrategy = (CursorStrategy<ScrollPosition>) cursorStrategy;
@@ -104,9 +102,8 @@ public class GenericViewDataFetcher implements DataFetcher<Window<Map<String, Ob
                 .fetch();
 
         boolean hasNext = rows.size() > pageSize;
-        List<Map<String, Object>> content = (hasNext ? rows.subList(0, pageSize) : rows).stream()
-                .map(this::recordToMap)
-                .toList();
+        List<Map<String, Object>> content = (hasNext ? rows.subList(0, pageSize) : rows)
+                .stream().map(this::recordToMap).toList();
 
         log.debug("GraphQL query {}: {} rows, offset {}, hasNext {}", queryFieldName, content.size(), offset, hasNext);
 

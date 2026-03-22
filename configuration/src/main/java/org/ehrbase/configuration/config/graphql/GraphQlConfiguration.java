@@ -17,6 +17,8 @@
  */
 package org.ehrbase.configuration.config.graphql;
 
+import static graphql.execution.instrumentation.SimpleInstrumentationContext.noOp;
+
 import graphql.ExecutionResult;
 import graphql.analysis.MaxQueryDepthInstrumentation;
 import graphql.execution.instrumentation.Instrumentation;
@@ -29,8 +31,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.graphql.autoconfigure.GraphQlSourceBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import static graphql.execution.instrumentation.SimpleInstrumentationContext.noOp;
 
 /**
  * GraphQL configuration for EHRbase.
@@ -56,14 +56,16 @@ public class GraphQlConfiguration {
                 // Exempt introspection queries (__schema, __type) from depth limiting.
                 // Standard introspection requires depth ~14 due to nested TypeRef fragments,
                 // and is essential for GraphiQL, IDE plugins, and codegen tooling.
-                boolean isIntrospection = parameters.getExecutionContext()
-                        .getOperationDefinition()
-                        .getSelectionSet()
-                        .getSelections()
-                        .stream()
-                        .filter(Field.class::isInstance)
-                        .map(sel -> ((Field) sel).getName())
-                        .anyMatch(name -> name.startsWith("__"));
+                boolean isIntrospection =
+                        parameters
+                                .getExecutionContext()
+                                .getOperationDefinition()
+                                .getSelectionSet()
+                                .getSelections()
+                                .stream()
+                                .filter(Field.class::isInstance)
+                                .map(sel -> ((Field) sel).getName())
+                                .anyMatch(name -> name.startsWith("__"));
                 if (isIntrospection) {
                     return noOp();
                 }

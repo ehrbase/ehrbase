@@ -100,7 +100,8 @@ public final class RmTreeWalker {
                 && !composition.getContext().getParticipations().isEmpty()) {
             mainValues.put(
                     "participations",
-                    org.jooq.JSONB.jsonb(serializeToJson(composition.getContext().getParticipations())));
+                    org.jooq.JSONB.jsonb(
+                            serializeToJson(composition.getContext().getParticipations())));
         }
 
         return new CompositionTableData(mainValues, childValues);

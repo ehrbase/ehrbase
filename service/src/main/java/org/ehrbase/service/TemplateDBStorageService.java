@@ -28,9 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.jooq.DSLContext;
 import org.jooq.Record;
@@ -57,8 +55,7 @@ public class TemplateDBStorageService implements TemplateStorage {
     private final boolean allowTemplateOverwrite;
 
     public TemplateDBStorageService(
-            DSLContext dsl,
-            @Value("${ehrbase.template.allow-overwrite:false}") boolean allowTemplateOverwrite) {
+            DSLContext dsl, @Value("${ehrbase.template.allow-overwrite:false}") boolean allowTemplateOverwrite) {
         this.dsl = dsl;
         this.allowTemplateOverwrite = allowTemplateOverwrite;
     }
@@ -70,10 +67,7 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public List<TemplateMetaData> listAllOperationalTemplates() {
-        return dsl.select()
-                .from(TEMPLATE)
-                .fetch()
-                .stream()
+        return dsl.select().from(TEMPLATE).fetch().stream()
                 .map(this::toMetaData)
                 .toList();
     }
@@ -121,13 +115,13 @@ public class TemplateDBStorageService implements TemplateStorage {
 
     @Override
     public List<Pair<UUID, String>> deleteAllTemplates() {
-        List<Pair<UUID, String>> deleted = dsl.select(
-                        field(name("id"), UUID.class), field(name("template_id"), String.class))
+        List<Pair<UUID, String>> deleted = dsl
+                .select(field(name("id"), UUID.class), field(name("template_id"), String.class))
                 .from(TEMPLATE)
                 .fetch()
                 .stream()
-                .map(r -> Pair.of(
-                        r.get(field(name("id"), UUID.class)), r.get(field(name("template_id"), String.class))))
+                .map(r ->
+                        Pair.of(r.get(field(name("id"), UUID.class)), r.get(field(name("template_id"), String.class))))
                 .toList();
         dsl.deleteFrom(TEMPLATE).execute();
         return deleted;

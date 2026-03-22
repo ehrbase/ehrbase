@@ -44,7 +44,8 @@ public class KeyValueEntryRepositoryImpl implements KeyValuePairRepository {
 
     @Override
     public List<KeyValuePair> findAllBy(String context) {
-        return ctx.select()
+        return ctx
+                .select()
                 .from(PLUGIN_CONFIG)
                 .where(field(name("pluginid"), String.class).eq(context))
                 .fetch()
