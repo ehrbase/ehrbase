@@ -222,8 +222,6 @@ public class DynamicCompositionReader {
      * to ensure UNION compatibility between main and history tables.
      */
     private static String storedColumnList(TemplateTableMetadata metadata) {
-        return metadata.storedColumns().stream()
-                .map(ColumnMetadata::columnName)
-                .collect(Collectors.joining(", "));
+        return metadata.storedColumns().stream().map(ColumnMetadata::columnName).collect(Collectors.joining(", "));
     }
 }
