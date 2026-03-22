@@ -27,7 +27,18 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * GraphQL configuration for EHRbase.
- * Configures query depth limiting and registers dynamically generated template schemas.
+ *
+ * <p>Configures:
+ * <ul>
+ *   <li>Query depth limiting via {@link MaxQueryDepthInstrumentation}</li>
+ *   <li>Dynamic template schema registration via {@link GraphQlSchemaRegistryService}</li>
+ * </ul>
+ *
+ * <p>Connection types (edges, pageInfo, cursors) are handled entirely by Spring for GraphQL's
+ * auto-configured {@code ConnectionFieldTypeVisitor} and {@code WindowConnectionAdapter}.
+ * The {@link org.ehrbase.service.graphql.fetcher.GenericViewDataFetcher} returns
+ * {@link org.springframework.data.domain.Window} objects that the framework converts
+ * to Relay-style connections automatically.
  */
 @Configuration
 public class GraphQlConfiguration {

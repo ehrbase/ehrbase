@@ -19,10 +19,12 @@ package org.ehrbase.service.graphql.fetcher;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.ehrbase.service.graphql.GraphQlSchemaRegistryService;
+import org.ehrbase.service.graphql.PgToGraphQlTypeMapper;
 import org.jooq.Condition;
-import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SortField;
@@ -30,36 +32,42 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.ScrollPosition;
+import org.springframework.data.domain.Window;
 import org.springframework.stereotype.Component;
 
 /**
  * Generic jOOQ-backed data fetcher for all template-derived GraphQL query fields.
  * Maps GraphQL query arguments (filter, orderBy, first, after) to jOOQ SELECT on {@code ehr_views}.
  *
+ * <p>Returns a {@link Window} of Maps, which Spring for GraphQL's auto-configured
+ * {@link org.springframework.graphql.data.query.WindowConnectionAdapter} converts to
+ * Relay-style Connection objects (edges, pageInfo, cursors) automatically.
+ *
  * <p>RLS is automatically enforced via {@code TenantAwareConnectionProvider} which sets
  * {@code SET LOCAL ehrbase.current_tenant} on every connection.
  */
 @Component
-public class GenericViewDataFetcher implements DataFetcher<Map<String, Object>> {
+public class GenericViewDataFetcher implements DataFetcher<Window<Map<String, Object>>> {
 
     private static final Logger log = LoggerFactory.getLogger(GenericViewDataFetcher.class);
     private static final String VIEW_SCHEMA = "ehr_views";
     private static final int DEFAULT_PAGE_SIZE = 20;
     private static final int MAX_PAGE_SIZE = 1000;
 
-    private final DSLContext dsl;
+    private final org.jooq.DSLContext dsl;
     private final GraphQlSchemaRegistryService schemaRegistry;
 
     @Value("${ehrbase.graphql.statement-timeout:10s}")
     private String statementTimeout;
 
-    public GenericViewDataFetcher(DSLContext dsl, GraphQlSchemaRegistryService schemaRegistry) {
+    public GenericViewDataFetcher(org.jooq.DSLContext dsl, GraphQlSchemaRegistryService schemaRegistry) {
         this.dsl = dsl;
         this.schemaRegistry = schemaRegistry;
     }
 
     @Override
-    public Map<String, Object> get(DataFetchingEnvironment env) {
+    public Window<Map<String, Object>> get(DataFetchingEnvironment env) {
         String queryFieldName = env.getFieldDefinition().getName();
         String viewName = schemaRegistry.resolveViewName(queryFieldName);
 
@@ -69,7 +77,7 @@ public class GenericViewDataFetcher implements DataFetcher<Map<String, Object>> 
         String after = env.getArgument("after");
 
         int pageSize = Math.min(first != null ? first : DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
-        int offset = ConnectionBuilder.decodeCursor(after);
+        int offset = decodeCursorToOffset(after);
 
         Condition whereCondition = FilterTranslator.translate(filter, VIEW_SCHEMA, viewName);
         SortField<?> orderBy = parseOrderBy(orderByArg, viewName);
@@ -84,12 +92,23 @@ public class GenericViewDataFetcher implements DataFetcher<Map<String, Object>> 
                 .offset(offset)
                 .fetch();
 
-        int totalCount = dsl.fetchCount(
-                DSL.selectOne().from(DSL.table(DSL.name(VIEW_SCHEMA, viewName))).where(whereCondition));
+        boolean hasNext = rows.size() > pageSize;
+        List<Map<String, Object>> content = (hasNext ? rows.subList(0, pageSize) : rows).stream()
+                .map(this::recordToMap)
+                .toList();
 
-        log.debug("GraphQL query {}: {} rows (total {}), offset {}", queryFieldName, rows.size(), totalCount, offset);
+        log.debug("GraphQL query {}: {} rows, offset {}, hasNext {}", queryFieldName, content.size(), offset, hasNext);
 
-        return ConnectionBuilder.build(rows, pageSize, offset, totalCount);
+        return Window.from(content, index -> ScrollPosition.offset(offset + index), hasNext);
+    }
+
+    private Map<String, Object> recordToMap(Record row) {
+        Map<String, Object> node = new LinkedHashMap<>();
+        for (org.jooq.Field<?> field : row.fields()) {
+            String camelName = PgToGraphQlTypeMapper.toCamelCase(field.getName());
+            node.put(camelName, row.get(field));
+        }
+        return node;
     }
 
     private SortField<?> parseOrderBy(String orderByArg, String viewName) {
@@ -102,5 +121,14 @@ public class GenericViewDataFetcher implements DataFetcher<Map<String, Object>> 
 
         org.jooq.Field<Object> field = DSL.field(DSL.name(VIEW_SCHEMA, viewName, columnName));
         return desc ? field.desc() : field.asc();
+    }
+
+    private int decodeCursorToOffset(String cursor) {
+        if (cursor == null || cursor.isEmpty()) {
+            return 0;
+        }
+        String decoded =
+                new String(java.util.Base64.getDecoder().decode(cursor), java.nio.charset.StandardCharsets.UTF_8);
+        return Integer.parseInt(decoded.replace("cursor:", "")) + 1;
     }
 }
