@@ -32,8 +32,10 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.OffsetScrollPosition;
 import org.springframework.data.domain.ScrollPosition;
 import org.springframework.data.domain.Window;
+import org.springframework.graphql.data.pagination.CursorStrategy;
 import org.springframework.stereotype.Component;
 
 /**
@@ -43,6 +45,9 @@ import org.springframework.stereotype.Component;
  * <p>Returns a {@link Window} of Maps, which Spring for GraphQL's auto-configured
  * {@link org.springframework.graphql.data.query.WindowConnectionAdapter} converts to
  * Relay-style Connection objects (edges, pageInfo, cursors) automatically.
+ *
+ * <p>Uses the auto-configured {@link CursorStrategy} for cursor encoding/decoding,
+ * ensuring consistency between cursor values in responses and cursor parsing on input.
  *
  * <p>RLS is automatically enforced via {@code TenantAwareConnectionProvider} which sets
  * {@code SET LOCAL ehrbase.current_tenant} on every connection.
@@ -57,13 +62,19 @@ public class GenericViewDataFetcher implements DataFetcher<Window<Map<String, Ob
 
     private final org.jooq.DSLContext dsl;
     private final GraphQlSchemaRegistryService schemaRegistry;
+    private final CursorStrategy<ScrollPosition> cursorStrategy;
 
     @Value("${ehrbase.graphql.statement-timeout:10s}")
     private String statementTimeout;
 
-    public GenericViewDataFetcher(org.jooq.DSLContext dsl, GraphQlSchemaRegistryService schemaRegistry) {
+    @SuppressWarnings("unchecked")
+    public GenericViewDataFetcher(
+            org.jooq.DSLContext dsl,
+            GraphQlSchemaRegistryService schemaRegistry,
+            CursorStrategy<?> cursorStrategy) {
         this.dsl = dsl;
         this.schemaRegistry = schemaRegistry;
+        this.cursorStrategy = (CursorStrategy<ScrollPosition>) cursorStrategy;
     }
 
     @Override
@@ -77,7 +88,7 @@ public class GenericViewDataFetcher implements DataFetcher<Window<Map<String, Ob
         String after = env.getArgument("after");
 
         int pageSize = Math.min(first != null ? first : DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE);
-        int offset = decodeCursorToOffset(after);
+        int offset = decodeCursor(after);
 
         Condition whereCondition = FilterTranslator.translate(filter, VIEW_SCHEMA, viewName);
         SortField<?> orderBy = parseOrderBy(orderByArg, viewName);
@@ -123,12 +134,14 @@ public class GenericViewDataFetcher implements DataFetcher<Window<Map<String, Ob
         return desc ? field.desc() : field.asc();
     }
 
-    private int decodeCursorToOffset(String cursor) {
+    private int decodeCursor(String cursor) {
         if (cursor == null || cursor.isEmpty()) {
             return 0;
         }
-        String decoded =
-                new String(java.util.Base64.getDecoder().decode(cursor), java.nio.charset.StandardCharsets.UTF_8);
-        return Integer.parseInt(decoded.replace("cursor:", "")) + 1;
+        ScrollPosition position = cursorStrategy.fromCursor(cursor);
+        if (position instanceof OffsetScrollPosition offsetPos) {
+            return (int) offsetPos.getOffset() + 1;
+        }
+        return 0;
     }
 }
