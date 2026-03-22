@@ -30,6 +30,7 @@ import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.api.controller.BaseApiController;
 import org.ehrbase.service.RequestContext;
 import org.jooq.DSLContext;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.jooq.Record;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/hipaa")
 @Tag(name = "HIPAA Compliance", description = "Accounting of disclosures per patient")
+@ConditionalOnProperty(name = "ehrbase.features.hipaa", havingValue = "true")
 public class HipaaController extends BaseApiController {
 
     private final DSLContext dsl;

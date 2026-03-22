@@ -136,6 +136,10 @@ ehrbase:
     item-tags: false
     adl2: false
     multi-tenant: false
+    emergency-access: false
+    gdpr: false
+    hipaa: false
+    ihe: false
   # Admin API configuration
   admin:
     delete-mode: pseudonymize   # pseudonymize | physical | disabled

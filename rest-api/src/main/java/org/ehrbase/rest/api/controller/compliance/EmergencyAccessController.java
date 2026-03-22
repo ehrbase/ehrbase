@@ -28,6 +28,7 @@ import org.ehrbase.rest.api.controller.BaseApiController;
 import org.ehrbase.service.AuditEventService;
 import org.ehrbase.service.RequestContext;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/emergency")
 @Tag(name = "Emergency Access", description = "Break-glass access with mandatory justification and audit")
+@ConditionalOnProperty(name = "ehrbase.features.emergency-access", havingValue = "true")
 public class EmergencyAccessController extends BaseApiController {
 
     private final EhrService ehrService;

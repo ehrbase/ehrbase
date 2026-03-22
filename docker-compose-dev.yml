@@ -59,6 +59,10 @@ services:
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
       EHRBASE_FEATURES_ADMIN_API: "true"
       EHRBASE_FEATURES_ITEM_TAGS: "true"
+      EHRBASE_FEATURES_EMERGENCY_ACCESS: "true"
+      EHRBASE_FEATURES_GDPR: "true"
+      EHRBASE_FEATURES_HIPAA: "true"
+      EHRBASE_FEATURES_IHE: "true"
     depends_on:
       ehrdb:
         condition: service_healthy

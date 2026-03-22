@@ -26,7 +26,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "ehrbase.features")
 public record FeatureFlagProperties(
-        boolean adminApi, boolean itemTags, boolean adl2, boolean multiTenant, boolean gdpr, boolean bulkApi) {
+        boolean adminApi,
+        boolean itemTags,
+        boolean adl2,
+        boolean multiTenant,
+        boolean gdpr,
+        boolean bulkApi,
+        boolean emergencyAccess,
+        boolean hipaa,
+        boolean ihe) {
 
     public FeatureFlagProperties {
         // defaults handled by Spring Boot property binding

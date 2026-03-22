@@ -17,68 +17,47 @@
  */
 package org.ehrbase.rest.api.controller;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.rest.api.dto.QueryRequestDto;
+import java.util.List;
+import java.util.UUID;
 import org.ehrbase.service.RequestContext;
 import org.ehrbase.service.ViewCatalogService;
-import org.jooq.DSLContext;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.http.ResponseEntity;
 
-/**
- * Migrated from OpenehrQueryControllerTest (partial — AQL-specific tests dropped)
- * + new SQL query controller tests.
- */
 class QueryControllerTest {
 
-    private final DSLContext mockDsl = mock();
     private final ViewCatalogService mockViewCatalog = mock();
     private final RequestContext mockRequestContext = mock();
 
-    private final QueryController controller = new QueryController(mockDsl, mockViewCatalog, mockRequestContext);
-
-    // Migrated: executeAddHocQueryUsingPOSTWithFetchInvalid → empty query
-    @Test
-    void executeSqlEmptyQuery() {
-        assertThatThrownBy(() -> controller.executeSql(new QueryRequestDto("", null, null)))
-                .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessageContaining("must not be empty");
-    }
+    private final QueryController controller = new QueryController(mockViewCatalog, mockRequestContext);
 
     @Test
-    void executeSqlNullQuery() {
-        assertThatThrownBy(() -> controller.executeSql(new QueryRequestDto(null, null, null)))
-                .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessageContaining("must not be empty");
+    void listViewsReturnsEntries() {
+        when(mockRequestContext.getTenantId()).thenReturn((short) 1);
+        var entry = new ViewCatalogService.ViewCatalogEntry(
+                UUID.randomUUID(), "v_blood_pressure", "ehr_views", "template", "blood_pressure.v1", "generated",
+                "Blood pressure view", false);
+        when(mockViewCatalog.listViews(null, (short) 1)).thenReturn(List.of(entry));
+
+        ResponseEntity<List<ViewCatalogService.ViewCatalogEntry>> response = controller.listViews();
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).hasSize(1);
+        assertThat(response.getBody().getFirst().viewName()).isEqualTo("v_blood_pressure");
     }
 
-    // NEW: Only SELECT allowed
-    @ParameterizedTest
-    @ValueSource(
-            strings = {"INSERT INTO ehr_views.x VALUES (1)", "UPDATE ehr_views.x SET a=1", "DELETE FROM ehr_views.x"})
-    void executeSqlNonSelectRejected(String sql) {
-        assertThatThrownBy(() -> controller.executeSql(new QueryRequestDto(sql, null, null)))
-                .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessageContaining("Only SELECT");
-    }
-
-    // NEW: ehr_system and ehr_data schemas forbidden
-    @ParameterizedTest
-    @ValueSource(strings = {"SELECT * FROM ehr_system.ehr", "SELECT * FROM ehr_data.blood_pressure"})
-    void executeSqlForbiddenSchemas(String sql) {
-        assertThatThrownBy(() -> controller.executeSql(new QueryRequestDto(sql, null, null)))
-                .isInstanceOf(InvalidApiParameterException.class)
-                .hasMessageContaining("ehr_views schema only");
-    }
-
-    // NEW: EXPLAIN with empty SQL
     @Test
-    void explainEmptySql() {
-        assertThatThrownBy(() -> controller.explainQuery(new QueryRequestDto("", null, null)))
-                .isInstanceOf(InvalidApiParameterException.class);
+    void listViewsReturnsEmptyList() {
+        when(mockRequestContext.getTenantId()).thenReturn((short) 1);
+        when(mockViewCatalog.listViews(null, (short) 1)).thenReturn(List.of());
+
+        ResponseEntity<List<ViewCatalogService.ViewCatalogEntry>> response = controller.listViews();
+
+        assertThat(response.getStatusCode().value()).isEqualTo(200);
+        assertThat(response.getBody()).isEmpty();
     }
 }

@@ -32,6 +32,7 @@ import org.ehrbase.rest.api.controller.BaseApiController;
 import org.ehrbase.service.AuditEventService;
 import org.ehrbase.service.RequestContext;
 import org.jooq.DSLContext;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.jooq.Record;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/gdpr")
 @Tag(name = "GDPR Compliance", description = "Data subject access, pseudonymization, and consent management")
+@ConditionalOnProperty(name = "ehrbase.features.gdpr", havingValue = "true")
 public class GdprController extends BaseApiController {
 
     private final DSLContext dsl;
