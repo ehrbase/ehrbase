@@ -39,10 +39,11 @@ spring:
     converters:
       preferred-json-mapper: jackson2
 
-# SpringDoc disabled until compatibility with Spring Boot 4.0.4 is verified
 springdoc:
   api-docs:
-    enabled: false
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
   graphql:
     graphiql:

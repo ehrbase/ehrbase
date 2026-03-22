@@ -23,7 +23,6 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.ehrbase.configuration.config.SwaggerConfiguration;
 import org.ehrbase.configuration.config.client.HttpClientConfiguration;
 import org.ehrbase.configuration.config.jackson.JacksonConfiguration;
 import org.ehrbase.configuration.config.plugin.PluginConfig;
@@ -46,7 +45,6 @@ import org.springframework.boot.test.context.SpringBootTest;
             HttpClientConfiguration.class,
             SecurityConfiguration.class,
             JacksonConfiguration.class,
-            SwaggerConfiguration.class,
             PluginConfig.class,
             WebConfiguration.class,
         },
