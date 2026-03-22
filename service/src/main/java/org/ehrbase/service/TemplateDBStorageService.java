@@ -88,7 +88,9 @@ public class TemplateDBStorageService implements TemplateStorage {
     @Override
     public TemplateMetaData storeTemplate(OPERATIONALTEMPLATE template) {
         String templateId = template.getTemplateId().getValue();
-        String content = template.xmlText();
+        TemplateDocument doc = TemplateDocument.Factory.newInstance();
+        doc.setTemplate(template);
+        String content = doc.xmlText();
 
         dsl.insertInto(TEMPLATE)
                 .set(field(name("template_id"), String.class), templateId)

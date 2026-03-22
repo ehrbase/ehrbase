@@ -1,5 +1,5 @@
 #
-# Full development setup: PostgreSQL 18 + EHRbase application
+# Full development setup: PostgreSQL 18 + Redis + EHRbase application
 #
 # Usage:
 #   mvn install -DskipTests                                   # Build the jar first
@@ -40,6 +40,22 @@ services:
       - ehrbase-dev
 
   #
+  # Redis for distributed caching
+  #
+  redis:
+    image: redis:8-alpine
+    container_name: ehrbase-redis-dev
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "6379:6379"
+    networks:
+      - ehrbase-dev
+
+  #
   # EHRbase application (built from local jar via Dockerfile)
   #
   ehrbase:
@@ -55,6 +71,8 @@ services:
       DB_PASS: ehrbase
       SERVER_NODENAME: local.ehrbase.org
       SECURITY_AUTHTYPE: NONE
+      SPRING_CACHE_TYPE: CAFFEINE
+      SPRING_DATA_REDIS_HOST: redis
       MANAGEMENT_ENDPOINTS_WEB_ACCESS: PUBLIC
       MANAGEMENT_ENDPOINT_HEALTH_SHOW_DETAILS: always
       EHRBASE_FEATURES_ADMIN_API: "true"
@@ -65,6 +83,8 @@ services:
       EHRBASE_FEATURES_IHE: "false"
     depends_on:
       ehrdb:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: [ "CMD-SHELL", "wget -qO- http://localhost:8080/ehrbase/management/health || exit 1" ]
