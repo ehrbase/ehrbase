@@ -162,25 +162,25 @@ public class TemplateController extends BaseApiController {
         return ResponseEntity.ok(wt);
     }
 
-    // ==================== ADL 2.4 (Stubs — Phase 11) ====================
+    // ==================== ADL 2.4 (Stubs) ====================
 
     @PostMapping(value = "/adl2")
     @Operation(summary = "Upload ADL 2.4 template (not yet implemented)")
     public ResponseEntity<Void> uploadAdl2() {
-        throw new UnsupportedOperationException("ADL 2.4 template upload deferred to Phase 11");
+        throw new UnsupportedOperationException("ADL 2.4 template upload not yet implemented");
     }
 
     @GetMapping(value = "/adl2")
     @Operation(summary = "List ADL 2.4 templates (not yet implemented)")
     public ResponseEntity<Void> listAdl2() {
-        throw new UnsupportedOperationException("ADL 2.4 template listing deferred to Phase 11");
+        throw new UnsupportedOperationException("ADL 2.4 template listing not yet implemented");
     }
 
     @GetMapping(value = "/adl2/{template_id}/{version}")
     @Operation(summary = "Get ADL 2.4 template (not yet implemented)")
     public ResponseEntity<Void> getAdl2(
             @PathVariable("template_id") String templateId, @PathVariable("version") String version) {
-        throw new UnsupportedOperationException("ADL 2.4 template retrieval deferred to Phase 11");
+        throw new UnsupportedOperationException("ADL 2.4 template retrieval not yet implemented");
     }
 
     // ==================== Common ====================

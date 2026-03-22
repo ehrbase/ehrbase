@@ -67,7 +67,7 @@ public class TemplateSchemaResolver {
     }
 
     /**
-     * Fast path: convert a Phase 2 TableDescriptor directly to TemplateTableMetadata.
+     * Fast path: convert a TableDescriptor directly to TemplateTableMetadata.
      * Called after template upload when the TableDescriptor is still in memory.
      * Also populates the cache.
      */

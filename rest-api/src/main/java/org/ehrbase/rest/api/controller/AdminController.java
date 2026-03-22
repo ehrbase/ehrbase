@@ -85,14 +85,14 @@ public class AdminController extends BaseApiController {
     }
 
     @PostMapping(value = "/migrate", produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Trigger data migration (Phase 10)")
+    @Operation(summary = "Trigger data migration")
     public ResponseEntity<Map<String, Object>> triggerMigration() {
-        throw new UnsupportedOperationException("Data migration deferred to Phase 10");
+        throw new UnsupportedOperationException("Data migration not yet implemented");
     }
 
     @GetMapping(value = "/migrate/status", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Get migration progress")
     public ResponseEntity<Map<String, Object>> migrationStatus() {
-        throw new UnsupportedOperationException("Data migration deferred to Phase 10");
+        throw new UnsupportedOperationException("Data migration not yet implemented");
     }
 }

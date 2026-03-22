@@ -72,7 +72,7 @@ class TemplateParserServiceTest {
     void parseJson_throwsUnsupported() {
         assertThatThrownBy(() -> parser.parse("{}", TemplateFormat.JSON))
                 .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("Phase 11");
+                .hasMessageContaining("not yet supported");
     }
 
     @Test

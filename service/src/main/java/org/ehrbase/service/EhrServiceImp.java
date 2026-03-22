@@ -191,7 +191,7 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public void adminDeleteEhr(UUID ehrId) {
-        throw new UnsupportedOperationException("Admin delete deferred to Phase 9 (Legacy Code Removal)");
+        throw new UnsupportedOperationException("Admin delete not yet implemented");
     }
 
     @Override

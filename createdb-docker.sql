@@ -49,7 +49,7 @@ CREATE SCHEMA IF NOT EXISTS ehr_data AUTHORIZATION :db_user_admin;
 -- ehr_views: Auto-generated views (created by SchemaGenerator)
 CREATE SCHEMA IF NOT EXISTS ehr_views AUTHORIZATION :db_user_admin;
 
--- ehr_staging: Migration & import (temporary, Phase 10)
+-- ehr_staging: Migration & import (temporary)
 CREATE SCHEMA IF NOT EXISTS ehr_staging AUTHORIZATION :db_user_admin;
 
 -- ext: PostgreSQL extensions

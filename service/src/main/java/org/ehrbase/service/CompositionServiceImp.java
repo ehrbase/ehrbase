@@ -239,7 +239,7 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public void adminDelete(UUID compositionId) {
-        throw new UnsupportedOperationException("Admin delete deferred to Phase 9 (Legacy Code Removal)");
+        throw new UnsupportedOperationException("Admin delete not yet implemented");
     }
 
     @Override

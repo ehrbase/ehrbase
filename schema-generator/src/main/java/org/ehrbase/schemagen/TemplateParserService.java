@@ -41,9 +41,7 @@ public class TemplateParserService {
         return switch (format) {
             case XML, OPT -> parseOpt14Xml(content);
             case ADL -> parseAdl14Text(content);
-            case JSON ->
-                throw new UnsupportedOperationException(
-                        "ADL 2.4 JSON format not yet supported. See Phase 11 (ADL 2.4 Future).");
+            case JSON -> throw new UnsupportedOperationException("ADL 2.4 JSON format not yet supported.");
         };
     }
 

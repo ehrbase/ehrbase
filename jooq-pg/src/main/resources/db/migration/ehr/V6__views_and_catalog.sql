@@ -1,6 +1,6 @@
 -- =====================================================================
 -- V6: SQL Views, View Catalog, and Materialized Views
--- Phase 5 of the EHRbase rewrite
+-- SQL Views, View Catalog, and Materialized Views for EHRbase
 -- =====================================================================
 
 -- =====================================================================
