@@ -108,15 +108,19 @@ public class EhrRepository {
                     .fetchOne();
             ehrId = result != null ? result.value1() : null;
         } else {
-            dsl.insertInto(EHR)
-                    .set(field(name("id"), UUID.class), ehrId)
-                    .set(field(name("subject_id"), String.class), subjectId)
-                    .set(field(name("subject_namespace"), String.class), subjectNamespace)
-                    .set(field(name("is_queryable"), Boolean.class), isQueryable)
-                    .set(field(name("is_modifiable"), Boolean.class), isModifiable)
-                    .set(field(name("creation_date"), OffsetDateTime.class), now)
-                    .set(field(name("sys_tenant"), Short.class), tenantId)
-                    .execute();
+            try {
+                dsl.insertInto(EHR)
+                        .set(field(name("id"), UUID.class), ehrId)
+                        .set(field(name("subject_id"), String.class), subjectId)
+                        .set(field(name("subject_namespace"), String.class), subjectNamespace)
+                        .set(field(name("is_queryable"), Boolean.class), isQueryable)
+                        .set(field(name("is_modifiable"), Boolean.class), isModifiable)
+                        .set(field(name("creation_date"), OffsetDateTime.class), now)
+                        .set(field(name("sys_tenant"), Short.class), tenantId)
+                        .execute();
+            } catch (org.springframework.dao.DuplicateKeyException e) {
+                throw new StateConflictException("EHR with this ID already exists: " + ehrId);
+            }
         }
 
         return ehrId;
@@ -322,6 +326,8 @@ public class EhrRepository {
                 .from(EHR)
                 .where(field(name("subject_id"), String.class).eq(subjectId))
                 .and(field(name("subject_namespace"), String.class).eq(namespace))
+                .orderBy(field(name("creation_date")).desc())
+                .limit(1)
                 .fetchOne();
         return result != null ? Optional.of(result.value1()) : Optional.empty();
     }

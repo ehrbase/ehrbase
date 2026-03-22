@@ -23,6 +23,7 @@ import static org.jooq.impl.DSL.table;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -98,18 +99,28 @@ public class DirectoryController extends BaseApiController {
         String path = (String) body.getOrDefault("path", "root." + pathLabel);
         String committerName = requestContext.getUserId();
 
-        dsl.execute(
-                "INSERT INTO ehr_system.ehr_folder (ehr_id, path, name, archetype_node_id, committer_name, committer_id, sys_tenant) "
-                        + "VALUES (?, ?::ltree, ?, ?, ?, ?, ?)",
-                ehrId,
-                path,
-                folderName,
-                archetypeNodeId,
-                committerName,
-                committerName,
-                requestContext.getTenantId());
+        Record result = dsl.resultQuery(
+                        "INSERT INTO ehr_system.ehr_folder "
+                                + "(ehr_id, path, name, archetype_node_id, committer_name, committer_id, sys_tenant) "
+                                + "VALUES (?, ?::ltree, ?, ?, ?, ?, ?) RETURNING id",
+                        ehrId,
+                        path,
+                        folderName,
+                        archetypeNodeId,
+                        committerName,
+                        committerName,
+                        requestContext.getTenantId())
+                .fetchOne();
 
-        return ResponseEntity.status(201).body(Map.of("name", folderName, "path", path, "ehr_id", ehrId.toString()));
+        UUID folderId = result != null ? result.get(0, UUID.class) : null;
+        URI location = locationUri("api", "v2", "ehrs", ehrId.toString(), "directory", String.valueOf(folderId));
+
+        return ResponseEntity.created(location)
+                .body(Map.of(
+                        "id", String.valueOf(folderId),
+                        "name", folderName,
+                        "path", path,
+                        "ehr_id", ehrId.toString()));
     }
 
     @org.springframework.web.bind.annotation.PutMapping(

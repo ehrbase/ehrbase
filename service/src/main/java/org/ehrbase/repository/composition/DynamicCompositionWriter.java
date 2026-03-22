@@ -71,17 +71,28 @@ public class DynamicCompositionWriter {
             Composition composition,
             WebTemplate webTemplate,
             TemplateTableMetadata metadata) {
+        return write(compositionId, ehrId, tenantId, 1, composition, webTemplate, metadata);
+    }
+
+    public UUID write(
+            UUID compositionId,
+            UUID ehrId,
+            short tenantId,
+            int sysVersion,
+            Composition composition,
+            WebTemplate webTemplate,
+            TemplateTableMetadata metadata) {
 
         CompositionTableData data = RmTreeWalker.extract(composition, webTemplate, metadata);
 
-        UUID rowId = insertRow(compositionId, ehrId, tenantId, data.mainTableValues(), metadata);
+        UUID rowId = insertRow(compositionId, ehrId, tenantId, sysVersion, data.mainTableValues(), metadata);
         log.debug("Inserted main table row: {} -> id={}", metadata.fqn(), rowId);
 
         for (TemplateTableMetadata childMeta : metadata.childTables()) {
             List<Map<String, Object>> childRows =
                     data.childTableValues().getOrDefault(childMeta.tableName(), List.of());
             for (Map<String, Object> childRow : childRows) {
-                insertChildRow(rowId, compositionId, ehrId, tenantId, childRow, childMeta);
+                insertChildRow(rowId, compositionId, ehrId, tenantId, sysVersion, childRow, childMeta);
             }
             if (!childRows.isEmpty()) {
                 log.debug("Inserted {} child rows into {}", childRows.size(), childMeta.fqn());
@@ -144,6 +155,7 @@ public class DynamicCompositionWriter {
             UUID compositionId,
             UUID ehrId,
             short tenantId,
+            int sysVersion,
             Map<String, Object> values,
             TemplateTableMetadata metadata) {
 
@@ -151,7 +163,7 @@ public class DynamicCompositionWriter {
         InsertSetMoreStep<?> step = insert.set(DynamicTable.col("composition_id"), (Object) compositionId)
                 .set(DynamicTable.col("ehr_id"), (Object) ehrId)
                 .set(DynamicTable.col("sys_tenant"), (Object) tenantId)
-                .set(DynamicTable.col("sys_version"), (Object) 1);
+                .set(DynamicTable.col("sys_version"), (Object) sysVersion);
 
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             step = step.set(DynamicTable.col(entry.getKey()), entry.getValue());
@@ -168,6 +180,7 @@ public class DynamicCompositionWriter {
             UUID compositionId,
             UUID ehrId,
             short tenantId,
+            int sysVersion,
             Map<String, Object> values,
             TemplateTableMetadata childMeta) {
 
@@ -176,7 +189,7 @@ public class DynamicCompositionWriter {
                 .set(DynamicTable.col("composition_id"), (Object) compositionId)
                 .set(DynamicTable.col("ehr_id"), (Object) ehrId)
                 .set(DynamicTable.col("sys_tenant"), (Object) tenantId)
-                .set(DynamicTable.col("sys_version"), (Object) 1);
+                .set(DynamicTable.col("sys_version"), (Object) sysVersion);
 
         for (Map.Entry<String, Object> entry : values.entrySet()) {
             step = step.set(DynamicTable.col(entry.getKey()), entry.getValue());

@@ -176,11 +176,13 @@ public class CompositionController extends BaseApiController {
             version = compositionService.getVersionByTimestamp(compositionId, timestamp);
         }
 
+        if (compositionService.isDeleted(ehrId, compositionId, version)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.GONE, "Composition has been deleted");
+        }
+
         Optional<Composition> composition = compositionService.retrieve(ehrId, compositionId, version);
         if (composition.isEmpty()) {
-            if (compositionService.isDeleted(ehrId, compositionId, version)) {
-                throw new org.ehrbase.api.exception.GeneralRequestProcessingException("Composition has been deleted");
-            }
             throw new ObjectNotFoundException("composition", compositionId.toString());
         }
 

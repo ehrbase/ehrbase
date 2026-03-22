@@ -232,8 +232,8 @@ public class VersioningEngine {
                 committerId,
                 tenantId);
 
-        // Step 5: Insert new clinical data (valid_period defaults to tstzrange(now(), NULL))
-        writer.write(compositionId, ehrId, tenantId, newComposition, webTemplate, tableMeta);
+        // Step 5: Insert new clinical data with correct sys_version
+        writer.write(compositionId, ehrId, tenantId, newVersion, newComposition, webTemplate, tableMeta);
 
         log.debug("Updated composition: id={} version={}->{}", compositionId, expectedVersion, newVersion);
 

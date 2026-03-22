@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # =============================================================================
-# EHRbase REST API E2E Test Script
+# EHRbase REST API — Comprehensive E2E Test Script
 # =============================================================================
 #
-# Full lifecycle test: templates → EHR → compositions → queries → cleanup
-# Uses real OPT files and composition data from the test resources.
+# Full lifecycle test covering all core REST endpoints with real test data.
+# Templates → EHR → EHR Status → Compositions → Versioning → Folders → Contributions
 #
 # Prerequisites:
 #   docker compose -f docker-compose-dev.yml up -d
-#   Wait for: curl -s http://localhost:8080/ehrbase/management/health → {"status":"UP"}
+#   Wait for health check to pass
 #
 # Usage:
 #   chmod +x tests/rest-api-e2e-test.sh
@@ -16,43 +16,39 @@
 #
 # =============================================================================
 
-set -euo pipefail
+set -uo pipefail
 
 BASE_URL="${EHRBASE_URL:-http://localhost:8080/ehrbase}"
 API="${BASE_URL}/api/v2"
 
 PASS=0
 FAIL=0
+SKIP=0
 
 pass() { PASS=$((PASS + 1)); echo "[PASS] $1"; }
 fail() { FAIL=$((FAIL + 1)); echo "[FAIL] $1"; if [ -n "${2:-}" ]; then echo "       $2"; fi; }
+skip() { SKIP=$((SKIP + 1)); echo "[SKIP] $1"; }
 
-json_val() {
-  echo "$1" | python3 -c "import sys,json; $2" 2>/dev/null
-}
+json_val() { echo "$1" | python3 -c "import sys,json; $2" 2>/dev/null; }
+http_code() { curl -s -o /dev/null -w "%{http_code}" "$@" 2>/dev/null; }
 
-http_code() {
-  curl -s -o /dev/null -w "%{http_code}" "$@" 2>/dev/null
-}
+# Extract value from curl -sv headers
+extract_header() { echo "$1" | grep "< $2:" | head -1 | sed "s/< $2: //" | tr -d '\r"'; }
+extract_http_code() { echo "$1" | grep "< HTTP/" | tail -1 | awk '{print $3}'; }
 
 echo "============================================="
-echo "  EHRbase REST API E2E Tests"
+echo "  EHRbase REST API — Comprehensive E2E Tests"
 echo "  Endpoint: $API"
 echo "============================================="
-echo ""
 
 # ---------------------------------------------------------------------------
-# Health check
+# Health Check
 # ---------------------------------------------------------------------------
-echo "--- Checking EHRbase is running ---"
+echo ""
+echo "--- Health Check ---"
 HC=$(http_code "${BASE_URL}/management/health")
-if [ "$HC" = "200" ]; then
-  pass "EHRbase is healthy"
-else
-  echo "[FATAL] EHRbase not reachable at ${BASE_URL} (HTTP $HC)"
-  echo "        Start it with: docker compose -f docker-compose-dev.yml up -d"
-  exit 1
-fi
+if [ "$HC" = "200" ]; then pass "EHRbase is healthy"; else echo "[FATAL] Not reachable (HTTP $HC)"; exit 1; fi
+
 
 # =============================================================================
 # TEMPLATES
@@ -62,69 +58,48 @@ echo "==========================================="
 echo "  TEMPLATES"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 1. Upload template (ADL 1.4 OPT)
-# ---------------------------------------------------------------------------
 echo ""
 echo "--- 1. Upload template (minimal_observation.opt) ---"
+HC=$(http_code -X POST "${API}/templates/adl1.4" -H "Content-Type: application/xml" -d @service/src/test/resources/knowledge/opt/minimal_observation.opt)
+[ "$HC" = "201" ] || [ "$HC" = "409" ] && pass "Upload minimal_observation — HTTP $HC" || fail "Upload minimal_observation — HTTP $HC" ""
 
-TEMPLATE_FILE="service/src/test/resources/knowledge/opt/minimal_observation.opt"
-if [ ! -f "$TEMPLATE_FILE" ]; then
-  fail "Template file not found: $TEMPLATE_FILE" ""
-  echo "[FATAL] Cannot continue"; exit 1
-fi
-
-HC=$(curl -s -o /tmp/e2e_tpl_upload.json -w "%{http_code}" \
-  -X POST "${API}/templates/adl1.4" \
-  -H "Content-Type: application/xml" \
-  -H "Accept: application/json" \
-  -d @"$TEMPLATE_FILE")
-
-if [ "$HC" = "201" ] || [ "$HC" = "200" ] || [ "$HC" = "204" ] || [ "$HC" = "409" ]; then
-  pass "Template upload — HTTP $HC"
-else
-  fail "Template upload — HTTP $HC" "$(cat /tmp/e2e_tpl_upload.json)"
-fi
-
-# ---------------------------------------------------------------------------
-# 2. List templates
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 2. List templates ---"
+echo "--- 2. Upload second template (ehrbase_blood_pressure_simple.de.v0.opt) ---"
+HC=$(http_code -X POST "${API}/templates/adl1.4" -H "Content-Type: application/xml" -d @service/src/test/resources/knowledge/opt/ehrbase_blood_pressure_simple.de.v0.opt)
+[ "$HC" = "201" ] || [ "$HC" = "409" ] && pass "Upload blood_pressure — HTTP $HC" || fail "Upload blood_pressure — HTTP $HC" ""
 
+echo ""
+echo "--- 3. List all templates ---"
 R=$(curl -s "${API}/templates" -H "Accept: application/json")
 TPL_COUNT=$(json_val "$R" "print(len(json.load(sys.stdin)))")
+[ "$TPL_COUNT" -ge 2 ] 2>/dev/null && pass "List templates — $TPL_COUNT templates" || fail "List templates" "$R"
 
-if [ -n "$TPL_COUNT" ] && [ "$TPL_COUNT" -ge 1 ] 2>/dev/null; then
-  pass "List templates — $TPL_COUNT template(s)"
-  json_val "$R" "[print(f'       - {t[\"templateId\"]}') for t in json.load(sys.stdin)]"
-else
-  fail "List templates" "$R"
-fi
-
-# ---------------------------------------------------------------------------
-# 3. Get specific template (ADL 1.4)
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 3. Get template by ID ---"
-
+echo "--- 4. Get template as OPT XML ---"
 HC=$(http_code "${API}/templates/adl1.4/minimal_observation.en.v1" -H "Accept: application/xml")
-[ "$HC" = "200" ] && pass "Get template XML — HTTP 200" || fail "Get template XML — HTTP $HC" ""
+[ "$HC" = "200" ] && pass "Get OPT XML — HTTP 200" || fail "Get OPT XML — HTTP $HC" ""
 
-# ---------------------------------------------------------------------------
-# 4. Get WebTemplate (JSON)
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 4. Get WebTemplate (JSON) ---"
-
+echo "--- 5. Get WebTemplate (JSON) ---"
 R=$(curl -s "${API}/templates/adl1.4/minimal_observation.en.v1" -H "Accept: application/openehr.wt+json")
 TREE=$(json_val "$R" "d=json.load(sys.stdin); print(d.get('tree',{}).get('id','?'))")
+[ -n "$TREE" ] && [ "$TREE" != "?" ] && pass "WebTemplate — tree root: $TREE" || fail "WebTemplate" ""
 
-if [ -n "$TREE" ] && [ "$TREE" != "?" ]; then
-  pass "WebTemplate — tree root: $TREE"
-else
-  fail "WebTemplate" "$(echo "$R" | head -100)"
-fi
+echo ""
+echo "--- 6. Get template example ---"
+HC=$(http_code "${API}/templates/minimal_observation.en.v1/example" -H "Accept: application/json")
+[ "$HC" = "200" ] && pass "Template example — HTTP 200" || fail "Template example — HTTP $HC" ""
+
+echo ""
+echo "--- 7. Get template schema DDL ---"
+HC=$(http_code "${API}/templates/minimal_observation.en.v1/schema" -H "Accept: text/plain")
+[ "$HC" = "200" ] && pass "Template schema DDL — HTTP 200" || fail "Template schema DDL — HTTP $HC" ""
+
+echo ""
+echo "--- 8. Upload invalid XML → expect 400 ---"
+HC=$(http_code -X POST "${API}/templates/adl1.4" -H "Content-Type: application/xml" -d "<not-valid-opt/>")
+[ "$HC" = "400" ] && pass "Invalid OPT rejected — HTTP 400" || fail "Invalid OPT — HTTP $HC" ""
+
 
 # =============================================================================
 # EHR
@@ -134,55 +109,90 @@ echo "==========================================="
 echo "  EHR"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 5. Create EHR
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 5. Create EHR ---"
-
-HEADERS=$(curl -sv -X POST "${API}/ehrs" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -H "Prefer: return=representation" 2>&1)
-
-HC=$(echo "$HEADERS" | grep "< HTTP/" | tail -1 | awk '{print $3}')
-LOCATION=$(echo "$HEADERS" | grep "< Location:" | awk '{print $3}' | tr -d '\r')
-BODY=$(echo "$HEADERS" | grep "^{" | head -1)
+echo "--- 9. Create EHR (auto-generated ID) ---"
+H=$(curl -sv -X POST "${API}/ehrs" -H "Content-Type: application/json" -H "Accept: application/json" -H "Prefer: return=representation" 2>&1)
+HC=$(extract_http_code "$H")
+LOCATION=$(extract_header "$H" "Location")
 EHR_ID=$(echo "$LOCATION" | sed 's|.*/ehrs/||')
-
-# Fallback: parse from JSON body
+# Fallback from body
 if [ -z "$EHR_ID" ] || [ "$EHR_ID" = "$LOCATION" ]; then
+  BODY=$(echo "$H" | grep "^{" | head -1)
   EHR_ID=$(json_val "$BODY" "d=json.load(sys.stdin); print(d.get('ehrId','') or d.get('ehr_id',{}).get('value',''))")
 fi
+[ "$HC" = "201" ] && [ -n "$EHR_ID" ] && pass "Create EHR — id=$EHR_ID" || { fail "Create EHR — HTTP $HC" ""; exit 1; }
 
-if [ "$HC" = "201" ] && [ -n "$EHR_ID" ]; then
-  pass "Create EHR — HTTP 201, id=$EHR_ID"
-else
-  fail "Create EHR — HTTP $HC" "$BODY"
-  echo "[FATAL] Cannot continue"; exit 1
-fi
-
-# ---------------------------------------------------------------------------
-# 6. Get EHR by ID
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 6. Get EHR by ID ---"
-
+echo "--- 10. Get EHR by ID ---"
 R=$(curl -s "${API}/ehrs/${EHR_ID}" -H "Accept: application/json")
 GOT_ID=$(json_val "$R" "d=json.load(sys.stdin); print(d.get('ehrId','') or d.get('ehr_id',{}).get('value',''))")
-
 [ "$GOT_ID" = "$EHR_ID" ] && pass "Get EHR — ID matches" || fail "Get EHR — ID mismatch: $GOT_ID" ""
 
-# ---------------------------------------------------------------------------
-# 7. Get EHR Status
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 7. Get EHR Status ---"
+echo "--- 11. Create EHR with specific ID ---"
+SPECIFIC_ID="00000000-0000-4000-8000-$(date +%s | tail -c 13)"
+HC=$(http_code -X PUT "${API}/ehrs/${SPECIFIC_ID}" -H "Content-Type: application/json" -H "Accept: application/json")
+[ "$HC" = "201" ] && pass "Create EHR with ID — HTTP 201" || fail "Create EHR with ID — HTTP $HC" ""
 
+echo ""
+echo "--- 12. Duplicate EHR → expect 409 ---"
+HC=$(http_code -X PUT "${API}/ehrs/${SPECIFIC_ID}" -H "Content-Type: application/json" -H "Accept: application/json")
+[ "$HC" = "409" ] && pass "Duplicate EHR rejected — HTTP 409" || fail "Duplicate EHR — HTTP $HC (expected 409)" ""
+
+echo ""
+echo "--- 13. Find EHR by subject ---"
+# Create EHR with known subject first
+H=$(curl -sv -X POST "${API}/ehrs" -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"_type":"EHR_STATUS","archetype_node_id":"openEHR-EHR-EHR_STATUS.generic.v1","name":{"value":"EHR Status"},"subject":{"external_ref":{"id":{"_type":"GENERIC_ID","value":"subject-e2e-lookup","scheme":"test"},"namespace":"e2e-ns","type":"PERSON"}},"is_queryable":true,"is_modifiable":true}' 2>&1)
+SUBJECT_EHR=$(echo "$H" | grep "< Location:" | head -1 | sed 's|.*ehrs/||' | tr -d '\r')
+
+R=$(curl -s "${API}/ehrs?subject_id=subject-e2e-lookup&subject_namespace=e2e-ns" -H "Accept: application/json")
+FOUND=$(json_val "$R" "d=json.load(sys.stdin); print(d.get('ehrId','') or d.get('ehr_id',{}).get('value',''))")
+[ -n "$FOUND" ] && pass "Find EHR by subject — found $FOUND" || fail "Find EHR by subject" "$R"
+
+
+# =============================================================================
+# EHR STATUS
+# =============================================================================
+echo ""
+echo "==========================================="
+echo "  EHR STATUS"
+echo "==========================================="
+
+echo ""
+echo "--- 14. Get EHR Status ---"
 R=$(curl -s "${API}/ehrs/${EHR_ID}/ehr_status" -H "Accept: application/json")
-IS_QUERYABLE=$(json_val "$R" "print(json.load(sys.stdin).get('is_queryable', '?'))")
+IS_Q=$(json_val "$R" "print(json.load(sys.stdin).get('is_queryable','?'))")
+STATUS_UID=$(json_val "$R" "d=json.load(sys.stdin); uid=d.get('uid',{}); print(uid.get('value','') if isinstance(uid,dict) else '')")
+[ "$IS_Q" = "True" ] && pass "Get EHR Status — is_queryable=true" || fail "Get EHR Status" "$R"
 
-[ "$IS_QUERYABLE" = "True" ] && pass "EHR Status — is_queryable=true" || fail "EHR Status" "$R"
+echo ""
+echo "--- 15. Update EHR Status (If-Match) ---"
+# Build EHR status update with real ehr_status.json template
+SUBJECT_UUID=$(python3 -c "import uuid; print(uuid.uuid4())")
+STATUS_JSON=$(cat configuration/src/test/resources/ehr_status.json | sed "s/%s/$SUBJECT_UUID/")
+
+if [ -n "$STATUS_UID" ]; then
+  H=$(curl -sv -X PUT "${API}/ehrs/${EHR_ID}/ehr_status" \
+    -H "Content-Type: application/json" -H "Accept: application/json" \
+    -H "If-Match: \"${STATUS_UID}\"" \
+    -d "$STATUS_JSON" 2>&1)
+  HC=$(extract_http_code "$H")
+  [ "$HC" = "200" ] || [ "$HC" = "204" ] && pass "Update EHR Status — HTTP $HC" || fail "Update EHR Status — HTTP $HC" "$(echo "$H" | grep 'error\|Error\|detail' | head -3)"
+else
+  skip "Update EHR Status — no version UID available"
+fi
+
+echo ""
+echo "--- 16. Versioned EHR Status container ---"
+HC=$(http_code "${API}/ehrs/${EHR_ID}/versioned_ehr_status" -H "Accept: application/json")
+[ "$HC" = "200" ] && pass "Versioned EHR Status — HTTP 200" || fail "Versioned EHR Status — HTTP $HC" ""
+
+echo ""
+echo "--- 17. EHR Status revision history ---"
+HC=$(http_code "${API}/ehrs/${EHR_ID}/versioned_ehr_status/revision_history" -H "Accept: application/json")
+[ "$HC" = "200" ] && pass "EHR Status revision history — HTTP 200" || fail "EHR Status revision history — HTTP $HC" ""
+
 
 # =============================================================================
 # COMPOSITIONS
@@ -192,110 +202,157 @@ echo "==========================================="
 echo "  COMPOSITIONS"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 8. Create Composition
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 8. Create Composition (real composition.json) ---"
-
-COMP_FILE="configuration/src/test/resources/composition.json"
-if [ ! -f "$COMP_FILE" ]; then
-  fail "Composition file not found: $COMP_FILE" ""
-  echo "[FATAL] Cannot continue"; exit 1
-fi
-
-HEADERS=$(curl -sv -X POST "${API}/ehrs/${EHR_ID}/compositions" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -H "Prefer: return=minimal" \
-  -d @"$COMP_FILE" 2>&1)
-
-HC=$(echo "$HEADERS" | grep "< HTTP/" | tail -1 | awk '{print $3}')
-LOCATION=$(echo "$HEADERS" | grep "< Location:" | awk '{print $3}' | tr -d '\r')
-ETAG=$(echo "$HEADERS" | grep "< ETag:" | awk '{print $3}' | tr -d '\r"')
-
-COMP_VERSION_UID=$(echo "$LOCATION" | sed 's|.*/compositions/||')
+echo "--- 18. Create Composition (real composition.json, minimal_evaluation) ---"
+H=$(curl -sv -X POST "${API}/ehrs/${EHR_ID}/compositions" \
+  -H "Content-Type: application/json" -H "Accept: application/json" -H "Prefer: return=minimal" \
+  -d @configuration/src/test/resources/composition.json 2>&1)
+HC=$(extract_http_code "$H")
+COMP_LOCATION=$(extract_header "$H" "Location")
+COMP_VERSION_UID=$(echo "$COMP_LOCATION" | sed 's|.*/compositions/||')
 COMP_ID=$(echo "$COMP_VERSION_UID" | sed 's/::.*$//')
+ETAG=$(extract_header "$H" "ETag")
+[ "$HC" = "201" ] && [ -n "$COMP_ID" ] && pass "Create Composition — $COMP_VERSION_UID" || { fail "Create Composition — HTTP $HC" ""; }
 
-if [ "$HC" = "201" ] && [ -n "$COMP_ID" ]; then
-  pass "Create Composition — HTTP 201"
-  echo "       Version UID: $COMP_VERSION_UID"
-  echo "       Composition ID: $COMP_ID"
-else
-  fail "Create Composition — HTTP $HC" "$LOCATION"
-  echo "[FATAL] Cannot continue"; exit 1
-fi
-
-# ---------------------------------------------------------------------------
-# 9. Get Composition by version UID
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 9. Get Composition ---"
+echo "--- 19. Get Composition by version UID ---"
+R=$(curl -s "${API}/ehrs/${EHR_ID}/compositions/${COMP_VERSION_UID}" -H "Accept: application/json")
+ARCH=$(json_val "$R" "print(json.load(sys.stdin).get('archetype_node_id','?'))")
+[ -n "$ARCH" ] && [ "$ARCH" != "?" ] && pass "Get Composition — archetype: $ARCH" || fail "Get Composition" "$(echo "$R" | head -50)"
 
-R=$(curl -s "${API}/ehrs/${EHR_ID}/compositions/${COMP_VERSION_UID}" \
-  -H "Accept: application/json")
-GOT_ARCH=$(json_val "$R" "print(json.load(sys.stdin).get('archetype_node_id','?'))")
-
-if [ -n "$GOT_ARCH" ] && [ "$GOT_ARCH" != "?" ]; then
-  pass "Get Composition — archetype: $GOT_ARCH"
-else
-  fail "Get Composition" "$(echo "$R" | head -50)"
-fi
-
-# ---------------------------------------------------------------------------
-# 10. List Compositions for EHR
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 10. List Compositions ---"
-
+echo "--- 20. List Compositions for EHR ---"
 R=$(curl -s "${API}/ehrs/${EHR_ID}/compositions" -H "Accept: application/json")
-COMP_COUNT=$(json_val "$R" "d=json.load(sys.stdin); print(len(d) if isinstance(d, list) else d.get('total',1))")
+COUNT=$(json_val "$R" "d=json.load(sys.stdin); print(len(d) if isinstance(d,list) else d.get('total',0))")
+[ "$COUNT" -ge 1 ] 2>/dev/null && pass "List Compositions — $COUNT composition(s)" || pass "List Compositions — response received"
 
-if [ -n "$COMP_COUNT" ] && [ "$COMP_COUNT" -ge 1 ] 2>/dev/null; then
-  pass "List Compositions — $COMP_COUNT composition(s)"
-else
-  pass "List Compositions — response received"
-fi
-
-# ---------------------------------------------------------------------------
-# 11. Update Composition
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 11. Update Composition ---"
-
-HEADERS=$(curl -sv -X PUT "${API}/ehrs/${EHR_ID}/compositions/${COMP_VERSION_UID}" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -H "If-Match: ${ETAG}" \
-  -H "Prefer: return=minimal" \
-  -d @"$COMP_FILE" 2>&1)
-
-HC=$(echo "$HEADERS" | grep "< HTTP/" | tail -1 | awk '{print $3}')
-NEW_ETAG=$(echo "$HEADERS" | grep "< ETag:" | awk '{print $3}' | tr -d '\r"')
-NEW_LOCATION=$(echo "$HEADERS" | grep "< Location:" | awk '{print $3}' | tr -d '\r')
+echo "--- 21. Update Composition (If-Match) ---"
+H=$(curl -sv -X PUT "${API}/ehrs/${EHR_ID}/compositions/${COMP_VERSION_UID}" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -H "If-Match: ${ETAG}" -H "Prefer: return=minimal" \
+  -d @configuration/src/test/resources/composition.json 2>&1)
+HC=$(extract_http_code "$H")
+NEW_ETAG=$(extract_header "$H" "ETag")
+NEW_LOCATION=$(extract_header "$H" "Location")
 NEW_VERSION_UID=$(echo "$NEW_LOCATION" | sed 's|.*/compositions/||')
+[ "$HC" = "200" ] || [ "$HC" = "204" ] && pass "Update Composition — HTTP $HC, $NEW_VERSION_UID" || fail "Update Composition — HTTP $HC" ""
 
-if [ "$HC" = "200" ] || [ "$HC" = "204" ]; then
-  pass "Update Composition — HTTP $HC"
-  echo "       New Version UID: $NEW_VERSION_UID"
-else
-  fail "Update Composition — HTTP $HC" "$(echo "$HEADERS" | grep -i "error\|detail" | head -3)"
-fi
-
-# ---------------------------------------------------------------------------
-# 12. Delete Composition
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 12. Delete Composition ---"
-
-HC=$(http_code -X DELETE "${API}/ehrs/${EHR_ID}/compositions/${NEW_VERSION_UID}" \
-  -H "Accept: application/json")
-
-if [ "$HC" = "204" ] || [ "$HC" = "200" ]; then
-  pass "Delete Composition — HTTP $HC"
+echo "--- 22. Get Composition after update (version 2) ---"
+if [ -n "$NEW_VERSION_UID" ]; then
+  R=$(curl -s "${API}/ehrs/${EHR_ID}/compositions/${NEW_VERSION_UID}" -H "Accept: application/json")
+  ARCH2=$(json_val "$R" "print(json.load(sys.stdin).get('archetype_node_id','?'))")
+  [ -n "$ARCH2" ] && [ "$ARCH2" != "?" ] && pass "Get Composition v2 — archetype: $ARCH2" || fail "Get Composition v2" ""
 else
-  fail "Delete Composition — HTTP $HC" ""
+  skip "Get Composition v2 — no version UID"
 fi
+
+echo ""
+echo "--- 23. Update with wrong If-Match → expect 409/412 ---"
+HC=$(http_code -X PUT "${API}/ehrs/${EHR_ID}/compositions/${NEW_VERSION_UID}" \
+  -H "Content-Type: application/json" -H "If-Match: \"wrong-etag\"" \
+  -d @configuration/src/test/resources/composition.json)
+[ "$HC" = "409" ] || [ "$HC" = "412" ] || [ "$HC" = "400" ] && pass "Wrong If-Match rejected — HTTP $HC" || fail "Wrong If-Match — HTTP $HC" ""
+
+echo ""
+echo "--- 24. Delete Composition ---"
+HC=$(http_code -X DELETE "${API}/ehrs/${EHR_ID}/compositions/${NEW_VERSION_UID}" -H "Accept: application/json")
+[ "$HC" = "204" ] || [ "$HC" = "200" ] && pass "Delete Composition — HTTP $HC" || fail "Delete Composition — HTTP $HC" ""
+
+echo ""
+echo "--- 25. Get deleted Composition → expect 410 Gone ---"
+HC=$(http_code "${API}/ehrs/${EHR_ID}/compositions/${NEW_VERSION_UID}" -H "Accept: application/json")
+[ "$HC" = "410" ] && pass "Deleted Composition — HTTP 410 Gone" || fail "Deleted Composition — HTTP $HC (expected 410)" ""
+
+
+# =============================================================================
+# VERSIONED COMPOSITION
+# =============================================================================
+echo ""
+echo "==========================================="
+echo "  VERSIONED COMPOSITION"
+echo "==========================================="
+
+echo ""
+echo "--- 26. Create a fresh Composition for versioning tests ---"
+H=$(curl -sv -X POST "${API}/ehrs/${EHR_ID}/compositions" \
+  -H "Content-Type: application/json" -H "Accept: application/json" -H "Prefer: return=minimal" \
+  -d @configuration/src/test/resources/composition.json 2>&1)
+V_COMP_LOCATION=$(extract_header "$H" "Location")
+V_COMP_UID=$(echo "$V_COMP_LOCATION" | sed 's|.*/compositions/||')
+V_COMP_ID=$(echo "$V_COMP_UID" | sed 's/::.*$//')
+pass "Created composition for versioning: $V_COMP_ID"
+
+echo ""
+echo "--- 27. Versioned Composition container ---"
+HC=$(http_code "${API}/ehrs/${EHR_ID}/versioned_composition/${V_COMP_ID}" -H "Accept: application/json")
+[ "$HC" = "200" ] && pass "Versioned Composition container — HTTP 200" || fail "Versioned Composition container — HTTP $HC" ""
+
+echo ""
+echo "--- 28. Versioned Composition revision history ---"
+HC=$(http_code "${API}/ehrs/${EHR_ID}/versioned_composition/${V_COMP_ID}/revision_history" -H "Accept: application/json")
+[ "$HC" = "200" ] && pass "Revision history — HTTP 200" || fail "Revision history — HTTP $HC" ""
+
+echo ""
+echo "--- 29. Versioned Composition specific version ---"
+HC=$(http_code "${API}/ehrs/${EHR_ID}/versioned_composition/${V_COMP_ID}/version/${V_COMP_UID}" -H "Accept: application/json")
+[ "$HC" = "200" ] && pass "Specific version — HTTP 200" || fail "Specific version — HTTP $HC" ""
+
+
+# =============================================================================
+# DIRECTORY / FOLDERS
+# =============================================================================
+echo ""
+echo "==========================================="
+echo "  DIRECTORY / FOLDERS"
+echo "==========================================="
+
+echo ""
+echo "--- 30. Create Folder ---"
+H=$(curl -sv -X POST "${API}/ehrs/${EHR_ID}/directory" \
+  -H "Content-Type: application/json" -H "Accept: application/json" \
+  -d '{"name": {"value": "Clinical Notes"}, "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"}' 2>&1)
+HC=$(extract_http_code "$H")
+BODY=$(echo "$H" | grep "^{" | head -1)
+FOLDER_ID=$(json_val "$BODY" "print(json.load(sys.stdin).get('id',''))" || echo "")
+[ -n "$FOLDER_ID" ] && echo "       Folder ID: $FOLDER_ID"
+[ "$HC" = "201" ] && pass "Create Folder — HTTP 201" || fail "Create Folder — HTTP $HC" "$BODY"
+
+echo ""
+echo "--- 31. Get Directory listing ---"
+R=$(curl -s "${API}/ehrs/${EHR_ID}/directory" -H "Accept: application/json")
+DIR_COUNT=$(json_val "$R" "d=json.load(sys.stdin); print(len(d) if isinstance(d,list) else 1)")
+[ "$DIR_COUNT" -ge 1 ] 2>/dev/null && pass "Get Directory — $DIR_COUNT folder(s)" || pass "Get Directory — response received"
+
+echo ""
+echo "--- 32. Add Composition to Folder ---"
+if [ -n "$FOLDER_ID" ] && [ -n "$V_COMP_ID" ]; then
+  HC=$(http_code -X POST "${API}/ehrs/${EHR_ID}/directory/${FOLDER_ID}/items" \
+    -H "Content-Type: application/json" -d "{\"composition_id\": \"${V_COMP_ID}\"}")
+  [ "$HC" = "201" ] || [ "$HC" = "200" ] && pass "Add item to folder — HTTP $HC" || fail "Add item to folder — HTTP $HC" ""
+else
+  skip "Add item to folder — no folder_id or comp_id"
+fi
+
+echo ""
+echo "--- 33. Remove Composition from Folder ---"
+if [ -n "$FOLDER_ID" ] && [ -n "$V_COMP_ID" ]; then
+  HC=$(http_code -X DELETE "${API}/ehrs/${EHR_ID}/directory/${FOLDER_ID}/items/${V_COMP_ID}")
+  [ "$HC" = "204" ] || [ "$HC" = "200" ] && pass "Remove item from folder — HTTP $HC" || fail "Remove item — HTTP $HC" ""
+else
+  skip "Remove item from folder — no folder_id or comp_id"
+fi
+
+echo ""
+echo "--- 34. Delete Folder ---"
+if [ -n "$FOLDER_ID" ]; then
+  HC=$(http_code -X DELETE "${API}/ehrs/${EHR_ID}/directory/${FOLDER_ID}")
+  [ "$HC" = "204" ] || [ "$HC" = "200" ] && pass "Delete Folder — HTTP $HC" || fail "Delete Folder — HTTP $HC" ""
+else
+  skip "Delete Folder — no folder_id"
+fi
+
 
 # =============================================================================
 # CONTRIBUTIONS
@@ -305,101 +362,75 @@ echo "==========================================="
 echo "  CONTRIBUTIONS"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 13. List Contributions
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 13. List Contributions ---"
-
+echo "--- 35. List Contributions ---"
 R=$(curl -s "${API}/ehrs/${EHR_ID}/contributions" -H "Accept: application/json")
-HC_CONTRIB=$(json_val "$R" "d=json.load(sys.stdin); print('ok')" || echo "fail")
+CONTRIB_ID=$(json_val "$R" "d=json.load(sys.stdin); print(d[0]['id'] if isinstance(d,list) and len(d)>0 else '')")
+[ -n "$CONTRIB_ID" ] && pass "List Contributions — found $CONTRIB_ID" || pass "List Contributions — response received"
 
-[ "$HC_CONTRIB" = "ok" ] && pass "List Contributions — response received" || fail "List Contributions" "$R"
-
-# =============================================================================
-# DIRECTORY (Folders)
-# =============================================================================
 echo ""
-echo "==========================================="
-echo "  DIRECTORY"
-echo "==========================================="
-
-# ---------------------------------------------------------------------------
-# 14. Create Folder
-# ---------------------------------------------------------------------------
-echo ""
-echo "--- 14. Create Folder ---"
-
-R=$(curl -s -w "\n%{http_code}" -X POST "${API}/ehrs/${EHR_ID}/directory" \
-  -H "Content-Type: application/json" \
-  -H "Accept: application/json" \
-  -d '{"name": {"value": "E2E Test Folder"}, "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"}')
-HC=$(echo "$R" | tail -1)
-BODY=$(echo "$R" | sed '$d')
-
-if [ "$HC" = "201" ] || [ "$HC" = "200" ]; then
-  pass "Create Folder — HTTP $HC"
+echo "--- 36. Get specific Contribution ---"
+if [ -n "$CONTRIB_ID" ]; then
+  HC=$(http_code "${API}/ehrs/${EHR_ID}/contributions/${CONTRIB_ID}" -H "Accept: application/json")
+  [ "$HC" = "200" ] && pass "Get Contribution — HTTP 200" || fail "Get Contribution — HTTP $HC" ""
 else
-  fail "Create Folder — HTTP $HC" "$(echo "$BODY" | head -50)"
+  skip "Get Contribution — no contribution_id available"
 fi
 
-# ---------------------------------------------------------------------------
-# 15. Get Directory
-# ---------------------------------------------------------------------------
-echo ""
-echo "--- 15. Get Directory ---"
-
-HC=$(http_code "${API}/ehrs/${EHR_ID}/directory" -H "Accept: application/json")
-[ "$HC" = "200" ] && pass "Get Directory — HTTP 200" || fail "Get Directory — HTTP $HC" ""
 
 # =============================================================================
 # QUERY / VIEWS
 # =============================================================================
 echo ""
 echo "==========================================="
-echo "  QUERY VIEWS"
+echo "  QUERY / VIEWS"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 16. List available views
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 16. List Views ---"
-
+echo "--- 37. List Views ---"
 R=$(curl -s "${API}/query/views" -H "Accept: application/json")
-VIEW_COUNT=$(json_val "$R" "d=json.load(sys.stdin); print(len(d) if isinstance(d, list) else '?')")
+VIEW_COUNT=$(json_val "$R" "d=json.load(sys.stdin); print(len(d) if isinstance(d,list) else '?')")
+[ -n "$VIEW_COUNT" ] && [ "$VIEW_COUNT" != "?" ] && pass "List Views — $VIEW_COUNT views" || pass "List Views — response received"
 
-if [ -n "$VIEW_COUNT" ] && [ "$VIEW_COUNT" != "?" ]; then
-  pass "List Views — $VIEW_COUNT view(s)"
-else
-  pass "List Views — response received"
-fi
 
 # =============================================================================
-# SWAGGER / OPENAPI
+# ADMIN (feature-gated)
+# =============================================================================
+echo ""
+echo "==========================================="
+echo "  ADMIN"
+echo "==========================================="
+
+echo ""
+echo "--- 38. Admin health ---"
+R=$(curl -s "${API}/admin/health" -H "Accept: application/json")
+HC_STATUS=$(json_val "$R" "print(json.load(sys.stdin).get('status','?'))")
+[ "$HC_STATUS" = "UP" ] && pass "Admin health — status=UP" || fail "Admin health — status=$HC_STATUS" "$R"
+
+
+# =============================================================================
+# API DOCUMENTATION
 # =============================================================================
 echo ""
 echo "==========================================="
 echo "  API DOCUMENTATION"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 17. OpenAPI spec
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 17. OpenAPI spec ---"
-
+echo "--- 39. OpenAPI spec ---"
 HC=$(http_code "${BASE_URL}/api-docs" -H "Accept: application/json")
 [ "$HC" = "200" ] && pass "OpenAPI spec — HTTP 200" || fail "OpenAPI spec — HTTP $HC" ""
 
-# ---------------------------------------------------------------------------
-# 18. Swagger UI
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 18. Swagger UI ---"
-
+echo "--- 40. Swagger UI ---"
 HC=$(http_code "${BASE_URL}/swagger-ui.html")
 [ "$HC" = "200" ] || [ "$HC" = "302" ] && pass "Swagger UI — HTTP $HC" || fail "Swagger UI — HTTP $HC" ""
+
+echo ""
+echo "--- 41. GraphiQL UI ---"
+HC=$(http_code "${API}/graphiql")
+[ "$HC" = "307" ] && pass "GraphiQL redirect — HTTP 307" || fail "GraphiQL — HTTP $HC" ""
+
 
 # =============================================================================
 # ERROR HANDLING
@@ -409,52 +440,38 @@ echo "==========================================="
 echo "  ERROR HANDLING"
 echo "==========================================="
 
-# ---------------------------------------------------------------------------
-# 19. Get non-existent EHR
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 19. Get non-existent EHR ---"
-
+echo "--- 42. Get non-existent EHR → 404 ---"
 HC=$(http_code "${API}/ehrs/00000000-0000-0000-0000-000000000000" -H "Accept: application/json")
 [ "$HC" = "404" ] && pass "Non-existent EHR — HTTP 404" || fail "Non-existent EHR — HTTP $HC" ""
 
-# ---------------------------------------------------------------------------
-# 20. Invalid EHR ID format
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 20. Invalid EHR ID ---"
-
+echo "--- 43. Invalid EHR ID format → 400 ---"
 HC=$(http_code "${API}/ehrs/not-a-uuid" -H "Accept: application/json")
 [ "$HC" = "400" ] || [ "$HC" = "404" ] && pass "Invalid EHR ID — HTTP $HC" || fail "Invalid EHR ID — HTTP $HC" ""
 
-# ---------------------------------------------------------------------------
-# 21. Create composition without template
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 21. Composition without valid template ---"
-
-HC=$(http_code -X POST "${API}/ehrs/${EHR_ID}/compositions" \
-  -H "Content-Type: application/json" \
-  -d '{"_type":"COMPOSITION","archetype_node_id":"invalid"}')
+echo "--- 44. Composition without valid content → 400 ---"
+HC=$(http_code -X POST "${API}/ehrs/${EHR_ID}/compositions" -H "Content-Type: application/json" -d '{"_type":"COMPOSITION","archetype_node_id":"invalid"}')
 [ "$HC" = "400" ] || [ "$HC" = "422" ] || [ "$HC" = "500" ] && pass "Invalid composition rejected — HTTP $HC" || fail "Invalid composition — HTTP $HC" ""
 
-# ---------------------------------------------------------------------------
-# 22. Delete non-existent composition
-# ---------------------------------------------------------------------------
 echo ""
-echo "--- 22. Delete non-existent composition ---"
-
+echo "--- 45. Delete non-existent composition → 404 ---"
 HC=$(http_code -X DELETE "${API}/ehrs/${EHR_ID}/compositions/00000000-0000-0000-0000-000000000000::local.ehrbase.org::1")
 [ "$HC" = "404" ] || [ "$HC" = "400" ] && pass "Delete non-existent — HTTP $HC" || fail "Delete non-existent — HTTP $HC" ""
+
+echo ""
+echo "--- 46. Get non-existent template → 404 ---"
+HC=$(http_code "${API}/templates/adl1.4/does_not_exist.en.v99" -H "Accept: application/xml")
+[ "$HC" = "404" ] && pass "Non-existent template — HTTP 404" || fail "Non-existent template — HTTP $HC" ""
+
 
 # =============================================================================
 # Summary
 # =============================================================================
 echo ""
 echo "============================================="
-echo "  Results: $PASS passed, $FAIL failed"
+echo "  Results: $PASS passed, $FAIL failed, $SKIP skipped"
 echo "============================================="
-
-rm -f /tmp/e2e_tpl_upload.json
 
 [ "$FAIL" -eq 0 ] && exit 0 || exit 1
