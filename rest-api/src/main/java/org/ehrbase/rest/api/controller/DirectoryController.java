@@ -117,10 +117,7 @@ public class DirectoryController extends BaseApiController {
 
         return ResponseEntity.created(location)
                 .body(Map.of(
-                        "id", String.valueOf(folderId),
-                        "name", folderName,
-                        "path", path,
-                        "ehr_id", ehrId.toString()));
+                        "id", String.valueOf(folderId), "name", folderName, "path", path, "ehr_id", ehrId.toString()));
     }
 
     @org.springframework.web.bind.annotation.PutMapping(

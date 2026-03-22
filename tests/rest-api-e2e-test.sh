@@ -310,11 +310,11 @@ echo "==========================================="
 
 echo ""
 echo "--- 30. Create Folder ---"
-H=$(curl -sv -X POST "${API}/ehrs/${EHR_ID}/directory" \
+BODY=$(curl -s -w "\n%{http_code}" -X POST "${API}/ehrs/${EHR_ID}/directory" \
   -H "Content-Type: application/json" -H "Accept: application/json" \
-  -d '{"name": {"value": "Clinical Notes"}, "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"}' 2>&1)
-HC=$(extract_http_code "$H")
-BODY=$(echo "$H" | grep "^{" | head -1)
+  -d '{"name": {"value": "Clinical Notes"}, "archetype_node_id": "openEHR-EHR-FOLDER.generic.v1"}')
+HC=$(echo "$BODY" | tail -1)
+BODY=$(echo "$BODY" | sed '$d')
 FOLDER_ID=$(json_val "$BODY" "print(json.load(sys.stdin).get('id',''))" || echo "")
 [ -n "$FOLDER_ID" ] && echo "       Folder ID: $FOLDER_ID"
 [ "$HC" = "201" ] && pass "Create Folder — HTTP 201" || fail "Create Folder — HTTP $HC" "$BODY"

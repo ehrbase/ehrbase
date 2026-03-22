@@ -72,8 +72,8 @@ public class TemplateIntrospectionController extends BaseApiController {
         requestContext.setTemplateId(templateId);
 
         // View names follow the pattern: v_comp_{sanitized_template_id}
-        String viewName =
-                "v_comp_" + templateId.toLowerCase().replace(" ", "_").replace(".", "_").replace("-", "_");
+        String viewName = "v_comp_"
+                + templateId.toLowerCase().replace(" ", "_").replace(".", "_").replace("-", "_");
         var entry = viewCatalogService.getView(viewName, requestContext.getTenantId());
         if (entry == null) {
             throw new ObjectNotFoundException("schema", "No schema found for template " + templateId);
