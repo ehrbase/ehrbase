@@ -38,7 +38,6 @@ FROM (
      ) dh
 WHERE (vh.vo_id, vh.sys_version)=(dh.vo_id, dh.sys_version);
 
-DROP INDEX IF EXISTS mig_move_history_date;
 DROP TABLE comp_data_history;
 
 --EHR_STATUS
@@ -76,16 +75,9 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
 BEGIN
-IF starts_with(entity_concept, '.') THEN
-    --add archetype_details to archetype root if missing
-    IF folder ? 'ad' THEN
-        RETURN folder;
-    ELSE
-        RETURN folder || ('{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "' || (folder ->> 'A') || '"}}}')::jsonb;
-    END IF;
-ELSIF entity_concept IS NULL AND (folder ->> 'T') = 'F' THEN
+IF entity_concept IS NULL AND (folder ->> 'T') = 'F' THEN
     --treat missing archetype_node_id as generic folder archetype
-    RETURN folder || '{"A":"openEHR-EHR-FOLDER.generic.v1", "ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "openEHR-EHR-FOLDER.generic.v1"}}}'::jsonb;
+    RETURN folder || '{"A":"openEHR-EHR-FOLDER.generic.v1"}'::jsonb;
 ELSE
     RETURN folder;
 END IF;

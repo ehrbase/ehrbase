@@ -18,18 +18,6 @@
 
 
 UPDATE ehr_folder_data
-SET data = data ||
-           (CASE
-               WHEN entity_concept IS NULL THEN
-                   '{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "openEHR-EHR-FOLDER.generic.v1"}},"A":"openEHR-EHR-FOLDER.generic.v1"}'
-               ELSE
-                   '{"ad":{"T":"AR","rv":"1.0.4","aX": {"T":"AX","V": "' || (data ->> 'A') || '"}}}'
-               END)::jsonb,
-    entity_concept =
-        CASE
-        WHEN entity_concept IS NULL THEN
-            '.generic.v1'
-        ELSE
-            entity_concept
-        END
-WHERE (entity_concept IS NULL AND rm_entity='F') OR (starts_with(entity_concept, '.') AND NOT data ? 'ad');
+SET data = data || '{"A":"openEHR-EHR-FOLDER.generic.v1"}'::jsonb,
+    entity_concept = '.generic.v1'
+WHERE entity_concept IS NULL AND rm_entity='F';
