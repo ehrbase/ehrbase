@@ -46,7 +46,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
 
       - name: Docker - Set up Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # Docker metadata extraction - obtain version and labels from here
       - name: Docker - Metadata
