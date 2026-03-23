@@ -51,7 +51,7 @@ jobs:
       # Docker metadata extraction - obtain version and labels from here
       - name: Docker - Metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ehrbase/ehrbase
           tags: |
