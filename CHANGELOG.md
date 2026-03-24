@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [unreleased]
+## [2.30.0]
  ### Added
 - RM constraint validation for DIRECTORY (with feature toggle) [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
  ### Changed
@@ -280,4 +280,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.27.0]: https://github.com/ehrbase/ehrbase/compare/v2.26.0...v2.27.0
 [2.28.0]: https://github.com/ehrbase/ehrbase/compare/v2.27.0...v2.28.0
 [2.29.0]: https://github.com/ehrbase/ehrbase/compare/v2.28.0...v2.29.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.29.0...HEAD
+[2.30.0]: https://github.com/ehrbase/ehrbase/compare/v2.29.0...v2.30.0
