@@ -22,27 +22,19 @@ import static org.ehrbase.api.rest.HttpRestContext.VERSION;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.VersionedObject;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
-import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.dto.VersionedEhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.rest.HttpRestContext;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
-import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.VersionedEhrStatusApiSpecification;
@@ -68,36 +60,28 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     private static final String REVISION_HISTORY = "revision_history";
 
-    private final ContributionService contributionService;
-
     private final EhrService ehrService;
 
-    public OpenehrVersionedEhrStatusController(EhrService ehrService, ContributionService contributionService) {
+    public OpenehrVersionedEhrStatusController(EhrService ehrService) {
         this.ehrService = Objects.requireNonNull(ehrService);
-        this.contributionService = Objects.requireNonNull(contributionService);
     }
 
     @GetMapping
     @Override
-    public ResponseEntity<VersionedEhrStatusDto> retrieveVersionedEhrStatusByEhr(
+    public ResponseEntity<VersionedEhrStatus> retrieveVersionedEhrStatusByEhr(
             @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
         createRestContext(ehrId, Map.of());
 
-        VersionedObject<EhrStatusDto> versionedEhrStatus = ehrService.getVersionedEhrStatus(ehrId);
-        VersionedEhrStatusDto versionedEhrStatusDto = new VersionedEhrStatusDto(
-                versionedEhrStatus.getUid(),
-                versionedEhrStatus.getOwnerId(),
-                DateTimeFormatter.ISO_DATE_TIME.format(
-                        versionedEhrStatus.getTimeCreated().getValue()));
+        VersionedEhrStatus versionedEhrStatus = ehrService.getVersionedEhrStatus(ehrId);
 
-        return ResponseEntity.ok().body(versionedEhrStatusDto);
+        return ResponseEntity.ok().body(versionedEhrStatus);
     }
 
     @GetMapping(path = "/revision_history")
     @Override
-    public ResponseEntity<RevisionHistoryResponseData> retrieveVersionedEhrStatusRevisionHistoryByEhr(
+    public ResponseEntity<RevisionHistory> retrieveVersionedEhrStatusRevisionHistoryByEhr(
             @PathVariable(value = "ehr_id") String ehrIdString) {
 
         UUID ehrId = getEhrUuid(ehrIdString);
@@ -105,12 +89,12 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
         createRestContext(ehrId, Map.of(), REVISION_HISTORY);
 
-        return ResponseEntity.ok().body(new RevisionHistoryResponseData(revisionHistory));
+        return ResponseEntity.ok().body(revisionHistory);
     }
 
     @GetMapping(path = "/version")
     @Override
-    public ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByTime(
+    public ResponseEntity<OriginalVersion<EhrStatus>> retrieveVersionOfEhrStatusByTime(
             @PathVariable(value = "ehr_id") String ehrIdString,
             @RequestParam(value = "version_at_time", required = false) String versionAtTime) {
 
@@ -136,7 +120,7 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
 
     @GetMapping(path = "/version/{version_uid}")
     @Override
-    public ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatusByVersionUid(
+    public ResponseEntity<OriginalVersion<EhrStatus>> retrieveVersionOfEhrStatusByVersionUid(
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "version_uid") String versionUid) {
 
@@ -160,26 +144,19 @@ public class OpenehrVersionedEhrStatusController extends BaseController implemen
                 versionId -> createRestContext(ehrId, Map.of(), "version", versionId.toString()));
     }
 
-    private ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> retrieveVersionOfEhrStatus(
+    private ResponseEntity<OriginalVersion<EhrStatus>> retrieveVersionOfEhrStatus(
             UUID ehrId, UUID ehrStatusId, int version, Consumer<ObjectVersionId> initContext) {
 
         HttpRestContext.register(VERSION, version);
 
-        OriginalVersion<EhrStatusDto> originalVersion = ehrService
+        OriginalVersion<EhrStatus> originalVersion = ehrService
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, version)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         RmConstants.EHR_STATUS, "Couldn't retrieve EhrStatus with given parameters"));
 
-        ObjectRef<? extends ObjectId> contribution = originalVersion.getContribution();
-        UUID contributionId = UUID.fromString(contribution.getId().getValue());
+        initContext.accept(originalVersion.getUid());
 
-        ContributionDto contributionDto = contributionService.getContribution(ehrId, contributionId);
-
-        OriginalVersionResponseData<EhrStatusDto> originalVersionResponseData =
-                new OriginalVersionResponseData<>(originalVersion, contributionDto);
-        initContext.accept(originalVersionResponseData.getVersionId());
-
-        return ResponseEntity.ok().body(originalVersionResponseData);
+        return ResponseEntity.ok().body(originalVersion);
     }
 
     private void createRestContext(UUID ehrId, Map<String, String> queryParams, String... pathSegments) {

@@ -304,8 +304,9 @@ public class AqlSqlQueryBuilder {
                     case AslColumnField src ->
                         Stream.of(FieldUtils.field(target, src, true).as(fieldName));
                     case AslComplexExtractedColumnField src ->
-                        src.getExtractedColumn().getColumns().stream().map(fn -> FieldUtils.field(target, src, fn, true)
-                                .as(src.aliasedName(fn)));
+                        src.getExtractedColumn().getColumns().stream()
+                                .map(fn ->
+                                        FieldUtils.field(target, src, fn, true).as(src.aliasedName(fn)));
                     case AslConstantField<?> cf -> Stream.of(DSL.inline(cf.getValue(), cf.getType()));
                     case AslAggregatingField __ ->
                         throw new IllegalArgumentException("Filtering queries cannot be based on AslAggregatingField");
@@ -659,7 +660,7 @@ public class AqlSqlQueryBuilder {
                     .when(DSL.cardinality(uuidsField).eq(DSL.inline(0)), dataField)
                     .else_(AdditionalSQLFunctions.jsonb_set(
                             dataField,
-                            AdditionalSQLFunctions.array_to_jsonb(uuidsField),
+                            AdditionalSQLFunctions.to_jsonb(uuidsField),
                             DbToRmFormat.FOLDER_ITEMS_UUID_ARRAY_ALIAS));
         } else {
             valueField = dataField;

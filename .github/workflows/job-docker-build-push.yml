@@ -29,29 +29,29 @@ jobs:
             Dockerfile
 
       - name: Download - Jar
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.ehrbase-jar-artifact }}
           path: ./application/target/
 
       # Docker registry login
       - name: Login into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # setup qemu for multi arch
       - name: Docker - Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
 
       - name: Docker - Set up Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       # Docker metadata extraction - obtain version and labels from here
       - name: Docker - Metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ehrbase/ehrbase
           tags: |
@@ -63,7 +63,7 @@ jobs:
 
       # build the release multi arch image
       - name: Docker - Build & Push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: Dockerfile

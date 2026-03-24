@@ -18,14 +18,14 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.ValidationException;
@@ -33,26 +33,15 @@ import org.ehrbase.api.exception.ValidationException;
 public interface EhrService {
 
     /**
-     * Wrapper for {@link #create(UUID, EhrStatusDto)} response that contains the <code>EHR</code> id as well as the
-     * {@link EhrStatusDto} and it's {@link ObjectVersionId}. This prevents to call {@link #getEhrStatus(UUID)} with an
-     * additional DB round trip.
-     *
-     * @param ehrId           <code>ID</code> of the created <code>EHR</code>
-     * @param statusVersionId the {@link ObjectVersionId} of the @{@link EhrStatusDto}
-     * @param status          initial {@link EhrStatusDto} version
-     */
-    record EhrResult(UUID ehrId, ObjectVersionId statusVersionId, EhrStatusDto status) {}
-
-    /**
      * Creates new EHR instance, with default settings and values when no status or ID is supplied.
      *
      * @param ehrId Optional, sets custom ID
      * @param status Optional, sets custom status
-     * @return {@link EhrResult} of new EHR instance
+     * @return {@link EhrStatus} of new EHR instance
      * @throws StateConflictException  when an EHR with the given id already exist
      * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
      */
-    EhrResult create(UUID ehrId, EhrStatusDto status);
+    UUID create(UUID ehrId, EhrStatus status);
 
     /**
      * Update the EHR_STATUS linked to the given EHR
@@ -61,11 +50,11 @@ public interface EhrService {
      * @param status       input EHR_STATUS
      * @param contribution Optional ID of custom contribution. Can be null.
      * @param audit        Audit event id
-     * @return {@link EhrResult} of the updated status
+     * @return {@link EhrStatus} of the updated status
      * @throws ObjectNotFoundException if no EHR is found
      * @throws ValidationException when given status is invalid, e.g. not a valid openEHR RM object
      */
-    EhrResult updateStatus(UUID ehrId, EhrStatusDto status, ObjectVersionId targetObjId, UUID contribution, UUID audit);
+    EhrStatus updateStatus(UUID ehrId, EhrStatus status, ObjectVersionId targetObjId, UUID contribution, UUID audit);
 
     /**
      * Gets latest EHR_STATUS of the given EHR.
@@ -74,7 +63,7 @@ public interface EhrService {
      * @return Latest EHR_STATUS
      * @throws ObjectNotFoundException if no EHR is found
      */
-    EhrResult getEhrStatus(UUID ehrUuid);
+    EhrStatus getEhrStatus(UUID ehrUuid);
 
     /**
      * Gets particular EHR_STATUS matching the given version Uid.
@@ -85,7 +74,7 @@ public interface EhrService {
      * @return Matching EHR_STATUS or empty
      * @throws ObjectNotFoundException if no EHR is found
      */
-    Optional<OriginalVersion<EhrStatusDto>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
+    Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(UUID ehrUuid, UUID versionedObjectUid, int version);
 
     /**
      * Search for an EHR_STATUS based on the given subject id and namespace
@@ -139,7 +128,7 @@ public interface EhrService {
      * @return Version container object
      * @throws ObjectNotFoundException if no EHR is found
      */
-    VersionedObject<EhrStatusDto> getVersionedEhrStatus(UUID ehrId);
+    VersionedEhrStatus getVersionedEhrStatus(UUID ehrId);
 
     /**
      * Gets revision history of EhrStatus associated with given EHR.

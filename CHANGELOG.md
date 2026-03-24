@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.30.0]
+ ### Added
+- RM constraint validation for DIRECTORY (with feature toggle) [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
+ ### Changed
+- update to java 25 [#1595](https://github.com/ehrbase/ehrbase/pull/1595)
+- changed history DB model for better compression [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
+- migrating `management` properties deprecated since Spring Boot 3.5 [#1605](https://github.com/ehrbase/ehrbase/pull/1605)
+ ### Fixed
+- Adjusted some endpoints to comply with openEHR REST API specs; see [UPDATING.md](./UPDATING.md) [#1599](https://github.com/ehrbase/ehrbase/pull/1599)
+- For existing EHR directory entries, missing `archetype_node_id`s of `FOLDER`s are set to `openEHR-EHR-FOLDER.generic.v1` [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
+
 ## [2.29.0]
  ### Added
  ### Changed 
@@ -269,3 +280,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.27.0]: https://github.com/ehrbase/ehrbase/compare/v2.26.0...v2.27.0
 [2.28.0]: https://github.com/ehrbase/ehrbase/compare/v2.27.0...v2.28.0
 [2.29.0]: https://github.com/ehrbase/ehrbase/compare/v2.28.0...v2.29.0
+[2.30.0]: https://github.com/ehrbase/ehrbase/compare/v2.29.0...v2.30.0

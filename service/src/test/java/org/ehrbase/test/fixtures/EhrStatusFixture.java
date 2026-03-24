@@ -21,45 +21,45 @@ import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.datastructures.ItemStructure;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
-import org.ehrbase.api.dto.EhrStatusDto;
 
-public class EhrStatusDtoFixture {
+public class EhrStatusFixture {
 
     private static final DvText NAME = new DvText("EHR_STATUS");
     private static final String ARCHETYPE_NODE_ID = "openEHR-EHR-EHR_STATUS.generic.v1";
     private static final PartySelf SUBJECT = new PartySelf();
 
-    public static EhrStatusDto ehrStatusDto(UIDBasedId uid) {
+    public static EhrStatus ehrStatus(UIDBasedId uid) {
         return ehrStatus(uid, ARCHETYPE_NODE_ID, NAME, null, null, SUBJECT, true, true, null);
     }
 
-    public static EhrStatusDto ehrStatusDto(DvText name) {
+    public static EhrStatus ehrStatus(DvText name) {
         return ehrStatus(null, ARCHETYPE_NODE_ID, name, null, null, SUBJECT, true, true, null);
     }
 
-    public static EhrStatusDto ehrStatusDto(Archetyped archetyped) {
+    public static EhrStatus ehrStatus(Archetyped archetyped) {
         return ehrStatus(null, ARCHETYPE_NODE_ID, NAME, archetyped, null, SUBJECT, true, true, null);
     }
 
-    public static EhrStatusDto ehrStatusDto(FeederAudit feederAudit) {
+    public static EhrStatus ehrStatus(FeederAudit feederAudit) {
         return ehrStatus(null, ARCHETYPE_NODE_ID, NAME, null, feederAudit, SUBJECT, true, true, null);
     }
 
-    public static EhrStatusDto ehrStatusDto(PartySelf subject) {
+    public static EhrStatus ehrStatus(PartySelf subject) {
         return ehrStatus(null, ARCHETYPE_NODE_ID, NAME, null, null, subject, true, true, null);
     }
 
-    public static EhrStatusDto ehrStatusDto(Boolean isQueryable, Boolean isModifiable) {
+    public static EhrStatus ehrStatus(boolean isQueryable, boolean isModifiable) {
         return ehrStatus(null, ARCHETYPE_NODE_ID, NAME, null, null, SUBJECT, isQueryable, isModifiable, null);
     }
 
-    public static EhrStatusDto ehrStatusDto(ItemStructure itemStructure) {
+    public static EhrStatus ehrStatus(ItemStructure itemStructure) {
         return ehrStatus(null, ARCHETYPE_NODE_ID, NAME, null, null, SUBJECT, true, true, itemStructure);
     }
 
-    private static EhrStatusDto ehrStatus(
+    private static EhrStatus ehrStatus(
             UIDBasedId uid,
             String archetypeNodeId,
             DvText name,
@@ -69,12 +69,15 @@ public class EhrStatusDtoFixture {
             Boolean isQueryable,
             Boolean isModifiable,
             ItemStructure otherDetails) {
-        return new EhrStatusDto(
+        return new EhrStatus(
                 uid,
                 archetypeNodeId,
                 name,
                 archetypeDetails,
                 feederAudit,
+                null,
+                null,
+                null,
                 subject,
                 isQueryable,
                 isModifiable,

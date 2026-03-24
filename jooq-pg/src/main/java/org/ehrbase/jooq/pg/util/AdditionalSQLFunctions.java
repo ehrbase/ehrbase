@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 import org.jooq.AggregateFunction;
 import org.jooq.Field;
-import org.jooq.JSON;
 import org.jooq.JSONB;
+import org.jooq.OrderField;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -52,16 +52,6 @@ public final class AdditionalSQLFunctions {
      */
     public static Field<JSONB> jsonb_set(Field<JSONB> target, Field<JSONB> new_value, String... path) {
         return DSL.function("jsonb_set", JSONB.class, target, DSL.inline(path), new_value);
-    }
-
-    /**
-     * Postgres only knows array_to_json
-     * @param src
-     * @return
-     * @param <T>
-     */
-    public static <T> Field<JSONB> array_to_jsonb(Field<T[]> src) {
-        return DSL.function("array_to_json", JSON.class, src).cast(JSONB.class);
     }
 
     public static <T> Field<T> jsonb_extract_path_text(Class<T> aClass, Field<JSONB> jsonb, String... path) {
@@ -133,5 +123,26 @@ public final class AdditionalSQLFunctions {
         return distinct
                 ? DSL.aggregateDistinct("count", SQLDataType.BIGINT, f)
                 : DSL.aggregate("count", SQLDataType.BIGINT, f == null ? DSL.field(DSL.raw("*")) : f);
+    }
+
+    /**
+     * DSL.stringAgg / DSL.listAgg is not supported in all postgres derivates
+     *
+     * @param toAggregate
+     * @param separator
+     * @param orderBy
+     * @return
+     */
+    public static Field<String> string_agg(Field<String> toAggregate, Field<String> separator, OrderField<?> orderBy) {
+        if (orderBy == null) {
+            return DSL.aggregate("string_agg", SQLDataType.CLOB, toAggregate, separator);
+        } else {
+            return DSL.field("string_agg({0},{1} ORDER BY {2})", SQLDataType.CLOB, toAggregate, separator, orderBy);
+        }
+    }
+
+    public static <T> Field<T[]> trim_array(Field<T[]> field, Field<Integer> elementsToTrim) {
+        return DSL.function(
+                "trim_array", (Class<T[]>) field.getType().getComponentType().arrayType(), field, elementsToTrim);
     }
 }

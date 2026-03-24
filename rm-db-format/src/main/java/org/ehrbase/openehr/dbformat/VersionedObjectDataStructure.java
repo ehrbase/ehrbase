@@ -38,6 +38,7 @@ import java.util.stream.StreamSupport;
 import org.ehrbase.openehr.dbformat.json.RmDbJson;
 import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeSerializationUtils;
 import org.ehrbase.openehr.sdk.webtemplate.parser.NodeId;
+import org.jspecify.annotations.NonNull;
 
 public final class VersionedObjectDataStructure {
 
@@ -50,10 +51,15 @@ public final class VersionedObjectDataStructure {
 
     public static List<StructureNode> createDataStructure(RMObject rmObject) {
         JsonNode jsonNode = RmDbJson.MARSHAL_OM.valueToTree(rmObject);
-        fillInMagnitudes(jsonNode);
+        return createDataStructure(jsonNode, rmObject.getClass());
+    }
+
+    public static @NonNull List<StructureNode> createDataStructure(
+            final JsonNode rmObjectTree, Class<? extends RMObject> rmClass) {
+        fillInMagnitudes(rmObjectTree);
 
         var root = createStructureDto(
-                null, jsonNode, StructureRmType.byType(rmObject.getClass()).orElseThrow(), null);
+                null, rmObjectTree, StructureRmType.byType(rmClass).orElseThrow(), null);
 
         List<StructureNode> roots = new ArrayList<>();
         roots.add(root);

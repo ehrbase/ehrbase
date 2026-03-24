@@ -30,27 +30,28 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.ehrbase.repository.EhrRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
-import org.ehrbase.service.maping.EhrStatusMapper;
 import org.ehrbase.test.assertions.EhrStatusAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -88,15 +89,18 @@ class EhrServiceTest {
         return spyEhrService;
     }
 
-    private static EhrStatusDto ehrStatusDto() {
-        return ehrStatusDto(null, null);
+    private static EhrStatus ehrStatus() {
+        return ehrStatus(null, null);
     }
 
-    private static EhrStatusDto ehrStatusDto(UIDBasedId id, PartySelf subject) {
-        return new EhrStatusDto(
+    private static EhrStatus ehrStatus(UIDBasedId id, PartySelf subject) {
+        return new EhrStatus(
                 id,
                 "openEHR-EHR-EHR_STATUS.generic.v1",
                 new DvText("EHR Status"),
+                new Archetyped(new ArchetypeID("openEHR-EHR-EHR_STATUS.generic.v1"), RmConstants.RM_VERSION_1_0_4),
+                null,
+                null,
                 null,
                 null,
                 subject,
@@ -117,38 +121,38 @@ class EhrServiceTest {
 
         CreationResult result = runCreateEhr(service(), ehrId, null);
 
-        verify(validationService, never()).check(any(EhrStatusDto.class));
+        verify(validationService, never()).check(any(EhrStatus.class));
 
         assertThat(result.ehrId).isEqualTo(ehrId);
         EhrStatusAssert.assertThat(result.ehrStatus)
                 .hasIdRoot()
                 .hasIdExtension("test-ehr-service::1")
-                .isEqualToIgnoreId(EhrStatusMapper.fromDto(ehrStatusDto(null, new PartySelf())));
+                .isEqualToIgnoreId(ehrStatus(null, new PartySelf()));
     }
 
     @Test
     void createWithEhrStatus() {
 
         UUID ehrId = UUID.fromString("ac7979e1-c84b-4a3a-affb-716d8651c37d");
-        EhrStatusDto ehrStatusDto = ehrStatusDto(
+        EhrStatus ehrStatusDto = ehrStatus(
                 new HierObjectId("49995d4b-2cff-445c-ae38-579919007a72"),
                 new PartySelf(new PartyRef(new HierObjectId("42"), "some:external_id", "my_type")));
         CreationResult result = runCreateEhr(service(), ehrId, ehrStatusDto);
 
-        verify(validationService, times(1)).check(any(EhrStatusDto.class));
+        verify(validationService, times(1)).check(any(EhrStatus.class));
 
         assertThat(result.ehrId).isEqualTo(ehrId);
         EhrStatusAssert.assertThat(result.ehrStatus)
                 .hasIdRoot()
                 .hasIdExtension("test-ehr-service::1")
-                .isEqualToIgnoreId(EhrStatusMapper.fromDto(ehrStatusDto));
+                .isEqualToIgnoreId(ehrStatusDto);
     }
 
     @Test
     void createWithEhrStatusIdReplaced() {
 
         UUID ehrId = UUID.fromString("64aa777e-942c-45c0-97c9-835a5371025a");
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new HierObjectId("invalid"), null);
+        EhrStatus ehrStatusDto = ehrStatus(new HierObjectId("invalid"), null);
         CreationResult result = runCreateEhr(service(), ehrId, ehrStatusDto);
 
         assertThat(UUID.fromString(result.ehrStatus.getUid().getRoot().getValue()))
@@ -159,7 +163,7 @@ class EhrServiceTest {
     void createWithEhrStatusErrorConflict() {
 
         UUID ehrId = UUID.fromString("35ac68ba-7147-455c-adbc-c31f1faa675b");
-        EhrStatusDto ehrStatusDto = ehrStatusDto(new HierObjectId("invalid"), null);
+        EhrStatus ehrStatusDto = ehrStatus(new HierObjectId("invalid"), null);
         CreationResult result = runCreateEhr(service(), ehrId, ehrStatusDto);
 
         assertThat(UUID.fromString(result.ehrStatus.getUid().getRoot().getValue()))
@@ -170,7 +174,7 @@ class EhrServiceTest {
     void createWithEhrStatusErrorPartyExist() {
 
         UUID ehrId = UUID.fromString("73d7cf5c-03b3-4b57-b689-d7f6be579049");
-        EhrStatusDto ehrStatusDto = ehrStatusDto(
+        EhrStatus ehrStatusDto = ehrStatus(
                 new HierObjectId("20b5cb7a-4431-4524-96ea-56f80bc00496"),
                 new PartySelf(new PartyRef(new HierObjectId("42"), "some:namespace", "some_type")));
 
@@ -190,10 +194,10 @@ class EhrServiceTest {
 
     private record CreationResult(UUID ehrId, EhrStatus ehrStatus) {}
 
-    private CreationResult runCreateEhr(EhrService service, UUID ehrId, EhrStatusDto ehrStatusDto) {
+    private CreationResult runCreateEhr(EhrService service, UUID ehrId, EhrStatus ehrStatusDto) {
 
         ArgumentCaptor<EhrStatus> captor = ArgumentCaptor.forClass(EhrStatus.class);
-        UUID createdEhrId = service.create(ehrId, ehrStatusDto).ehrId();
+        UUID createdEhrId = service.create(ehrId, ehrStatusDto);
 
         verify(ehrRepository, times(1)).commit(eq(createdEhrId), captor.capture(), isNull(), isNull());
         return new CreationResult(
@@ -231,15 +235,13 @@ class EhrServiceTest {
     void getEhrStatus() {
 
         UUID ehrId = UUID.fromString("ce3a8b60-cfba-4081-8583-8113d12a6118");
-        EhrStatusDto ehrStatusDto = ehrStatusDto();
+        EhrStatus ehrStatusDto = ehrStatus();
 
         EhrService service = service();
         doReturn(true).when(ehrRepository).hasEhr(ehrId);
-        doReturn(Optional.of(EhrStatusMapper.fromDto(ehrStatusDto)))
-                .when(ehrRepository)
-                .findHead(ehrId);
+        doReturn(Optional.of(ehrStatusDto)).when(ehrRepository).findHead(ehrId);
 
-        EhrStatusDto ehrStatus = service.getEhrStatus(ehrId).status();
+        EhrStatus ehrStatus = service.getEhrStatus(ehrId);
         assertThat(ehrStatus).isEqualTo(ehrStatusDto);
     }
 
@@ -274,14 +276,14 @@ class EhrServiceTest {
 
         UUID ehrId = UUID.fromString("d783d2f0-0686-4dc0-a04e-0c7272687952");
         UUID statusId = UUID.fromString("d4bab064-23a9-44e5-a7a2-5e62ff00b651");
-        EhrStatusDto ehrStatusDto = ehrStatusDto();
-        OriginalVersion<EhrStatus> expectedVersion = originalVersion(statusId, EhrStatusMapper.fromDto(ehrStatusDto));
+        EhrStatus ehrStatusDto = ehrStatus();
+        OriginalVersion<EhrStatus> expectedVersion = originalVersion(statusId, ehrStatusDto);
         EhrService service = service();
 
         doReturn(true).when(ehrRepository).hasEhr(ehrId);
         doReturn(Optional.of(expectedVersion)).when(ehrRepository).getOriginalVersionStatus(ehrId, statusId, 5);
 
-        OriginalVersion<EhrStatusDto> originalVersion =
+        OriginalVersion<EhrStatus> originalVersion =
                 service.getEhrStatusAtVersion(ehrId, statusId, 5).orElseThrow();
         assertThat(originalVersion.getUid()).isEqualTo(expectedVersion.getUid());
         assertThat(originalVersion.getData()).isEqualTo(ehrStatusDto);
@@ -292,7 +294,7 @@ class EhrServiceTest {
 
         UUID ehrId = UUID.fromString("ccf560ea-06dd-4c0b-815f-89b076de674a");
         ObjectVersionId ifMatch = new ObjectVersionId("10a0ec8e-c459-4a28-bad4-fbdc03593ac1", "some-system", "7");
-        EhrStatusDto ehrStatusDto = ehrStatusDto(ifMatch, null);
+        EhrStatus ehrStatusDto = ehrStatus(ifMatch, null);
         EhrService service = service();
 
         doThrow(new ObjectNotFoundException("EHR", "Test"))
@@ -308,13 +310,13 @@ class EhrServiceTest {
 
         UUID ehrId = UUID.fromString("ccf560ea-06dd-4c0b-815f-89b076de674a");
         ObjectVersionId ifMatch = new ObjectVersionId("10a0ec8e-c459-4a28-bad4-fbdc03593ac1", "some-system", "7");
-        EhrStatusDto ehrStatusDto = ehrStatusDto(ifMatch, null);
+        EhrStatus ehrStatusDto = ehrStatus(ifMatch, null);
         EhrService service = service();
 
-        doReturn(true).when(ehrRepository).hasEhr(ehrId);
+        doReturn(Optional.of(ehrStatusDto)).when(ehrRepository).findHead(ehrId);
 
-        EhrService.EhrResult ehrResult = service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null);
-        ObjectVersionId versionId = ehrResult.statusVersionId();
+        EhrStatus ehrResult = service.updateStatus(ehrId, ehrStatusDto, ifMatch, null, null);
+        ObjectVersionId versionId = (ObjectVersionId) ehrResult.getUid();
 
         verify(validationService, times(1)).check(ehrStatusDto);
         verify(ehrRepository, times(1)).update(eq(ehrId), any(), isNull(), isNull());

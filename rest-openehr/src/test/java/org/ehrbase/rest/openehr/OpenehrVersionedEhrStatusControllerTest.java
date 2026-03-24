@@ -24,8 +24,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
-import com.nedap.archie.rm.changecontrol.VersionedObject;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.ehr.VersionedEhrStatus;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.generic.RevisionHistoryItem;
 import com.nedap.archie.rm.support.identification.HierObjectId;
@@ -34,19 +35,12 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import org.ehrbase.api.dto.EhrStatusDto;
-import org.ehrbase.api.dto.VersionedEhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.EhrService;
-import org.ehrbase.openehr.sdk.response.dto.OriginalVersionResponseData;
-import org.ehrbase.openehr.sdk.response.dto.RevisionHistoryResponseData;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.ContributionDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,12 +55,10 @@ class OpenehrVersionedEhrStatusControllerTest {
 
     private final EhrService mockEhrService = mock();
 
-    private final ContributionService mockContributionService = mock();
-
-    private final EhrStatusDto mockEhrStatus = mock();
+    private final EhrStatus mockEhrStatus = mock();
 
     private final OpenehrVersionedEhrStatusController spyController =
-            spy(new OpenehrVersionedEhrStatusController(mockEhrService, mockContributionService));
+            spy(new OpenehrVersionedEhrStatusController(mockEhrService));
 
     @BeforeEach
     void setUp() {
@@ -97,21 +89,21 @@ class OpenehrVersionedEhrStatusControllerTest {
     void retrieveVersionedEhrStatusByEhr() {
 
         UUID ehrId = UUID.fromString("8994182c-517d-43d2-addf-f5abbf07cef2");
-        VersionedObject<Object> versionedObject = new VersionedObject<>(
+        VersionedEhrStatus versionedObject = new VersionedEhrStatus(
                 new HierObjectId("337167e4-f325-47c1-8e9b-e9fb9fd136df::test::42"),
                 new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"),
                 new DvDateTime(OffsetDateTime.parse("2024-07-16T15:20:00Z")));
 
         doReturn(versionedObject).when(mockEhrService).getVersionedEhrStatus(ehrId);
-        ResponseEntity<VersionedEhrStatusDto> response = controller().retrieveVersionedEhrStatusByEhr(ehrId.toString());
+        ResponseEntity<VersionedEhrStatus> response = controller().retrieveVersionedEhrStatusByEhr(ehrId.toString());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        VersionedEhrStatusDto body = response.getBody();
+        VersionedEhrStatus body = response.getBody();
         assertThat(body).isNotNull();
-        assertThat(body.uid()).isEqualTo(versionedObject.getUid());
-        assertThat(body.ownerId()).isEqualTo(versionedObject.getOwnerId());
-        assertThat(OffsetDateTime.parse(body.timeCreated()).toInstant())
+        assertThat(body.getUid()).isEqualTo(versionedObject.getUid());
+        assertThat(body.getOwnerId()).isEqualTo(versionedObject.getOwnerId());
+        assertThat(OffsetDateTime.from(body.getTimeCreated().getValue()).toInstant())
                 .isEqualTo(Instant.from(versionedObject.getTimeCreated().getValue()));
     }
 
@@ -133,14 +125,11 @@ class OpenehrVersionedEhrStatusControllerTest {
                 new ObjectVersionId("ae668b81-9d73-4a49-befa-9e18cb1b83cd::test::42"), List.of()));
 
         doReturn(revisionHistory).when(mockEhrService).getRevisionHistoryOfVersionedEhrStatus(ehrId);
-        ResponseEntity<RevisionHistoryResponseData> response =
+        ResponseEntity<RevisionHistory> response =
                 controller().retrieveVersionedEhrStatusRevisionHistoryByEhr(ehrId.toString());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-
-        RevisionHistoryResponseData body = response.getBody();
-        assertThat(body).isNotNull();
-        assertThat(body.getRevisionHistory()).isEqualTo(revisionHistory);
+        assertThat(response.getBody()).isEqualTo(revisionHistory);
     }
 
     @Test
@@ -200,14 +189,13 @@ class OpenehrVersionedEhrStatusControllerTest {
     }
 
     private void runRetrieveOriginalVersionTest(
-            BiFunction<UUID, OriginalVersion<EhrStatusDto>, ResponseEntity<OriginalVersionResponseData<EhrStatusDto>>>
-                    invocation) {
+            BiFunction<UUID, OriginalVersion<EhrStatus>, ResponseEntity<OriginalVersion<EhrStatus>>> invocation) {
 
         UUID ehrId = UUID.fromString("77c7df3a-fe41-41e1-9ccd-f1140c2f54b4");
         ObjectVersionId objectVersionId = new ObjectVersionId("337167e4-f325-47c1-8e9b-e9fb9fd136df", "test", "42");
         HierObjectId contributionId = new HierObjectId("f23c4a76-4a76-46c0-8e85-a0d1591d5195");
 
-        OriginalVersion<EhrStatusDto> originalVersion = new OriginalVersion<>();
+        OriginalVersion<EhrStatus> originalVersion = new OriginalVersion<>();
         originalVersion.setUid(objectVersionId);
         originalVersion.setData(mockEhrStatus);
         originalVersion.setContribution(new ObjectRef<>(contributionId, "namespace", "EHR_STATUS"));
@@ -220,18 +208,14 @@ class OpenehrVersionedEhrStatusControllerTest {
                         UUID.fromString(objectVersionId.getObjectId().getValue()),
                         Integer.parseInt(objectVersionId.getVersionTreeId().getValue()));
 
-        ContributionDto contribution = new ContributionDto(
-                UUID.fromString(originalVersion.getContribution().getId().getValue()), Map.of(), null);
-        doReturn(contribution).when(mockContributionService).getContribution(ehrId, contribution.getUuid());
-
-        ResponseEntity<OriginalVersionResponseData<EhrStatusDto>> response = invocation.apply(ehrId, originalVersion);
+        ResponseEntity<OriginalVersion<EhrStatus>> response = invocation.apply(ehrId, originalVersion);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-        OriginalVersionResponseData<EhrStatusDto> body = response.getBody();
+        OriginalVersion<EhrStatus> body = response.getBody();
         assertThat(body).isNotNull();
-        assertThat(body.getVersionId()).isEqualTo(objectVersionId);
+        assertThat(body.getUid()).isEqualTo(objectVersionId);
         assertThat(body.getData()).isSameAs(originalVersion.getData());
-        assertThat(body.getContribution().getUid()).isEqualTo(contributionId);
+        assertThat(body.getContribution().getId()).isEqualTo(contributionId);
     }
 }

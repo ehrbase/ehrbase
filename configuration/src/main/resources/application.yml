@@ -86,6 +86,7 @@ ehrbase:
   validation:
     check-for-extra-nodes: true
     validate-rm-constraints: true
+    validate-folders: true
   aql:
     # Improves AQL performance for paths containing consecutive at-/id-codes
     # May produce unexpected results if the paths do not follow the archetype definitions
@@ -176,7 +177,8 @@ server:
 management:
   endpoints:
     # Disable all endpoint by default to opt-in enabled endpoints
-    enabled-by-default: false
+    access:
+      default: none
     web:
       base-path: '/management'
       exposure:
@@ -191,27 +193,24 @@ management:
     # Env endpoint - Shows information on environment of EHRbase
     env:
       # Enable / disable env endpoint
-      enabled: false
+      access: none
     # Health endpoint - Shows information on system status
     health:
       # Enable / disable health endpoint
-      enabled: false
+      access: none
       # Show components in health endpoint. Can be "never", "when-authorized" or "always"
       show-components: 'when-authorized'
       # Show details in health endpoint. Can be "never", "when-authorized" or "always"
       show-details: 'when-authorized'
       # Show additional information on used systems. See https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready-health-indicators for available keys
-      datasource:
-        # Enable / disable report if datasource connection could be established
-        enabled: true
     # Info endpoint - Shows information on the application as build infor, etc.
     info:
       # Enable / disable info endpoint
-      enabled: false
+      access: none
     # Metrics endpoint - Shows several metrics on running EHRbase
     metrics:
       # Enable / disable metrics endpoint
-      enabled: false
+      access: none
   # Prometheus metric endpoint - Special metrics format to display in microservice observer solutions
   prometheus:
     metrics:

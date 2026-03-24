@@ -37,7 +37,9 @@ project on a live system.
 
 ### Prerequisites
 
-You will need Java JDK/JRE 21 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
+You will need Java JDK/JRE 25 (preferably openJDK: e.g. from https://adoptopenjdk.net/)
+
+Docker is required to build EHRbase.
 
 You will need a Postgres Database (at least Version 15 or higher, Version 16 recommended) (Docker image or local installation).
 We recommend the Docker image to get started quickly.
@@ -45,8 +47,6 @@ We recommend the Docker image to get started quickly.
 ### Installing
 
 #### 1. Setup database
-
-> NOTE: Building EHRbase requires a properly set-up and running DB for the following steps.
 
 Run `./createdb.sql` as `postgres` User.
 

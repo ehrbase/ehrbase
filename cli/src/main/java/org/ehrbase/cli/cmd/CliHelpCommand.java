@@ -39,8 +39,7 @@ public class CliHelpCommand extends CliCommand {
 
     @Override
     protected void printUsage() {
-        println(
-                """
+        println("""
                 Run with subcommand
 
                 cli [sub-command] [arguments]

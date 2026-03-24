@@ -27,15 +27,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-import com.nedap.archie.rm.datavalues.DvText;
-import com.nedap.archie.rm.generic.PartySelf;
+import com.nedap.archie.rm.ehr.Ehr;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import org.ehrbase.api.dto.EhrDto;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
@@ -76,21 +74,9 @@ class OpenehrEhrControllerTest {
         return spyController;
     }
 
-    private EhrService.EhrResult createResult(UUID ehrId) {
-        return new EhrService.EhrResult(ehrId, null, ehrStatusDto());
-    }
-
-    private EhrStatusDto ehrStatusDto() {
-        return new EhrStatusDto(
-                null,
-                "openEHR-EHR-EHR_STATUS.generic.v1",
-                new DvText("EHR Status"),
-                null,
-                null,
-                new PartySelf(),
-                true,
-                true,
-                null);
+    private EhrStatus ehrStatus() {
+        return OpenehrEhrStatusControllerTest.ehrStatus(
+                new ObjectVersionId(UUID.randomUUID().toString(), "system", "1"), true, true);
     }
 
     @ParameterizedTest
@@ -98,8 +84,8 @@ class OpenehrEhrControllerTest {
     void createEhr(String prefer) {
 
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
-        runCreateTest(ehrId, ehrStatusDto(), prefer, () -> {
-            when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
+        runCreateTest(ehrId, ehrStatus(), prefer, () -> {
+            when(mockEhrService.create(isNull(), any())).thenReturn(ehrId);
             return controller().createEhr("1.0.3", null, prefer, null);
         });
     }
@@ -108,10 +94,10 @@ class OpenehrEhrControllerTest {
     @ValueSource(strings = {"", "return=minimal", "return=representation"})
     void createEhrWithStatus(String prefer) {
 
-        var ehrStatus = ehrStatusDto();
+        var ehrStatus = ehrStatus();
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
-            when(mockEhrService.create(isNull(), any())).thenReturn(createResult(ehrId));
+            when(mockEhrService.create(isNull(), any())).thenReturn(ehrId);
             return controller().createEhr("1.0.3", null, prefer, ehrStatus);
         });
     }
@@ -121,8 +107,8 @@ class OpenehrEhrControllerTest {
     void createEhrWithId(String prefer) {
 
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
-        runCreateTest(ehrId, ehrStatusDto(), prefer, () -> {
-            when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
+        runCreateTest(ehrId, ehrStatus(), prefer, () -> {
+            when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
             return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null);
         });
     }
@@ -132,9 +118,9 @@ class OpenehrEhrControllerTest {
     void createEhrWithIdIdAndStatus(String prefer) {
 
         UUID ehrId = UUID.fromString("2eee20ea-67cc-449f-95bc-1dbdf6d3d0c1");
-        var ehrStatus = ehrStatusDto();
+        var ehrStatus = ehrStatus();
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
-            when(mockEhrService.create(eq(ehrId), any())).thenReturn(createResult(ehrId));
+            when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
             return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), ehrStatus);
         });
     }
@@ -148,12 +134,9 @@ class OpenehrEhrControllerTest {
                 .hasMessage("EHR ID format not a UUID");
     }
 
-    private void runCreateTest(
-            UUID ehrId, EhrStatusDto ehrStatus, String prefer, Supplier<ResponseEntity<EhrDto>> creation) {
+    private void runCreateTest(UUID ehrId, EhrStatus ehrStatus, String prefer, Supplier<ResponseEntity<Ehr>> creation) {
 
-        doReturn(new EhrService.EhrResult(ehrId, ((ObjectVersionId) ehrStatus.uid()), ehrStatus))
-                .when(mockEhrService)
-                .getEhrStatus(ehrId);
+        doReturn(ehrStatus).when(mockEhrService).getEhrStatus(ehrId);
 
         var response = creation.get();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -193,9 +176,9 @@ class OpenehrEhrControllerTest {
     void getEhrBy() {
 
         UUID ehrId = UUID.fromString("0c1f9fce-05bd-4f6f-a558-fc27a2140795");
-        var ehrStatus = ehrStatusDto();
+        var ehrStatus = ehrStatus();
 
-        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(new EhrService.EhrResult(ehrId, null, ehrStatus));
+        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(ehrStatus);
 
         var response = controller().getEhrById(ehrId.toString());
         assertEhrResponseData(response, ehrId, ehrStatus);
@@ -216,16 +199,16 @@ class OpenehrEhrControllerTest {
     void getEhrBySubject() {
 
         UUID ehrId = UUID.fromString("d2c04bbd-fbd5-4a39-ade3-848a336037ed");
-        var ehrStatus = ehrStatusDto();
+        var ehrStatusDto = ehrStatus();
 
         when(mockEhrService.findBySubject("test_subject", "some:external:id")).thenReturn(Optional.of(ehrId));
-        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(new EhrService.EhrResult(ehrId, null, ehrStatus));
+        when(mockEhrService.getEhrStatus(ehrId)).thenReturn(ehrStatusDto);
 
         var response = controller().getEhrBySubject("test_subject", "some:external:id");
-        assertEhrResponseData(response, ehrId, ehrStatus);
+        assertEhrResponseData(response, ehrId, ehrStatusDto);
     }
 
-    private static void assertEhrResponseData(ResponseEntity<EhrDto> response, UUID ehrId, EhrStatusDto ehrStatus) {
+    private static void assertEhrResponseData(ResponseEntity<Ehr> response, UUID ehrId, EhrStatus ehrStatus) {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/ehr/" + ehrId));
@@ -233,10 +216,10 @@ class OpenehrEhrControllerTest {
         assertResponseDataBody(response, ehrId, ehrStatus);
     }
 
-    private static void assertResponseDataBody(ResponseEntity<EhrDto> response, UUID ehrId, EhrStatusDto ehrStatus) {
-        EhrDto body = response.getBody();
+    private static void assertResponseDataBody(ResponseEntity<Ehr> response, UUID ehrId, EhrStatus ehrStatus) {
+        Ehr body = response.getBody();
         assertThat(body).isNotNull();
-        assertThat(body.ehrId().getValue()).isEqualTo(ehrId.toString());
-        assertThat(body.ehrStatus()).isSameAs(ehrStatus);
+        assertThat(body.getEhrId().getValue()).isEqualTo(ehrId.toString());
+        assertThat(body.getEhrStatus().getId()).isSameAs(ehrStatus.getUid());
     }
 }

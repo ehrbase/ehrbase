@@ -64,6 +64,8 @@ public final class DbToRmFormat {
 
     public static final String FEEDER_AUDIT_ATTRIBUTE_ALIAS = "f";
 
+    public static final String UID_ALIAS = "U";
+
     private static final Comparator<CharSequence> SIMPLE_CHAR_SEQUENCE_COMPARATOR = (cs1, cs2) -> {
         if (cs1 instanceof String s1 && cs2 instanceof String s2) {
             return s1.compareTo(s2);

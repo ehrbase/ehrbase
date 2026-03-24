@@ -21,6 +21,8 @@ import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rmobjectvalidator.APathQueryCache;
@@ -37,23 +39,23 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
-import org.ehrbase.api.dto.EhrStatusDto;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
-import org.ehrbase.openehr.sdk.validation.CompositionValidator;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
+import org.ehrbase.openehr.sdk.validation.LocatableValidator;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.service.validation.ValidationProperties;
+import org.ehrbase.util.FolderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -73,8 +75,9 @@ public class ValidationServiceImp implements ValidationService {
     private final KnowledgeCacheServiceImp knowledgeCacheService;
 
     private final TerminologyService terminologyService;
+    private final boolean folderValidationEnabled;
 
-    private final ThreadLocal<CompositionValidator> compositionValidator;
+    private final ThreadLocal<LocatableValidator> locatableValidator;
 
     private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
 
@@ -86,6 +89,7 @@ public class ValidationServiceImp implements ValidationService {
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
+        this.folderValidationEnabled = validationProperties.validateFolders();
 
         boolean disableStrictValidation = !validationProperties.validateRmConstraints();
         if (disableStrictValidation) {
@@ -104,24 +108,24 @@ public class ValidationServiceImp implements ValidationService {
             logger.warn("shared RMPathQueryCache is disabled");
             delegator = null;
         }
-        compositionValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
+        locatableValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
                 objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
     }
 
-    private static CompositionValidator createCompositionValidator(
+    private static LocatableValidator createCompositionValidator(
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
             APathQueryCache delegator,
             boolean checkForChildrenNotInTemplate) {
-        CompositionValidator validator =
-                new CompositionValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
+        LocatableValidator validator =
+                new LocatableValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
 
         setSharedAPathQueryCache(validator, delegator);
         return validator;
     }
 
-    private static void setSharedAPathQueryCache(CompositionValidator validator, APathQueryCache delegator) {
+    private static void setSharedAPathQueryCache(LocatableValidator validator, APathQueryCache delegator) {
         if (delegator == null) {
             return;
         }
@@ -169,7 +173,7 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // Validate the composition based on WebTemplate
-        List<ConstraintViolation> violations = compositionValidator.get().validate(composition, webTemplate);
+        List<ConstraintViolation> violations = locatableValidator.get().validate(composition, webTemplate);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
@@ -190,33 +194,31 @@ public class ValidationServiceImp implements ValidationService {
     }
 
     @Override
-    public void check(EhrStatusDto ehrStatus) {
+    public void check(Folder folder) {
+        FolderUtils.checkSiblingNameConflicts(folder);
+
+        if (folderValidationEnabled) {
+            List<ConstraintViolation> result = locatableValidator.get().validate(folder);
+            if (!result.isEmpty()) {
+                throw new ConstraintViolationException(result);
+            }
+        }
+    }
+
+    @Override
+    public void check(EhrStatus ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
-        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
-        List<RMObjectValidationMessage> validationIssues = Stream.of(
-                        // RM-DTO required
-                        require(ehrStatus.type(), "/subject", "subject", ehrStatus.subject()),
-                        require(ehrStatus.type(), "/is_queryable", "is_queryable", ehrStatus.isQueryable()),
-                        require(ehrStatus.type(), "/is_modifiable", "is_modifiable", ehrStatus.isModifiable()),
-                        // rm validation
-                        validate(rmObjectValidator, "/uid", ehrStatus.uid()),
-                        validate(rmObjectValidator, "/name", ehrStatus.name()),
-                        validate(rmObjectValidator, "/subject", ehrStatus.subject()),
-                        validate(rmObjectValidator, "/archetype_details", ehrStatus.archetypeDetails()),
-                        validate(rmObjectValidator, "/feeder_audit", ehrStatus.feederAudit()),
-                        validate(rmObjectValidator, "/other_details", ehrStatus.otherDetails()),
-                        // additional checks
-                        matches(
-                                ehrStatus.type(),
-                                "/subject/external_ref/namespace",
-                                "namespace",
-                                NAMESPACE_PATTERN,
-                                Optional.ofNullable(ehrStatus.subject())
-                                        .map(PartyProxy::getExternalRef)
-                                        .map(PartyRef::getNamespace)))
-                .flatMap(Collection::stream)
-                .toList();
+        List<RMObjectValidationMessage> validationIssues =
+                validate(locatableValidator.get().getRmObjectValidator(), "", ehrStatus);
+        validationIssues.addAll(matches(
+                RmConstants.EHR_STATUS,
+                "/subject/external_ref/namespace",
+                "namespace",
+                NAMESPACE_PATTERN,
+                Optional.ofNullable(ehrStatus.getSubject())
+                        .map(PartyProxy::getExternalRef)
+                        .map(PartyRef::getNamespace)));
 
         if (!validationIssues.isEmpty()) {
             throw new ValidationException(
@@ -228,7 +230,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(ContributionCreateDto contribution) {
 
         // first, check the built EhrStatus using the general Archie RM-Validator
-        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
+        RMObjectValidator rmObjectValidator = locatableValidator.get().getRmObjectValidator();
 
         // UID does not have to be validated
 
@@ -298,20 +300,7 @@ public class ValidationServiceImp implements ValidationService {
                         msg.getHumanReadableArchetypePath(),
                         msg.getMessage(),
                         msg.getType()))
-                .toList();
-    }
-
-    private static List<RMObjectValidationMessage> require(String type, String path, String attr, Object value) {
-        if (value == null) {
-            return List.of(new RMObjectValidationMessage(
-                    path,
-                    null,
-                    null,
-                    path,
-                    "Attribute %s of class %s does not match existence 1..1".formatted(attr, type),
-                    RMObjectValidationMessageType.REQUIRED));
-        }
-        return List.of();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private static List<RMObjectValidationMessage> matches(

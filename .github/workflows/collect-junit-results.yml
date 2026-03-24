@@ -35,7 +35,7 @@ jobs:
       # Download report separately because the dorny/test-reporter is not compatible with
       # actions/[upload/download]-artifact@v4 https://github.com/dorny/test-reporter/issues/363
       - name: Download - Unit Reports
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           github-token: ${{ secrets.BOT_ACCESS_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }} # download artifacts from build and test workflow
@@ -44,7 +44,7 @@ jobs:
           path: ./
 
       - name: Collect - JUnit Reports
-        uses: dorny/test-reporter@v2
+        uses: dorny/test-reporter@v3
         # Dependabot has not enough rights to add the report to the run.
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:

@@ -85,13 +85,10 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|90867c82-8498-4536-b2b6-16ea4e62818f
             COMPOSITION|6d4622d6-ecbb-456a-981a-59423a374a2e
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void bulkUpsertEhrNotExistError(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
@@ -147,13 +144,10 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|1a598f7a-fbc2-4762-9fae-6480390b9bb5
             COMPOSITION|9448b3b8-866f-4415-97d2-d5605a553e45
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void bulkUpsert(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
@@ -188,13 +182,10 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|422f7ddf-5646-4db8-b984-2df23d5021da
             COMPOSITION|6d4622d6-ecbb-456a-981a-59423a374a2e
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void findEhrNotExistError(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
@@ -205,13 +196,10 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|90867c82-8498-4536-b2b6-16ea4e62818f|tag::1
             COMPOSITION|7eb105ca-d671-4220-9103-d08db0403dc0|tag::2
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void findItemByTag(String type, String targetId, String key) {
 
         UUID target = UUID.fromString(targetId);
@@ -242,13 +230,10 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|422f7ddf-5646-4db8-b984-2df23d5021da
             COMPOSITION|6d4622d6-ecbb-456a-981a-59423a374a2e
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void bulkDeleteEhrNotExistError(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
@@ -260,13 +245,10 @@ class ItemTagServiceTest {
     }
 
     @ParameterizedTest
-    @CsvSource(
-            textBlock =
-                    """
+    @CsvSource(textBlock = """
             EHR_STATUS|b84b5a08-e6fa-4988-b40a-82f162a8f068
             COMPOSITION|f1251117-66e2-49e5-884b-c69641ad36e3
-            """,
-            delimiterString = "|")
+            """, delimiterString = "|")
     void bulkDelete(String type, String targetId) {
 
         UUID target = UUID.fromString(targetId);
@@ -329,10 +311,7 @@ class ItemTagServiceTest {
     void validTagValue() {
 
         assertDoesNotThrow(() -> ItemTagServiceImpl.validateTagValue("key", "Some tag, lorem ipsum? Dolor et amer!"));
-        assertDoesNotThrow(
-                () -> ItemTagServiceImpl.validateTagValue(
-                        "key",
-                        """
+        assertDoesNotThrow(() -> ItemTagServiceImpl.validateTagValue("key", """
                 {
                     "could": "also be json"
                 }

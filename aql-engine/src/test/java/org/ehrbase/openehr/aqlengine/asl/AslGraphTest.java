@@ -38,8 +38,7 @@ class AslGraphTest {
     @Disabled
     void printDataQueryGraph() {
 
-        AqlQuery aqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery aqlQuery = AqlQueryParser.parse("""
                 SELECT
                   -- c1/content[openEHR-EHR-SECTION.adhoc.v1],
                   -- c1/content[openEHR-EHR-SECTION.adhoc.v1]/name,
@@ -69,8 +68,7 @@ class AslGraphTest {
     }
 
     private String createSampleGraph() {
-        AqlQuery sampleAqlQuery = AqlQueryParser.parse(
-                """
+        AqlQuery sampleAqlQuery = AqlQueryParser.parse("""
              SELECT
              c/uid/value AS compositionID,
              c/context/start_time AS startTime,

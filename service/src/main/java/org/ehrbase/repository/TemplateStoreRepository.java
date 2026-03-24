@@ -39,6 +39,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.ehrbase.service.TimeProvider;
+import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.Record2;
 import org.jooq.Record3;
@@ -58,7 +59,7 @@ public class TemplateStoreRepository {
 
     public TemplateMetaData store(OPERATIONALTEMPLATE operationaltemplate) {
         TemplateStoreRecord templateStoreRecord = context.newRecord(TEMPLATE_STORE);
-        setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(UUID.randomUUID()));
+        setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(UuidGenerator.randomUUID()));
         templateStoreRecord.setCreationTime(timeProvider.getNow());
         templateStoreRecord.store();
         return TemplateStoreRepository.buildMetadata(

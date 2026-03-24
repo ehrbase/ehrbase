@@ -18,17 +18,15 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import org.ehrbase.api.dto.EhrStatusDto;
+import com.nedap.archie.rm.directory.Folder;
+import com.nedap.archie.rm.ehr.EhrStatus;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 
 /**
  * ValidationService
  * <p>
- * performs a composition validation based on the constraints defined in a 1.4 operational template
- * The service is a wrapper of Validator and use a cache to optimize validation since the
- * construction of the constraints is somewhat resource intensive. The validation constraints are
- * maintained into a standard java cache. The service uses KnowledgeCache to retrieve operational
- * templates.
+ * Performs RM Object validation,
+ * Composition validation is based on the constraints defined in a 1.4 operational template.
  */
 public interface ValidationService {
 
@@ -40,13 +38,15 @@ public interface ValidationService {
      */
     void check(Composition composition);
 
+    void check(Folder folder);
+
     /**
      * Initially check if <code>ehrStatus</code> is valid for further processing.
      *
      * @param ehrStatus to validate
      * @throws IllegalArgumentException in case the given <code>ehrStatus</code> is invalid.
      */
-    void check(EhrStatusDto ehrStatus);
+    void check(EhrStatus ehrStatus);
 
     /**
      * Initially check if <code>contribution</code> is valid for further processing.
