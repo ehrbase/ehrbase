@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2026 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -15,10 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.service.validation;
+package org.ehrbase.api.exception;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+/**
+ * Project-custom exception that allows outbound APIs to react on missing resource data. Shall be thrown to invoke
+ * status 410 "Gone".
+ */
+public class ResourceGoneException extends RuntimeException {
 
-@ConfigurationProperties(prefix = "ehrbase.validation")
-public record ValidationProperties(
-        boolean validateRmConstraints, boolean checkForExtraNodes, boolean validateFolders) {}
+    public ResourceGoneException(String message) {
+        super(message);
+    }
+
+    public ResourceGoneException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ResourceGoneException(Throwable cause) {
+        super(cause.getMessage(), cause);
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 vitasystems GmbH.
+ * Copyright (c) 2026 vitasystems GmbH.
  *
  * This file is part of project EHRbase
  *
@@ -7,18 +7,17 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
+ * See the License for the specific LANGUAGE governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.service.validation;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "ehrbase.validation")
-public record ValidationProperties(
-        boolean validateRmConstraints, boolean checkForExtraNodes, boolean validateFolders) {}
+UPDATE ehr_folder_data
+SET data = data || '{"A":"openEHR-EHR-FOLDER.generic.v1"}'::jsonb,
+    entity_concept = '.generic.v1'
+WHERE entity_concept IS NULL AND rm_entity='F';

@@ -22,7 +22,7 @@ import java.util.EnumMap;
 import java.util.UUID;
 import org.jooq.Record3;
 
-public class ObjectVersionHistoryRecordPrototype extends AbstractRecordPrototype<ObjectVersionHistoryRecordPrototype> {
+public class ObjectHistoryRecordPrototype extends AbstractRecordPrototype<ObjectHistoryRecordPrototype> {
 
     private static final long serialVersionUID = 1L;
     static final EnumMap<FieldPrototype, Integer> COLUMNS = determineColumns(true, false);
@@ -91,6 +91,22 @@ public class ObjectVersionHistoryRecordPrototype extends AbstractRecordPrototype
         return (Boolean) get(FieldPrototype.SYS_DELETED);
     }
 
+    public void setOvData(String value) {
+        set(FieldPrototype.OV_DATA, value);
+    }
+
+    public String getOvData() {
+        return (String) get(FieldPrototype.OV_DATA);
+    }
+
+    public void setOvRef(Integer value) {
+        set(FieldPrototype.OV_REF, value);
+    }
+
+    public Integer getOvRef() {
+        return (Integer) get(FieldPrototype.OV_REF);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -104,11 +120,11 @@ public class ObjectVersionHistoryRecordPrototype extends AbstractRecordPrototype
     // Constructors
     // -------------------------------------------------------------------------
 
-    public ObjectVersionHistoryRecordPrototype() {
-        super(ObjectVersionHistoryTablePrototype.INSTANCE);
+    public ObjectHistoryRecordPrototype() {
+        super(ObjectHistoryTablePrototype.INSTANCE);
     }
 
-    public ObjectVersionHistoryRecordPrototype(
+    public ObjectHistoryRecordPrototype(
             UUID voId,
             UUID ehrId,
             UUID contributionId,
@@ -116,9 +132,11 @@ public class ObjectVersionHistoryRecordPrototype extends AbstractRecordPrototype
             Integer sysVersion,
             OffsetDateTime sysPeriodLower,
             OffsetDateTime sysPeriodUpper,
-            Boolean sysDeleted) {
+            Boolean sysDeleted,
+            String ovData,
+            Integer ovRef) {
         super(
-                ObjectVersionHistoryTablePrototype.INSTANCE,
+                ObjectHistoryTablePrototype.INSTANCE,
                 voId,
                 ehrId,
                 contributionId,
@@ -126,7 +144,9 @@ public class ObjectVersionHistoryRecordPrototype extends AbstractRecordPrototype
                 sysVersion,
                 sysPeriodLower,
                 sysPeriodUpper,
-                sysDeleted);
+                sysDeleted,
+                ovData,
+                ovRef);
     }
 
     @Override

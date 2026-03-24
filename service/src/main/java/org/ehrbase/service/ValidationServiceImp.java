@@ -21,6 +21,7 @@ import com.nedap.archie.query.RMPathQuery;
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.PartyRef;
@@ -54,6 +55,7 @@ import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.service.validation.ValidationProperties;
+import org.ehrbase.util.FolderUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -73,8 +75,9 @@ public class ValidationServiceImp implements ValidationService {
     private final KnowledgeCacheServiceImp knowledgeCacheService;
 
     private final TerminologyService terminologyService;
+    private final boolean folderValidationEnabled;
 
-    private final ThreadLocal<LocatableValidator> compositionValidator;
+    private final ThreadLocal<LocatableValidator> locatableValidator;
 
     private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
 
@@ -86,6 +89,7 @@ public class ValidationServiceImp implements ValidationService {
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.knowledgeCacheService = knowledgeCacheService;
         this.terminologyService = terminologyService;
+        this.folderValidationEnabled = validationProperties.validateFolders();
 
         boolean disableStrictValidation = !validationProperties.validateRmConstraints();
         if (disableStrictValidation) {
@@ -104,7 +108,7 @@ public class ValidationServiceImp implements ValidationService {
             logger.warn("shared RMPathQueryCache is disabled");
             delegator = null;
         }
-        compositionValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
+        locatableValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
                 objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
     }
 
@@ -169,7 +173,7 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // Validate the composition based on WebTemplate
-        List<ConstraintViolation> violations = compositionValidator.get().validate(composition, webTemplate);
+        List<ConstraintViolation> violations = locatableValidator.get().validate(composition, webTemplate);
         if (!violations.isEmpty()) {
             throw new ConstraintViolationException(violations);
         }
@@ -190,11 +194,23 @@ public class ValidationServiceImp implements ValidationService {
     }
 
     @Override
+    public void check(Folder folder) {
+        FolderUtils.checkSiblingNameConflicts(folder);
+
+        if (folderValidationEnabled) {
+            List<ConstraintViolation> result = locatableValidator.get().validate(folder);
+            if (!result.isEmpty()) {
+                throw new ConstraintViolationException(result);
+            }
+        }
+    }
+
+    @Override
     public void check(EhrStatus ehrStatus) {
 
         // second, additional specific checks and other mandatory attributes
         List<RMObjectValidationMessage> validationIssues =
-                validate(compositionValidator.get().getRmObjectValidator(), "", ehrStatus);
+                validate(locatableValidator.get().getRmObjectValidator(), "", ehrStatus);
         validationIssues.addAll(matches(
                 RmConstants.EHR_STATUS,
                 "/subject/external_ref/namespace",
@@ -214,7 +230,7 @@ public class ValidationServiceImp implements ValidationService {
     public void check(ContributionCreateDto contribution) {
 
         // first, check the built EhrStatus using the general Archie RM-Validator
-        RMObjectValidator rmObjectValidator = compositionValidator.get().getRmObjectValidator();
+        RMObjectValidator rmObjectValidator = locatableValidator.get().getRmObjectValidator();
 
         // UID does not have to be validated
 

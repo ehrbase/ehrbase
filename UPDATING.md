@@ -25,6 +25,14 @@ This file documents any backwards-incompatible changes in EHRBase and assists us
 - `List stored queries` now directly returns an array of queries.
 - Each entry now also contains an attribute `q` with the plain (AQL) query.
 
+### History DB Model
+The new data model for history data requires a full migration of the history tables, which may take a while.
+
+### DIRECTORY Validation
+- The RM constraints of directories are now validated by default. To restore the previous behaviour set `ehrbase.validation.validate-folders=false`.
+- During migration, missing `archetype_node_id`s are added to `FOLDER` entries, which may take a while.
+
+
 ## EHRbase 2.21.0
 
 In AQL queries CONTAINS expressions with a node predicate now exclude results from nested archetypes.

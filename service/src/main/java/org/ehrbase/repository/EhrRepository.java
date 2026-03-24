@@ -19,7 +19,6 @@ package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.EHR_;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA;
-import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_DATA_HISTORY;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION;
 import static org.ehrbase.jooq.pg.Tables.EHR_STATUS_VERSION_HISTORY;
 
@@ -35,13 +34,15 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.jooq.pg.tables.EhrStatusData;
+import org.ehrbase.jooq.pg.tables.EhrStatusVersion;
+import org.ehrbase.jooq.pg.tables.EhrStatusVersionHistory;
 import org.ehrbase.jooq.pg.tables.records.EhrRecord;
-import org.ehrbase.jooq.pg.tables.records.EhrStatusDataHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusDataRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionHistoryRecord;
 import org.ehrbase.jooq.pg.tables.records.EhrStatusVersionRecord;
@@ -62,11 +63,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public class EhrRepository
         extends AbstractVersionedObjectRepository<
-                EhrStatusVersionRecord,
-                EhrStatusDataRecord,
-                EhrStatusVersionHistoryRecord,
-                EhrStatusDataHistoryRecord,
-                EhrStatus> {
+                EhrStatusVersionRecord, EhrStatusDataRecord, EhrStatusVersionHistoryRecord, EhrStatus, Void> {
 
     public static final String[] IS_MODIFIABLE_JSON_PATH = RmAttributeAlias.rmToJsonPathParts("is_modifiable");
     public static final String[] SUBJECT_ID_JSON_PATH =
@@ -85,7 +82,6 @@ public class EhrRepository
                 EHR_STATUS_VERSION,
                 EHR_STATUS_DATA,
                 EHR_STATUS_VERSION_HISTORY,
-                EHR_STATUS_DATA_HISTORY,
                 context,
                 contributionRepository,
                 systemService,
@@ -130,7 +126,7 @@ public class EhrRepository
         Table<EhrStatusDataRecord> dataHead = tables.dataHead();
         return context.select(jsonDataField(dataHead, IS_MODIFIABLE_JSON_PATH).cast(Boolean.class))
                 .from(dataHead)
-                .where(singleEhrStatusCondition(ehrId, dataHead))
+                .where(singleEhrStatusCondition(ehrId).apply(dataHead))
                 .and(dataRootCondition(dataHead))
                 .fetchOptional()
                 .map(Record1::value1)
@@ -154,43 +150,37 @@ public class EhrRepository
     }
 
     public Optional<ObjectVersionId> findVersionByTime(UUID ehrId, OffsetDateTime time) {
-        return findVersionByTime(
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                time);
+        return findVersionByTime(singleEhrStatusCondition(ehrId), singleEhrStatusCondition(ehrId), time);
     }
 
     public Optional<ObjectVersionId> findLatestVersion(UUID ehrId) {
-        return context.select(field(VERSION_PROTOTYPE.VO_ID), field(VERSION_PROTOTYPE.SYS_VERSION))
-                .from(tables.versionHead())
-                .where(singleEhrStatusCondition(ehrId, tables.versionHead()))
+        EhrStatusVersion versionHead = EHR_STATUS_VERSION.as("v");
+        return context.select(versionHead.VO_ID, versionHead.SYS_VERSION)
+                .from(versionHead)
+                .where(singleEhrStatusCondition(ehrId).apply(versionHead))
                 .fetchOptional()
                 .map(r -> buildObjectVersionId(r.value1(), r.value2(), systemService));
     }
 
     public Optional<EhrStatus> findHead(UUID ehrId) {
-        return findHead(singleEhrStatusCondition(ehrId, tables.dataHead()));
+        return findHead(singleEhrStatusCondition(ehrId));
     }
 
     @Override
-    protected boolean isDeleted(Condition condition, Condition historyCondition, Integer version) {
+    protected boolean isDeleted(
+            Function<Table<?>, Condition> condition, Function<Table<?>, Condition> historyCondition, Integer version) {
         return false;
     }
 
     public Optional<OriginalVersion<EhrStatus>> getOriginalVersionStatus(
             UUID ehrId, UUID versionedObjectUid, int version) {
 
-        return getOriginalVersion(
-                        singleEhrStatusCondition(ehrId, tables.versionHead()),
-                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                        version)
+        return getOriginalVersion(singleEhrStatusCondition(ehrId), singleEhrStatusCondition(ehrId), version)
                 .filter(e -> LocatableUtils.getUuid(e.getUid()).equals(versionedObjectUid));
     }
 
     public RevisionHistory getRevisionHistory(UUID ehrId) {
-        return getRevisionHistory(
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()));
+        return getRevisionHistory(singleEhrStatusCondition(ehrId), singleEhrStatusCondition(ehrId));
     }
 
     public OffsetDateTime findEhrCreationTime(UUID ehrId) {
@@ -204,12 +194,10 @@ public class EhrRepository
 
     public void adminDelete(UUID ehrId) {
 
-        context.deleteFrom(tables.versionHead())
-                .where(field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId))
-                .execute();
-        context.deleteFrom(tables.versionHistory())
-                .where(field(VERSION_HISTORY_PROTOTYPE.EHR_ID).eq(ehrId))
-                .execute();
+        EhrStatusVersion versionHead = EHR_STATUS_VERSION.as("v");
+        context.deleteFrom(versionHead).where(versionHead.EHR_ID.eq(ehrId)).execute();
+        EhrStatusVersionHistory history = EHR_STATUS_VERSION_HISTORY.as("h");
+        context.deleteFrom(history).where(history.EHR_ID.eq(ehrId)).execute();
         context.deleteFrom(EHR_).where(EHR_.ID.eq(ehrId)).execute();
     }
 
@@ -219,8 +207,8 @@ public class EhrRepository
         update(
                 ehrId,
                 ehrStatus,
-                singleEhrStatusCondition(ehrId, tables.versionHead()),
-                singleEhrStatusCondition(ehrId, tables.versionHistory()),
+                singleEhrStatusCondition(ehrId),
+                singleEhrStatusCondition(ehrId),
                 contributionId,
                 auditId,
                 r -> {},
@@ -230,20 +218,17 @@ public class EhrRepository
 
     public Optional<VersionedEhrStatus> getVersionedEhrStatus(UUID ehrId) {
 
-        return findRootRecordByVersion(
-                        singleEhrStatusCondition(ehrId, tables.versionHead()),
-                        singleEhrStatusCondition(ehrId, tables.versionHistory()),
-                        1)
+        return findRootRecordByVersion(singleEhrStatusCondition(ehrId), singleEhrStatusCondition(ehrId), 1)
                 .map(root -> recordToVersionedEhrStatus(ehrId, root));
     }
 
-    private Condition singleEhrStatusCondition(UUID ehrId, Table<?> table) {
+    private Function<Table<?>, Condition> singleEhrStatusCondition(UUID ehrId) {
 
-        return table.field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId);
+        return table -> table.field(VERSION_PROTOTYPE.EHR_ID).eq(ehrId);
     }
 
     @Override
-    protected Class<EhrStatus> getLocatableClass() {
+    public Class<EhrStatus> getLocatableClass() {
         return EhrStatus.class;
     }
 

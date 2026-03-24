@@ -36,6 +36,7 @@ import java.util.UUID;
 import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
+import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.repository.EhrFolderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,9 +51,11 @@ class DirectoryServiceTest {
     private final EhrService mockEhrService = mock();
 
     private final EhrFolderRepository mockEhrFolderRepository = mock();
+    private final ValidationService mockValidationService = mock();
 
     private DirectoryServiceImp service() {
-        return new DirectoryServiceImp(() -> "test-system", mockEhrService, mockEhrFolderRepository);
+        return new DirectoryServiceImp(
+                () -> "test-system", mockEhrService, mockEhrFolderRepository, mockValidationService);
     }
 
     @BeforeEach

@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
 import static org.mockito.Mockito.doReturn;
@@ -30,10 +31,15 @@ import com.nedap.archie.rm.archetyped.FeederAudit;
 import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
+import com.nedap.archie.rm.datastructures.Cluster;
+import com.nedap.archie.rm.datastructures.Element;
 import com.nedap.archie.rm.datastructures.ItemList;
+import com.nedap.archie.rm.datastructures.ItemSingle;
+import com.nedap.archie.rm.datastructures.ItemTree;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
@@ -52,6 +58,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
@@ -85,7 +92,7 @@ class ValidationServiceTest {
 
     private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
 
-    private final ValidationProperties serverConfig = new ValidationProperties(true, true);
+    private final ValidationProperties serverConfig = new ValidationProperties(true, true, true);
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 
@@ -466,6 +473,119 @@ class ValidationServiceTest {
         contribution.setAudit(validAuditDetails());
         consumer.accept(contribution);
         service().check(contribution);
+    }
+
+    // --- Folder ---
+
+    @Test
+    void checkFolderValid() {
+
+        Folder folder = folderWithName("root");
+        assertThatNoException().isThrownBy(() -> service().check(folder));
+    }
+
+    @Test
+    void checkFolderValidWithSubFolders() {
+
+        Folder root = folderWithName("root");
+        root.addFolder(folderWithName("alpha"));
+        root.addFolder(folderWithName("beta"));
+        assertThatNoException().isThrownBy(() -> service().check(root));
+    }
+
+    @Test
+    void checkFolderValidWithNestedSubFolders() {
+
+        Folder root = folderWithName("root");
+        Folder child = folderWithName("child");
+        child.addFolder(folderWithName("grandchild-a"));
+        child.addFolder(folderWithName("grandchild-b"));
+        root.addFolder(child);
+        assertThatNoException().isThrownBy(() -> service().check(root));
+    }
+
+    @Test
+    void checkFolderInvalidDuplicateSiblingName() {
+
+        Folder root = folderWithName("root");
+        root.addFolder(folderWithName("duplicate"));
+        root.addFolder(folderWithName("duplicate"));
+
+        assertThatThrownBy(() -> service().check(root))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Duplicate folder name duplicate");
+    }
+
+    @Test
+    void checkFolderInvalidDuplicateSiblingNameInNestedLevel() {
+
+        Folder root = folderWithName("root");
+        Folder child = folderWithName("child");
+        child.addFolder(folderWithName("duplicate"));
+        child.addFolder(folderWithName("duplicate"));
+        root.addFolder(child);
+
+        assertThatThrownBy(() -> service().check(root))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Duplicate folder name duplicate");
+    }
+
+    @Test
+    void checkFolderDuplicateNamesAllowedAcrossDifferentLevels() {
+
+        // Same name is only forbidden among siblings; the same name at different levels is fine.
+        Folder root = folderWithName("root");
+        Folder child = folderWithName("shared-name");
+        child.addFolder(folderWithName("shared-name"));
+        root.addFolder(child);
+
+        assertThatNoException().isThrownBy(() -> service().check(root));
+    }
+
+    @Test
+    void checkFolderInvalidRmConstraints() {
+        Folder folder = new Folder();
+        folder.setItems(List.of(new ObjectRef<>()));
+        folder.setDetails(new ItemSingle(null, null, new Element()));
+        Folder subfolder = new Folder();
+        subfolder.setDetails(new ItemTree(null, null, List.of(new Cluster())));
+        subfolder.setItems(List.of(new ObjectRef<>()));
+        folder.addFolder(subfolder);
+
+        assertThatThrownBy(() -> service().check(folder))
+                .isInstanceOf(ConstraintViolationException.class)
+                .message()
+                .isEqualToIgnoringNewLines("""
+                /folders[1]/archetype_node_id: Attribute archetype_node_id of class FOLDER does not match existence 1..1,
+                 /folders[1]/name: Attribute name of class FOLDER does not match existence 1..1,
+                 /folders[1]/details/archetype_node_id: Attribute archetype_node_id of class ITEM_TREE does not match existence 1..1,
+                 /folders[1]/details/name: Attribute name of class ITEM_TREE does not match existence 1..1,
+                 /folders[1]/details/items[1]/archetype_node_id: Attribute archetype_node_id of class CLUSTER does not match existence 1..1,
+                 /folders[1]/details/items[1]/name: Attribute name of class CLUSTER does not match existence 1..1,
+                 /folders[1]/details/items[1]/items: Attribute does not match cardinality 1..*,
+                 /folders[1]/items[1]/namespace: Attribute namespace of class OBJECT_REF does not match existence 1..1,
+                 /folders[1]/items[1]/id: Attribute id of class OBJECT_REF does not match existence 1..1,
+                 /folders[1]/items[1]/type: Attribute type of class OBJECT_REF does not match existence 1..1,
+                 /archetype_node_id: Attribute archetype_node_id of class FOLDER does not match existence 1..1,
+                 /name: Attribute name of class FOLDER does not match existence 1..1,
+                 /details/item: Invariant Inv_null_flavour_indicated failed on type ELEMENT,
+                 /details/item/archetype_node_id: Attribute archetype_node_id of class ELEMENT does not match existence 1..1,
+                 /details/item/name: Attribute name of class ELEMENT does not match existence 1..1,
+                 /details/archetype_node_id: Attribute archetype_node_id of class ITEM_SINGLE does not match existence 1..1,
+                 /details/name: Attribute name of class ITEM_SINGLE does not match existence 1..1,
+                 /items[1]/namespace: Attribute namespace of class OBJECT_REF does not match existence 1..1,
+                 /items[1]/id: Attribute id of class OBJECT_REF does not match existence 1..1,
+                 /items[1]/type: Attribute type of class OBJECT_REF does not match existence 1..1
+                """);
+    }
+
+    private static Folder folderWithName(String name) {
+        Folder folder = new Folder();
+        folder.setName(new DvText(name));
+        folder.setArchetypeNodeId("openEHR-EHR-FOLDER.generic.v1");
+        folder.setItems(
+                List.of(new ObjectRef<>(new HierObjectId(UUID.randomUUID().toString()), "ns", "t")));
+        return folder;
     }
 
     // --- HELPER ---

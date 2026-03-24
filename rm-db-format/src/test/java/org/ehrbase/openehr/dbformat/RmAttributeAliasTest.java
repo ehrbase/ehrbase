@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 class RmAttributeAliasTest {
 
     @Test
-    void checkAliases() {
+    void checkNoOverlapBetweenAttributesAndAliases() {
         Set<String> attributes = RmAttributeAlias.VALUES.stream()
                 .map(RmAttributeAlias::attribute)
                 .collect(Collectors.toSet());
@@ -42,6 +42,14 @@ class RmAttributeAliasTest {
         attributes.forEach(a -> assertThatThrownBy(() -> RmAttributeAlias.getAttribute(a))
                 .withFailMessage(() -> "Alias name clashes with an existing attribute " + a)
                 .isInstanceOf(IllegalArgumentException.class));
+    }
+
+    @Test
+    void checkAliasAttributeBijection() {
+        RmAttributeAlias.VALUES.forEach(v -> {
+            assertThat(RmAttributeAlias.getAlias(v.attribute())).isEqualTo(v.alias());
+            assertThat(RmAttributeAlias.getAttribute(v.alias())).isEqualTo(v.attribute());
+        });
     }
 
     @Test
