@@ -18,8 +18,6 @@
 package org.ehrbase.api.knowledge;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -28,8 +26,6 @@ public class TemplateMetaData {
     private OffsetDateTime createdOn;
 
     private UUID internalId;
-
-    private List<String> errorList;
 
     public OPERATIONALTEMPLATE getOperationaltemplate() {
         return operationaltemplate;
@@ -53,19 +49,5 @@ public class TemplateMetaData {
 
     public UUID getInternalId() {
         return internalId;
-    }
-
-    public List<String> getErrorList() {
-        if (this.errorList == null) {
-            this.errorList = new ArrayList<>();
-        }
-        return errorList;
-    }
-
-    public void addError(String error) {
-        if (this.errorList == null) {
-            this.errorList = new ArrayList<>();
-        }
-        this.errorList.add(error);
     }
 }

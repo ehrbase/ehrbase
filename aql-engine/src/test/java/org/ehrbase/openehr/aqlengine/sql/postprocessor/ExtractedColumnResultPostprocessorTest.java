@@ -31,7 +31,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAccessor;
 import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -45,17 +45,17 @@ import org.mockito.Mockito;
 
 class ExtractedColumnResultPostprocessorTest {
 
-    private final KnowledgeCacheService knowledgeCacheService = mock(KnowledgeCacheService.class);
+    private final TemplateCacheService templateCacheService = mock(TemplateCacheService.class);
     private final Record dbRecord = mock(Record.class);
 
     private ExtractedColumnResultPostprocessor processor(AslExtractedColumn extractedColumn) {
-        return ExtractedColumnResultPostprocessor.get(extractedColumn, knowledgeCacheService, "test-node");
+        return ExtractedColumnResultPostprocessor.get(extractedColumn, templateCacheService, "test-node");
     }
 
     @BeforeEach
     void setUp() {
 
-        Mockito.reset(knowledgeCacheService, dbRecord);
+        Mockito.reset(templateCacheService, dbRecord);
     }
 
     @Test
@@ -68,7 +68,7 @@ class ExtractedColumnResultPostprocessorTest {
     void templateId() {
 
         var uuid = UUID.fromString("93e01a9a-041e-4bf6-89c2-e63f8a74a4d5");
-        doReturn(Optional.of("test-template")).when(knowledgeCacheService).findTemplateIdByUuid(uuid);
+        doReturn(Optional.of("test-template")).when(templateCacheService).findTemplateIdByUuid(uuid);
         assertThat(processor(AslExtractedColumn.TEMPLATE_ID).postProcessColumn(uuid))
                 .isEqualTo("test-template");
     }

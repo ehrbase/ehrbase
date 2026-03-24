@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
@@ -57,13 +57,13 @@ public class CompositionRepository
         extends AbstractVersionedObjectRepository<
                 CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, Composition, Void> {
 
-    private final KnowledgeCacheService knowledgeCache;
+    private final TemplateCacheService templateCache;
 
     public CompositionRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
             SystemService systemService,
-            KnowledgeCacheService knowledgeCache,
+            TemplateCacheService templateCache,
             TimeProvider timeProvider) {
         super(
                 AuditDetailsTargetType.COMPOSITION,
@@ -74,7 +74,7 @@ public class CompositionRepository
                 contributionRepository,
                 systemService,
                 timeProvider);
-        this.knowledgeCache = knowledgeCache;
+        this.templateCache = templateCache;
     }
 
     @Override
@@ -88,12 +88,7 @@ public class CompositionRepository
     }
 
     @Transactional
-    public void commit(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
-        UUID templateId = Optional.of(composition)
-                .map(LocatableUtils::getTemplateId)
-                .flatMap(knowledgeCache::findUuidByTemplateId)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
+    public void commit(UUID ehrId, Composition composition, UUID contributionId, UUID auditId, UUID templateId) {
 
         String rootConcept = AslRmTypeAndConcept.toEntityConcept(composition.getArchetypeNodeId());
 
@@ -123,21 +118,23 @@ public class CompositionRepository
     }
 
     public boolean isTemplateUsed(String templateId) {
-        Optional<UUID> templateUuid = knowledgeCache.findUuidByTemplateId(templateId);
-        if (templateUuid.isEmpty()) {
-            return false;
-        }
+        return templateCache
+                .findUuidByTemplateId(templateId)
+                .filter(this::isTemplateUsed)
+                .isPresent();
+    }
 
+    public boolean isTemplateUsed(UUID templateUuid) {
         CompVersion vTable = COMP_VERSION.as("v");
         CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
 
         return context.select(vTable.VO_ID)
                 .from(vTable)
-                .where(vTable.TEMPLATE_ID.eq(templateUuid.get()))
+                .where(vTable.TEMPLATE_ID.eq(templateUuid))
                 .limit(1)
                 .unionAll(context.select(hTable.VO_ID)
                         .from(hTable)
-                        .where(hTable.TEMPLATE_ID.eq(templateUuid.get()))
+                        .where(hTable.TEMPLATE_ID.eq(templateUuid))
                         .limit(1))
                 .limit(1)
                 .fetchOptional()
@@ -145,15 +142,9 @@ public class CompositionRepository
     }
 
     @Transactional
-    public void update(UUID ehrId, Composition composition, UUID contributionId, UUID auditId) {
+    public void update(UUID ehrId, Composition composition, UUID contributionId, UUID auditId, UUID templateId) {
 
         UUID rootId = LocatableUtils.getUuid(composition);
-
-        UUID templateId = Optional.of(composition)
-                .map(LocatableUtils::getTemplateId)
-                .flatMap(knowledgeCache::findUuidByTemplateId)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
 
         String rootConcept = AslRmTypeAndConcept.toEntityConcept(composition.getArchetypeNodeId());
 
@@ -262,7 +253,7 @@ public class CompositionRepository
         });
     }
 
-    public Optional<String> findTemplateId(UUID compId) {
+    public Optional<UUID> findTemplateId(UUID compId) {
         CompVersion vTable = COMP_VERSION.as("v");
         CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
         return context.select(vTable.TEMPLATE_ID)
@@ -274,8 +265,7 @@ public class CompositionRepository
                         .orderBy(hTable.SYS_VERSION.desc())
                         .limit(1))
                 .limit(1)
-                .fetchOptional(Record1::value1)
-                .flatMap(knowledgeCache::findTemplateIdByUuid);
+                .fetchOptional(Record1::value1);
     }
 
     public Optional<UUID> findEHRforComposition(UUID compId) {

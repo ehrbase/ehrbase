@@ -18,11 +18,10 @@
 package org.ehrbase.service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateStorage {
@@ -33,14 +32,7 @@ public interface TemplateStorage {
      */
     boolean allowTemplateOverwrite();
 
-    /**
-     * List all Templates in the store;
-     *
-     * @return @see {@link TemplateMetaData}
-     */
-    List<TemplateMetaData> listAllOperationalTemplates();
-
-    Map<UUID, String> findAllTemplateIds();
+    List<TemplateService.TemplateDetails> findAllTemplates();
 
     /**
      * Save a template in the store
@@ -55,7 +47,16 @@ public interface TemplateStorage {
      * @param templateId
      * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
      */
-    Optional<TemplateMetaData> readTemplate(String templateId);
+    default Optional<TemplateMetaData> readTemplate(String templateId) {
+        return readTemplates(templateId).stream().findFirst();
+    }
+
+    /**
+     * Find and returns saved Templates by templateId
+     * @param templateIds
+     * @return the templates @see {@link OPERATIONALTEMPLATE}
+     */
+    List<TemplateMetaData> readTemplates(String... templateIds);
 
     /**
      * Deletes an operational template from template storage. The template will be removed physically so ensure that
@@ -63,9 +64,9 @@ public interface TemplateStorage {
      *
      * @param templateId - Template id to delete from storage, e.g. "IDCR Allergies List.v0"
      */
-    void deleteTemplate(String templateId);
+    void deleteTemplate(UUID uuid);
 
-    List<Pair<UUID, String>> deleteAllTemplates();
+    List<TemplateService.TemplateDetails> deleteAllTemplates();
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 

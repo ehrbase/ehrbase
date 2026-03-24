@@ -18,12 +18,11 @@
 package org.ehrbase.service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService.TemplateDetails;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.TemplateStoreRepository;
 import org.ehrbase.util.TemplateUtils;
@@ -71,13 +70,8 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     @Override
-    public List<TemplateMetaData> listAllOperationalTemplates() {
-        return templateStoreRepository.findAll();
-    }
-
-    @Override
-    public Map<UUID, String> findAllTemplateIds() {
-        return templateStoreRepository.findAllTemplateIds();
+    public List<TemplateDetails> findAllTemplates() {
+        return templateStoreRepository.findAllTemplates();
     }
 
     @Override
@@ -105,8 +99,8 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     @Override
-    public Optional<TemplateMetaData> readTemplate(String templateId) {
-        return templateStoreRepository.findByTemplateId(templateId);
+    public List<TemplateMetaData> readTemplates(String... templateIds) {
+        return templateStoreRepository.findByTemplateIds(templateIds);
     }
 
     private void checkUsages() {
@@ -125,27 +119,25 @@ public class TemplateDBStorageService implements TemplateStorage {
      * {@inheritDoc}
      */
     @Override
-    public void deleteTemplate(String templateId) {
-
-        if (compositionRepository.isTemplateUsed(templateId)) {
+    public void deleteTemplate(UUID uuid) {
+        if (compositionRepository.isTemplateUsed(uuid)) {
             // There are compositions using this template -> Return list of uuids
             throw new UnprocessableEntityException(
-                    "Cannot delete template %s since it is used by at least one composition".formatted(templateId));
+                    "Cannot delete template %s since it is used by at least one composition"
+                            .formatted(findTemplateIdByUuid(uuid)));
+        } else {
+            templateStoreRepository.delete(uuid);
         }
-        templateStoreRepository.delete(templateId);
     }
 
     @Override
-    public List<Pair<UUID, String>> deleteAllTemplates() {
+    public List<TemplateDetails> deleteAllTemplates() {
         checkUsages();
 
-        return templateStoreRepository.findAll().stream()
-                .map(t -> {
-                    String templateId = TemplateUtils.getTemplateId(t.getOperationaltemplate());
-                    templateStoreRepository.delete(templateId);
-                    return Pair.of(t.getInternalId(), templateId);
-                })
-                .toList();
+        List<TemplateDetails> allTemplates = templateStoreRepository.findAllTemplates();
+        allTemplates.forEach(d -> templateStoreRepository.delete(d.id()));
+
+        return allTemplates;
     }
 
     @Override

@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.openehr.aqlengine.asl.AslFromCreator.ContainsToOwnerProvider;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.DataNodeInfo.ExtractedColumnDataNodeInfo;
@@ -95,7 +95,7 @@ import org.springframework.util.function.SingletonSupplier;
 final class AslPathCreator {
 
     private final AliasProvider aliasProvider;
-    private final KnowledgeCacheService knowledgeCacheService;
+    private final TemplateCacheService templateCacheService;
     private final String systemId;
 
     @FunctionalInterface
@@ -103,9 +103,9 @@ final class AslPathCreator {
         AslField getField(IdentifiedPath path);
     }
 
-    AslPathCreator(AliasProvider aliasProvider, KnowledgeCacheService knowledgeCacheService, String systemId) {
+    AslPathCreator(AliasProvider aliasProvider, TemplateCacheService templateCacheService, String systemId) {
         this.aliasProvider = aliasProvider;
-        this.knowledgeCacheService = knowledgeCacheService;
+        this.templateCacheService = templateCacheService;
         this.systemId = systemId;
     }
 
@@ -593,7 +593,7 @@ final class AslPathCreator {
                     AslUtils.predicates(
                                     p.getRight(),
                                     cp -> AslUtils.structurePredicateCondition(
-                                            cp, sq, knowledgeCacheService::findUuidByTemplateId))
+                                            cp, sq, templateCacheService::findUuidByTemplateId))
                             .orElse(new AslTrueQueryCondition())));
         }
     }

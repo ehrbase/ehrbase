@@ -22,7 +22,7 @@ import static org.mockito.Mockito.mock;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.assertj.core.api.ThrowingConsumer;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.openehr.aqlengine.asl.model.join.AslJoin;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
@@ -37,11 +37,11 @@ import org.mockito.Mockito;
 
 class AslFromCreatorTest {
 
-    private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+    private final TemplateCacheService mockTemplateCacheService = mock();
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(mockKnowledgeCacheService);
+        Mockito.reset(mockTemplateCacheService);
     }
 
     private AslRootQuery addFromClause(String aql) {
@@ -51,7 +51,7 @@ class AslFromCreatorTest {
         var aqlQuery = AqlQueryParser.parse(aql);
         var queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        var aslFromCreator = new AslFromCreator(aliasProvider, mockKnowledgeCacheService, true);
+        var aslFromCreator = new AslFromCreator(aliasProvider, mockTemplateCacheService, true);
         aslFromCreator.addFromClause(aslQuery, queryWrapper);
 
         return aslQuery;

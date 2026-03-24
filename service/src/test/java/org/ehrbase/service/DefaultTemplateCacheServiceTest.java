@@ -26,7 +26,7 @@ import static org.mockito.Mockito.spy;
 import java.util.List;
 import java.util.Optional;
 import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
@@ -38,7 +38,7 @@ import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 
-class KnowledgeCacheServiceTest {
+class DefaultTemplateCacheServiceTest {
 
     private final TemplateStorage mockTemplateStorage = mock();
     private SimpleCacheManager cacheManager;
@@ -51,14 +51,15 @@ class KnowledgeCacheServiceTest {
         cacheManager.setCaches(List.of(
                 new ConcurrentMapCache(CacheProvider.TEMPLATE_ID_UUID_CACHE.name()),
                 new ConcurrentMapCache(CacheProvider.TEMPLATE_UUID_ID_CACHE.name()),
-                new ConcurrentMapCache(CacheProvider.INTROSPECT_CACHE.name()) // For WebTemplate representation
+                new ConcurrentMapCache(CacheProvider.TEMPLATE_OPT_CACHE.name()),
+                new ConcurrentMapCache(CacheProvider.TEMPLATE_CACHE.name()) // For WebTemplate representation
                 ));
         cacheManager.initializeCaches();
     }
 
-    private KnowledgeCacheService service() {
+    private TemplateCacheService service() {
 
-        return new KnowledgeCacheServiceImp(mockTemplateStorage, new CacheProviderImp(cacheManager));
+        return new DefaultTemplateCacheService(mockTemplateStorage, new CacheProviderImp(cacheManager));
     }
 
     @Test
@@ -79,7 +80,7 @@ class KnowledgeCacheServiceTest {
                 .when(mockTemplateStorage)
                 .readTemplate(testTemplate.templateId());
 
-        KnowledgeCacheService service = service();
+        TemplateCacheService service = service();
         OPERATIONALTEMPLATE operationaltemplate = testTemplate.operationaltemplate();
         assertThatThrownBy(() -> service.addOperationalTemplate(operationaltemplate))
                 .isInstanceOf(StateConflictException.class)
@@ -97,7 +98,7 @@ class KnowledgeCacheServiceTest {
                 .readTemplate(testTemplate.templateId());
         doReturn(true).when(mockTemplateStorage).allowTemplateOverwrite();
 
-        KnowledgeCacheService service = spy(service());
+        TemplateCacheService service = spy(service());
         String templateId = service.addOperationalTemplate(testTemplate.operationaltemplate());
 
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());

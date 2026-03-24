@@ -35,6 +35,11 @@ public class CacheProperties {
     private boolean templateInitOnStartup = true;
 
     private boolean storedQueryInitOnStartup = true;
+    private CacheConfig operationalTemplateCacheConfig;
+    private CacheConfig internalTemplateCacheConfig;
+    private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
+    private CacheConfig userIdCacheConfig = new CacheConfig();
+    private CacheConfig storedQueryCacheConfig;
 
     public boolean isTemplateInitOnStartup() {
         return templateInitOnStartup;
@@ -52,8 +57,21 @@ public class CacheProperties {
         this.storedQueryInitOnStartup = storedQueryInitOnStartup;
     }
 
-    private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
-    private CacheConfig userIdCacheConfig = new CacheConfig();
+    public CacheConfig getInternalTemplateCacheConfig() {
+        return internalTemplateCacheConfig;
+    }
+
+    public void setInternalTemplateCacheConfig(CacheConfig internalTemplateCacheConfig) {
+        this.internalTemplateCacheConfig = internalTemplateCacheConfig;
+    }
+
+    public CacheConfig getOperationalTemplateCacheConfig() {
+        return operationalTemplateCacheConfig;
+    }
+
+    public void setOperationalTemplateCacheConfig(CacheConfig operationalTemplateCacheConfig) {
+        this.operationalTemplateCacheConfig = operationalTemplateCacheConfig;
+    }
 
     public CacheConfig getExternalFhirTerminologyCacheConfig() {
         return externalFhirTerminologyCacheConfig;
@@ -79,10 +97,37 @@ public class CacheProperties {
         this.txProxyExcludedBeanNames = txProxyExcludedBeanNames;
     }
 
+    public CacheConfig getStoredQueryCacheConfig() {
+        return storedQueryCacheConfig;
+    }
+
+    public void setStoredQueryCacheConfig(CacheConfig storedQueryCacheConfig) {
+        this.storedQueryCacheConfig = storedQueryCacheConfig;
+    }
+
     public static class CacheConfig {
+
+        private Integer initialCapacity;
+        private Integer maximumSize;
 
         private ExpireTime expireAfterAccess;
         private ExpireTime expireAfterWrite;
+
+        public Integer getInitialCapacity() {
+            return initialCapacity;
+        }
+
+        public void setInitialCapacity(Integer initialCapacity) {
+            this.initialCapacity = initialCapacity;
+        }
+
+        public Integer getMaximumSize() {
+            return maximumSize;
+        }
+
+        public void setMaximumSize(Integer maximumSize) {
+            this.maximumSize = maximumSize;
+        }
 
         public ExpireTime getExpireAfterAccess() {
             return expireAfterAccess;

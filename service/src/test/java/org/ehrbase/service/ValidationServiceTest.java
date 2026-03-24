@@ -63,6 +63,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.ContributionUtils;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
@@ -90,7 +91,7 @@ import org.springframework.beans.factory.ObjectProvider;
 
 class ValidationServiceTest {
 
-    private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
+    private final TemplateCacheService templateCacheService = mock();
 
     private final ValidationProperties serverConfig = new ValidationProperties(true, true, true);
 
@@ -114,11 +115,11 @@ class ValidationServiceTest {
     }
 
     private final ValidationService spyService = spy(new ValidationServiceImp(
-            knowledgeCacheService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
+            templateCacheService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(knowledgeCacheService, objectProvider, spyService);
+        Mockito.reset(templateCacheService, objectProvider, spyService);
         doReturn(new NopTerminologyValidation()).when(objectProvider).getIfAvailable();
     }
 
@@ -258,7 +259,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getInternalTemplate(templateID);
+        doReturn(webTemplate).when(templateCacheService).getInternalTemplate(templateID);
         service().check(composition);
     }
 
@@ -292,7 +293,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getInternalTemplate(templateID);
+        doReturn(webTemplate).when(templateCacheService).getInternalTemplate(templateID);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(composition)).isInstanceOf(ConstraintViolationException.class);

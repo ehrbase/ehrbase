@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.jooq.pg.Tables;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -64,15 +64,15 @@ import org.jooq.JoinType;
 public final class AslFromCreator {
 
     private final AliasProvider aliasProvider;
-    private final KnowledgeCacheService knowledgeCacheService;
+    private final TemplateCacheService templateCacheService;
     private final boolean archetypeLocalNodePredicates;
 
     public AslFromCreator(
             AliasProvider aliasProvider,
-            KnowledgeCacheService knowledgeCacheService,
+            TemplateCacheService templateCacheService,
             final boolean archetypeLocalNodePredicates1) {
         this.aliasProvider = aliasProvider;
-        this.knowledgeCacheService = knowledgeCacheService;
+        this.templateCacheService = templateCacheService;
         this.archetypeLocalNodePredicates = archetypeLocalNodePredicates1;
     }
 
@@ -356,7 +356,7 @@ public final class AslFromCreator {
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
-                                c, aslStructureQuery, knowledgeCacheService::findUuidByTemplateId))
+                                c, aslStructureQuery, templateCacheService::findUuidByTemplateId))
                 .ifPresent(aslStructureQuery::addConditionAnd);
 
         // num = 0 condition for roots gets added by the AqlSqlQueryBuilder

@@ -41,7 +41,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
@@ -115,22 +115,22 @@ class CompositionRepositoryTest {
             TemplateId templateId = new TemplateId();
             templateId.setValue("dca5b9e5-610e-4af2-a823-e905b98a08bd");
             doReturn(Optional.of(UUID.fromString("dca5b9e5-610e-4af2-a823-e905b98a08bd")))
-                    .when(mockKnowledgeCache)
+                    .when(mockTemplateCache)
                     .findUuidByTemplateId("dca5b9e5-610e-4af2-a823-e905b98a08bd");
             return templateId;
         }
 
-        private static final KnowledgeCacheService mockKnowledgeCache = mock();
+        private static final TemplateCacheService mockTemplateCache = mock();
 
         public Update() {
             super(spy(new CompositionRepository(
-                    mock(), mock(), () -> SYSTEM_ID, mockKnowledgeCache, OffsetDateTime::now)));
+                    mock(), mock(), () -> SYSTEM_ID, mockTemplateCache, OffsetDateTime::now)));
         }
 
         @Override
         void setUp() {
             super.setUp();
-            Mockito.reset(mockKnowledgeCache);
+            Mockito.reset(mockTemplateCache);
         }
 
         @Override

@@ -17,21 +17,20 @@
  */
 package org.ehrbase.api.knowledge;
 
-import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
-public interface KnowledgeCacheService {
+public interface TemplateCacheService {
 
     String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
-    List<TemplateMetaData> listAllOperationalTemplates();
+    List<TemplateMetaData> cacheTemplates(String... templateIds);
 
-    Map<UUID, String> findAllTemplateIds();
+    List<TemplateService.TemplateDetails> findAllTemplates();
 
     /**
      * retrieve an operational template document instance
@@ -45,19 +44,18 @@ public interface KnowledgeCacheService {
     WebTemplate getInternalTemplate(String templateId);
 
     /**
-     * Deletes a given operational template physically from cache and from template storage and from cache. Should only
-     * be executed if the template is no longer referenced by any Composition. Make sure you check for references before
-     * deleting a template otherwise this causes inconsistencies and no longer deliverable Composition entries.
+     * Deletes a given operational template physically from cache and from template storage and from cache.
+     * Can only be executed if the template is no longer referenced by any Composition.
      *
-     * @param template - The template instance to delete
+     * @param templateUuid - Internalö id of template instance to delete
      */
-    void deleteOperationalTemplate(OPERATIONALTEMPLATE template);
+    void deleteOperationalTemplate(UUID templateUuid);
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 
     Optional<UUID> findUuidByTemplateId(String templateId);
 
-    String adminUpdateOperationalTemplate(InputStream content);
+    String adminUpdateOperationalTemplate(String templateId, String content);
 
     int deleteAllOperationalTemplates();
 }

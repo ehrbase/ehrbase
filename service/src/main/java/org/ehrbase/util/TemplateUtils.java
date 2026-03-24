@@ -52,8 +52,8 @@ public class TemplateUtils {
      */
     public static boolean isSupported(WebTemplate template) {
         return template.getTree()
-                .findMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
-                .isEmpty();
+                .streamMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
+                .noneMatch(_ -> true);
     }
 
     /**

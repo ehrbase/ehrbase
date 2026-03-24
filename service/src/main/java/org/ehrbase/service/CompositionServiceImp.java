@@ -45,6 +45,7 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
@@ -63,6 +64,7 @@ import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.util.SemVer;
 import org.ehrbase.util.UuidGenerator;
+import org.jspecify.annotations.NonNull;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +118,7 @@ public class CompositionServiceImp implements CompositionService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ValidationService validationService;
-    private final KnowledgeCacheServiceImp knowledgeCacheService;
+    private final TemplateCacheService templateCacheService;
     private final EhrService ehrService;
 
     private final CompositionRepository compositionRepository;
@@ -125,7 +127,7 @@ public class CompositionServiceImp implements CompositionService {
     private final SystemService systemService;
 
     public CompositionServiceImp(
-            KnowledgeCacheServiceImp knowledgeCacheService,
+            TemplateCacheService templateCacheService,
             ValidationService validationService,
             EhrService ehrService,
             SystemService systemService,
@@ -134,7 +136,7 @@ public class CompositionServiceImp implements CompositionService {
 
         this.validationService = validationService;
         this.ehrService = ehrService;
-        this.knowledgeCacheService = knowledgeCacheService;
+        this.templateCacheService = templateCacheService;
         this.compositionRepository = compositionRepository;
         this.itemTagRepository = itemTagRepository;
         this.systemService = systemService;
@@ -187,7 +189,9 @@ public class CompositionServiceImp implements CompositionService {
         // actual creation
         final UUID compositionId = extractUid(objectVersionId);
 
-        compositionRepository.commit(ehrId, composition, contributionId, audit);
+        UUID templateId = getTemplateUuid(composition);
+
+        compositionRepository.commit(ehrId, composition, contributionId, audit, templateId);
 
         logger.debug("Composition created: id={}", compositionId);
 
@@ -271,6 +275,7 @@ public class CompositionServiceImp implements CompositionService {
 
         String existingTemplateId = compositionRepository
                 .findTemplateId(compId)
+                .flatMap(templateCacheService::findTemplateIdByUuid)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "composition", "No COMPOSITION with given id: %s".formatted(compId)));
 
@@ -278,9 +283,19 @@ public class CompositionServiceImp implements CompositionService {
 
         composition.setUid(buildObjectVersionId(compId, version + 1, systemService));
 
-        compositionRepository.update(ehrId, composition, contributionId, audit);
+        UUID templateId = getTemplateUuid(composition);
+
+        compositionRepository.update(ehrId, composition, contributionId, audit, templateId);
 
         return compId;
+    }
+
+    private @NonNull UUID getTemplateUuid(Composition composition) {
+        return Optional.of(composition)
+                .map(LocatableUtils::getTemplateId)
+                .flatMap(templateCacheService::findUuidByTemplateId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
     }
 
     /**
@@ -476,7 +491,7 @@ public class CompositionServiceImp implements CompositionService {
         return new TemplateProvider() {
             @Override
             public Optional<OPERATIONALTEMPLATE> find(String s) {
-                return knowledgeCacheService.retrieveOperationalTemplate(s);
+                return templateCacheService.retrieveOperationalTemplate(s);
             }
 
             @Override
@@ -484,7 +499,7 @@ public class CompositionServiceImp implements CompositionService {
                 if (templateId == null) {
                     return Optional.empty();
                 }
-                return Optional.ofNullable(knowledgeCacheService.getInternalTemplate(templateId));
+                return Optional.ofNullable(templateCacheService.getInternalTemplate(templateId));
             }
         };
     }
@@ -511,8 +526,10 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public String retrieveTemplateId(UUID compositionId) {
-
-        return compositionRepository.findTemplateId(compositionId).orElseThrow();
+        return compositionRepository
+                .findTemplateId(compositionId)
+                .flatMap(templateCacheService::findTemplateIdByUuid)
+                .orElseThrow();
     }
 
     @Override

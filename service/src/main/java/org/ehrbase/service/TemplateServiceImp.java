@@ -18,26 +18,20 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
-import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
-import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorToCompositionWalker;
@@ -51,8 +45,6 @@ import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValues;
 import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.webtemplateskeletonbuilder.WebTemplateSkeletonBuilder;
-import org.openehr.schemas.v1.CARCHETYPEROOT;
-import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,40 +53,30 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TemplateServiceImp implements TemplateService {
 
-    private final KnowledgeCacheService knowledgeCacheService;
+    private final TemplateCacheService templateCacheService;
 
-    public TemplateServiceImp(KnowledgeCacheService knowledgeCacheService) {
-        this.knowledgeCacheService = Objects.requireNonNull(knowledgeCacheService);
+    public TemplateServiceImp(TemplateCacheService templateCacheService) {
+        this.templateCacheService = Objects.requireNonNull(templateCacheService);
     }
 
     @Override
     public List<TemplateMetaDataDto> getAllTemplates() {
-        return knowledgeCacheService.listAllOperationalTemplates().stream()
-                .map(this::mapToDto)
-                .collect(Collectors.toList());
+        return templateCacheService.findAllTemplates().stream()
+                .map(TemplateServiceImp::mapToDto)
+                .toList();
     }
 
     @Override
-    public Map<UUID, String> findAllTemplateIds() {
-        return knowledgeCacheService.findAllTemplateIds();
+    public Collection<TemplateDetails> findAllTemplates() {
+        return templateCacheService.findAllTemplates();
     }
 
-    private TemplateMetaDataDto mapToDto(TemplateMetaData data) {
+    private static TemplateMetaDataDto mapToDto(TemplateDetails data) {
         TemplateMetaDataDto dto = new TemplateMetaDataDto();
-        dto.setCreatedOn(data.getCreatedOn());
-
-        Optional<OPERATIONALTEMPLATE> operationalTemplate = Optional.ofNullable(data.getOperationaltemplate());
-        dto.setTemplateId(operationalTemplate
-                .map(OPERATIONALTEMPLATE::getTemplateId)
-                .map(OBJECTID::getValue)
-                .orElse(null));
-        dto.setArchetypeId(operationalTemplate
-                .map(OPERATIONALTEMPLATE::getDefinition)
-                .map(CARCHETYPEROOT::getArchetypeId)
-                .map(OBJECTID::getValue)
-                .orElse(null));
-
-        dto.setConcept(operationalTemplate.map(OPERATIONALTEMPLATE::getConcept).orElse(null));
+        dto.setCreatedOn(data.creationTime());
+        dto.setTemplateId(data.templateId());
+        dto.setArchetypeId(data.archetypeId());
+        dto.setConcept(data.concept());
         return dto;
     }
 
@@ -123,7 +105,7 @@ public class TemplateServiceImp implements TemplateService {
 
     public WebTemplate findInternalTemplate(String templateId) {
         try {
-            return knowledgeCacheService.getInternalTemplate(templateId);
+            return templateCacheService.getInternalTemplate(templateId);
         } catch (NullPointerException | IllegalArgumentException e) {
             throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
         } catch (Exception e) {
@@ -144,9 +126,10 @@ public class TemplateServiceImp implements TemplateService {
         }
 
         Optional<OPERATIONALTEMPLATE> existingTemplate =
-                this.knowledgeCacheService.retrieveOperationalTemplate(templateId);
+                this.templateCacheService.retrieveOperationalTemplate(templateId);
 
         return existingTemplate
+                // XXX CDR-2305 should this be cached???
                 .map(template -> {
                     XmlOptions opts = new XmlOptions();
                     opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
@@ -158,7 +141,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public String create(OPERATIONALTEMPLATE content) {
-        return this.knowledgeCacheService.addOperationalTemplate(content);
+        return this.templateCacheService.addOperationalTemplate(content);
     }
 
     /**
@@ -166,13 +149,13 @@ public class TemplateServiceImp implements TemplateService {
      */
     @Override
     public void adminDeleteTemplate(String templateId) {
-        OPERATIONALTEMPLATE existingTemplate = knowledgeCacheService
-                .retrieveOperationalTemplate(templateId)
+        UUID templateUuid = templateCacheService
+                .findUuidByTemplateId(templateId)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
 
         // Delete template if not used
-        knowledgeCacheService.deleteOperationalTemplate(existingTemplate);
+        templateCacheService.deleteOperationalTemplate(templateUuid);
     }
 
     /**
@@ -180,20 +163,13 @@ public class TemplateServiceImp implements TemplateService {
      */
     @Override
     public String adminUpdateTemplate(String templateId, String content) {
-        Optional<OPERATIONALTEMPLATE> existingTemplate = knowledgeCacheService.retrieveOperationalTemplate(templateId);
-
-        // Check if template exists
-        if (existingTemplate.isEmpty()) {
-            throw new ObjectNotFoundException(
-                    "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId));
-        }
-
-        try (InputStream in = IOUtils.toInputStream(content, StandardCharsets.UTF_8)) {
-            // Replace content
-            return knowledgeCacheService.adminUpdateOperationalTemplate(in);
-        } catch (IOException e) {
-            throw new InternalServerException(e.getMessage(), e);
-        }
+        // XXX CDR-2305 Why is this not based on OPERATIONALTEMPLATE?
+        templateCacheService
+                .findUuidByTemplateId(templateId)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId)));
+        // Replace content
+        return templateCacheService.adminUpdateOperationalTemplate(templateId, content);
     }
 
     /**
@@ -201,6 +177,6 @@ public class TemplateServiceImp implements TemplateService {
      */
     @Override
     public int adminDeleteAllTemplates() {
-        return this.knowledgeCacheService.deleteAllOperationalTemplates();
+        return this.templateCacheService.deleteAllOperationalTemplates();
     }
 }

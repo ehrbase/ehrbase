@@ -25,11 +25,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import javax.xml.namespace.QName;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
@@ -37,12 +35,15 @@ import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.ehrbase.service.TimeProvider;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
-import org.jooq.Record2;
+import org.jooq.Field;
 import org.jooq.Record3;
+import org.jooq.XML;
+import org.jooq.impl.DSL;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Repository;
 
@@ -81,18 +82,25 @@ public class TemplateStoreRepository {
                 templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
-    public List<TemplateMetaData> findAll() {
-
-        return context.select(TEMPLATE_STORE.CONTENT, TEMPLATE_STORE.CREATION_TIME, TEMPLATE_STORE.ID)
+    public List<TemplateService.TemplateDetails> findAllTemplates() {
+        Field<XML> xmlContent = TEMPLATE_STORE.CONTENT.cast(XML.class);
+        return context.select(
+                        TEMPLATE_STORE.ID,
+                        TEMPLATE_STORE.TEMPLATE_ID,
+                        TEMPLATE_STORE.CREATION_TIME,
+                        DSL.arrayGet(
+                                DSL.xmlquery("/*/*[local-name()=\"concept\"]/text()")
+                                        .passing(xmlContent)
+                                        .cast(String[].class),
+                                1),
+                        DSL.arrayGet(
+                                DSL.xmlquery("/*/*[local-name()=\"archetype_id\"]/*[local-name()=\"value\"]/text()")
+                                        .passing(xmlContent)
+                                        .cast(String[].class),
+                                1))
                 .from(TEMPLATE_STORE)
-                .fetch()
-                .map(TemplateStoreRepository::buildMetadata);
-    }
-
-    public Map<UUID, String> findAllTemplateIds() {
-        return context.select(TEMPLATE_STORE.ID, TEMPLATE_STORE.TEMPLATE_ID)
-                .from(TEMPLATE_STORE)
-                .collect(Collectors.toMap(Record2::value1, Record2::value2));
+                .fetch(r -> new TemplateService.TemplateDetails(
+                        r.component1(), r.component2(), r.component3(), r.component4(), r.component5()));
     }
 
     private static TemplateMetaData buildMetadata(Record3<String, OffsetDateTime, UUID> r) {
@@ -108,6 +116,18 @@ public class TemplateStoreRepository {
         return templateMetaData;
     }
 
+    public void delete(UUID id) {
+
+        int execute = context.deleteFrom(TEMPLATE_STORE)
+                .where(TEMPLATE_STORE.ID.eq(id))
+                .execute();
+
+        if (execute == 0) {
+            throw new ObjectNotFoundException("OPERATIONALTEMPLATE", "No template with id = %s".formatted(id));
+        }
+    }
+
+    @Deprecated(forRemoval = true)
     public void delete(String templateId) {
 
         int execute = context.deleteFrom(TEMPLATE_STORE)
@@ -119,13 +139,14 @@ public class TemplateStoreRepository {
         }
     }
 
-    public Optional<TemplateMetaData> findByTemplateId(String templateId) {
+    public List<TemplateMetaData> findByTemplateIds(String... templateIds) {
+
+        if (templateIds.length == 0) return List.of();
 
         return context.select(TEMPLATE_STORE.CONTENT, TEMPLATE_STORE.CREATION_TIME, TEMPLATE_STORE.ID)
                 .from(TEMPLATE_STORE)
-                .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
-                .fetchOptional()
-                .map(TemplateStoreRepository::buildMetadata);
+                .where(TEMPLATE_STORE.TEMPLATE_ID.in(templateIds))
+                .fetch(TemplateStoreRepository::buildMetadata);
     }
 
     public Optional<String> findTemplateIdByUuid(UUID uuid) {

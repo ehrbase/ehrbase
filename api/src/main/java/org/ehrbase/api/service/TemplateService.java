@@ -18,8 +18,9 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
@@ -27,9 +28,13 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateService {
+
+    record TemplateDetails(
+            UUID id, String templateId, OffsetDateTime creationTime, String concept, String archetypeId) {}
+
     List<TemplateMetaDataDto> getAllTemplates();
 
-    Map<UUID, String> findAllTemplateIds();
+    Collection<TemplateDetails> findAllTemplates();
 
     Composition buildExample(String templateId);
 

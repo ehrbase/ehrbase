@@ -43,6 +43,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
@@ -72,7 +73,7 @@ public class ValidationServiceImp implements ValidationService {
 
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile("[a-zA-Z][a-zA-Z0-9-_:/&+?]*");
 
-    private final KnowledgeCacheServiceImp knowledgeCacheService;
+    private final TemplateCacheService templateCacheService;
 
     private final TerminologyService terminologyService;
     private final boolean folderValidationEnabled;
@@ -82,12 +83,12 @@ public class ValidationServiceImp implements ValidationService {
     private final Map<String, RMPathQuery> rmPathQueryCache = new ConcurrentHashMap<>();
 
     public ValidationServiceImp(
-            KnowledgeCacheServiceImp knowledgeCacheService,
+            TemplateCacheService templateCacheService,
             TerminologyService terminologyService,
             ValidationProperties validationProperties,
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
-        this.knowledgeCacheService = knowledgeCacheService;
+        this.templateCacheService = templateCacheService;
         this.terminologyService = terminologyService;
         this.folderValidationEnabled = validationProperties.validateFolders();
 
@@ -167,7 +168,7 @@ public class ValidationServiceImp implements ValidationService {
     private void check(String templateID, Composition composition) {
         WebTemplate webTemplate;
         try {
-            webTemplate = knowledgeCacheService.getInternalTemplate(templateID);
+            webTemplate = templateCacheService.getInternalTemplate(templateID);
         } catch (IllegalArgumentException e) {
             throw new UnprocessableEntityException(e.getMessage());
         }
