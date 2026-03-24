@@ -19,6 +19,7 @@ package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
+import static org.ehrbase.jooq.pg.util.AdditionalSQLFunctions.regexp_match_single_group;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,14 +37,13 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.jooq.pg.tables.TemplateStore;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.ehrbase.service.TimeProvider;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record3;
-import org.jooq.XML;
-import org.jooq.impl.DSL;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Repository;
 
@@ -83,22 +83,17 @@ public class TemplateStoreRepository {
     }
 
     public List<TemplateService.TemplateDetails> findAllTemplates() {
-        Field<XML> xmlContent = TEMPLATE_STORE.CONTENT.cast(XML.class);
+        TemplateStore templateStore = TEMPLATE_STORE.as("s");
+        Field<String> xmlContent = templateStore.CONTENT;
         return context.select(
-                        TEMPLATE_STORE.ID,
-                        TEMPLATE_STORE.TEMPLATE_ID,
-                        TEMPLATE_STORE.CREATION_TIME,
-                        DSL.arrayGet(
-                                DSL.xmlquery("/*/*[local-name()=\"concept\"]/text()")
-                                        .passing(xmlContent)
-                                        .cast(String[].class),
-                                1),
-                        DSL.arrayGet(
-                                DSL.xmlquery("/*/*[local-name()=\"archetype_id\"]/*[local-name()=\"value\"]/text()")
-                                        .passing(xmlContent)
-                                        .cast(String[].class),
-                                1))
-                .from(TEMPLATE_STORE)
+                        templateStore.ID,
+                        templateStore.TEMPLATE_ID,
+                        templateStore.CREATION_TIME,
+                        regexp_match_single_group(xmlContent, "<(?:\\w+:)?concept>\\s*([^<]*[^<\\s])\\s*<"),
+                        regexp_match_single_group(
+                                xmlContent,
+                                "<(?:\\w+:)?archetype_id>\\s*<(?:\\w+:)?value>\\s*(openEHR-EHR-COMPOSITION\\.[\\w.-]+)\\s*<"))
+                .from(templateStore)
                 .fetch(r -> new TemplateService.TemplateDetails(
                         r.component1(), r.component2(), r.component3(), r.component4(), r.component5()));
     }

@@ -35,11 +35,11 @@ public class CacheProperties {
     private boolean templateInitOnStartup = true;
 
     private boolean storedQueryInitOnStartup = true;
-    private CacheConfig operationalTemplateCacheConfig;
-    private CacheConfig internalTemplateCacheConfig;
+    private CacheConfig operationalTemplateCacheConfig = new CacheConfig();
+    private CacheConfig internalTemplateCacheConfig = new CacheConfig();
     private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
     private CacheConfig userIdCacheConfig = new CacheConfig();
-    private CacheConfig storedQueryCacheConfig;
+    private CacheConfig storedQueryCacheConfig = new CacheConfig();
 
     public boolean isTemplateInitOnStartup() {
         return templateInitOnStartup;

@@ -25,6 +25,7 @@ import static org.mockito.Mockito.spy;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.cache.CacheProvider;
@@ -76,9 +77,9 @@ class DefaultTemplateCacheServiceTest {
 
         TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        doReturn(Optional.of(testTemplate.metaData()))
+        doReturn(Optional.of(UUID.randomUUID()))
                 .when(mockTemplateStorage)
-                .readTemplate(testTemplate.templateId());
+                .findUuidByTemplateId(testTemplate.templateId());
 
         TemplateCacheService service = service();
         OPERATIONALTEMPLATE operationaltemplate = testTemplate.operationaltemplate();

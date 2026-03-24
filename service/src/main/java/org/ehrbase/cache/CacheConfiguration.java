@@ -85,11 +85,9 @@ public class CacheConfiguration {
 
         Optional<CacheProperties.CacheConfig> cc = Optional.of(cacheConfig);
 
-        cc.map(CacheProperties.CacheConfig::getInitialCapacity)
-                .ifPresent(caffeine::initialCapacity);
+        cc.map(CacheProperties.CacheConfig::getInitialCapacity).ifPresent(caffeine::initialCapacity);
 
-        cc.map(CacheProperties.CacheConfig::getMaximumSize)
-                .ifPresent(caffeine::maximumSize);
+        cc.map(CacheProperties.CacheConfig::getMaximumSize).ifPresent(caffeine::maximumSize);
 
         cc.map(CacheProperties.CacheConfig::getExpireAfterWrite)
                 .ifPresent(d -> caffeine.expireAfterWrite(d.getDuration(), d.getUnit()));
