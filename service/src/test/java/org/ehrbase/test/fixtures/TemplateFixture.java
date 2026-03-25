@@ -18,13 +18,15 @@
 package org.ehrbase.test.fixtures;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.openehr.schemas.v1.TemplateDocument;
+import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 public class TemplateFixture {
 
@@ -36,19 +38,21 @@ public class TemplateFixture {
 
     public static TestTemplate fixtureTemplate(
             OperationalTemplateTestData operationalTemplateTestData, UUID internalUUID) {
-        TemplateDocument templateDocument;
-        try (var in = operationalTemplateTestData.getStream()) {
-            templateDocument = TemplateDocument.Factory.parse(in);
-        } catch (XmlException | IOException e) {
-            throw new RuntimeException(e);
+        String templateDocument;
+        try {
+            templateDocument = IOUtils.toString(operationalTemplateTestData.getStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
-        OPERATIONALTEMPLATE template = templateDocument.getTemplate();
         TemplateMetaData metaData = new TemplateMetaData();
-        metaData.setOperationalTemplate(template);
+        metaData.setOperationalTemplate(templateDocument);
         metaData.setInternalId(internalUUID);
         metaData.setCreatedOn(OffsetDateTime.parse("2020-10-10T12:00:00Z"));
 
-        return new TestTemplate(operationalTemplateTestData.getTemplateId(), template, metaData);
+        return new TestTemplate(
+                operationalTemplateTestData.getTemplateId(),
+                TemplateService.buildOperationalTemplate(templateDocument),
+                metaData);
     }
 }

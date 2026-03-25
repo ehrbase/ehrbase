@@ -22,7 +22,9 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -80,4 +82,14 @@ public interface TemplateService {
      * @return - Number of deleted templates
      */
     int adminDeleteAllTemplates();
+
+    static OPERATIONALTEMPLATE buildOperationalTemplate(String content) {
+        org.openehr.schemas.v1.TemplateDocument document;
+        try {
+            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(content);
+        } catch (XmlException e) {
+            throw new InternalServerException(e.getMessage());
+        }
+        return document.getTemplate();
+    }
 }

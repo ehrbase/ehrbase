@@ -491,7 +491,7 @@ public class CompositionServiceImp implements CompositionService {
         return new TemplateProvider() {
             @Override
             public Optional<OPERATIONALTEMPLATE> find(String s) {
-                return templateCacheService.retrieveOperationalTemplate(s);
+                throw new UnsupportedOperationException();
             }
 
             @Override

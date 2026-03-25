@@ -20,18 +20,12 @@ package org.ehrbase.repository;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.xml.namespace.QName;
-import org.apache.commons.io.IOUtils;
-import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlOptions;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
@@ -98,7 +92,7 @@ public class TemplateStoreRepository {
     private static TemplateMetaData buildMetadata(
             UUID internalId, OffsetDateTime creationTime, String templateContent) {
         TemplateMetaData templateMetaData = new TemplateMetaData();
-        templateMetaData.setOperationalTemplate(buildOperationalTemplate(templateContent));
+        templateMetaData.setOperationalTemplate(templateContent);
         templateMetaData.setCreatedOn(creationTime);
         templateMetaData.setInternalId(internalId);
         return templateMetaData;
@@ -149,17 +143,6 @@ public class TemplateStoreRepository {
                 .from(TEMPLATE_STORE)
                 .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
                 .fetchOptional(TEMPLATE_STORE.ID);
-    }
-
-    private static OPERATIONALTEMPLATE buildOperationalTemplate(String content) {
-        org.openehr.schemas.v1.TemplateDocument document;
-        try (InputStream in = IOUtils.toInputStream(content, StandardCharsets.UTF_8)) {
-            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
-        } catch (XmlException | IOException e) {
-            throw new InternalServerException(e.getMessage());
-        }
-
-        return document.getTemplate();
     }
 
     private static void setTemplateFields(

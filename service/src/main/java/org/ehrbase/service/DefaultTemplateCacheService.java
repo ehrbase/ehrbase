@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import java.text.MessageFormat;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -149,37 +148,21 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     }
 
     private void addToCache(TemplateMetaData template) {
-        String templateId = TemplateUtils.getTemplateId(template.getOperationaltemplate());
+        OPERATIONALTEMPLATE operationaltemplate =
+                TemplateService.buildOperationalTemplate(template.getOperationaltemplate());
+        String templateId = TemplateUtils.getTemplateId(operationaltemplate);
         // FIXME CDR-2305 cache must be clear: web or opt
         CacheProvider.TEMPLATE_CACHE.put(
-                cacheProvider,
-                templateId,
-                Pair.of(buildWebTemplate(template.getOperationaltemplate()), template.getCreatedOn()));
-        CacheProvider.TEMPLATE_OPT_CACHE.put(
-                cacheProvider, templateId, Pair.of(template.getOperationaltemplate(), template.getCreatedOn()));
+                cacheProvider, templateId, Pair.of(buildWebTemplate(operationaltemplate), template.getCreatedOn()));
         CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, template.getInternalId(), templateId);
         CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, templateId, template.getInternalId());
     }
 
-    private void ensureCached(List<TemplateService.TemplateDetails> templateDetails) {
-        // FIXME cache must be clear: web or opt
-        String[] uncached = templateDetails.stream()
-                .filter(d -> CacheProvider.TEMPLATE_CACHE
-                        .getCached(cacheProvider, d.templateId())
-                        .filter(v -> v.getRight().equals(d.creationTime()))
-                        .isEmpty())
-                .map(TemplateService.TemplateDetails::templateId)
-                .toArray(String[]::new);
-        if (uncached.length > 0) {
-            cacheTemplates(uncached);
-        }
-    }
-
     private void invalidateCaches(String templateId, UUID internalId) {
         CacheProvider.TEMPLATE_CACHE.evict(cacheProvider, templateId);
+        CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
         CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
         CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
-        CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
     }
 
     @Override
@@ -197,16 +180,15 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         return templateStorage.findAllTemplates();
     }
 
-    public Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key) {
-        log.debug("retrieveOperationalTemplate({})", key);
-        Pair<OPERATIONALTEMPLATE, OffsetDateTime> result = CacheProvider.TEMPLATE_OPT_CACHE.get(
+    public String retrieveOperationalTemplate(String templateId) {
+        log.trace("retrieveOperationalTemplate({})", templateId);
+        return CacheProvider.TEMPLATE_OPT_CACHE.get(
                 cacheProvider,
-                key,
+                templateId,
                 () -> templateStorage
-                        .readTemplate(key)
-                        .map(m -> Pair.of(m.getOperationaltemplate(), m.getCreatedOn()))
+                        .readTemplate(templateId)
+                        .map(TemplateMetaData::getOperationaltemplate)
                         .orElse(null));
-        return Optional.ofNullable(result).map(Pair::getLeft);
     }
 
     /**
@@ -271,26 +253,19 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
             return CacheProvider.TEMPLATE_CACHE
                     .get(cacheProvider, templateId, () -> {
                         log.info("Updating WebTemplate cache for template: {}", templateId);
-
-                        Optional<Pair<OPERATIONALTEMPLATE, OffsetDateTime>> cachedOpt =
-                                CacheProvider.TEMPLATE_OPT_CACHE.getCached(cacheProvider, templateId);
-
-                        return cachedOpt
-                                .map(d -> Pair.of(buildWebTemplate(d.getLeft()), d.getRight()))
-                                .orElseGet(() -> retrieveInternalTemplate(templateId));
+                        return templateStorage
+                                .readTemplate(templateId)
+                                .map(d -> Pair.of(
+                                        buildWebTemplate(
+                                                TemplateService.buildOperationalTemplate(d.getOperationaltemplate())),
+                                        d.getCreatedOn()))
+                                .orElseThrow(() -> new IllegalArgumentException(
+                                        "Could not retrieve template for template Id: " + templateId));
                     })
                     .getLeft();
         } catch (Cache.ValueRetrievalException ex) {
             throw (RuntimeException) ex.getCause();
         }
-    }
-
-    private Pair<WebTemplate, OffsetDateTime> retrieveInternalTemplate(String templateId) {
-        return templateStorage
-                .readTemplate(templateId)
-                .map(d -> Pair.of(buildWebTemplate(d.getOperationaltemplate()), d.getCreatedOn()))
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Could not retrieve template for template Id: " + templateId));
     }
 
     private WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate) {

@@ -33,13 +33,12 @@ public interface TemplateCacheService {
     List<TemplateService.TemplateDetails> findAllTemplates();
 
     /**
-     * retrieve an operational template document instance
+     * retrieve an operational template document
      *
      * @param key the name of the operational template
-     * @return an OPERATIONALTEMPLATE document instance or null
-     * @see org.openehr.schemas.v1.OPERATIONALTEMPLATE
+     * @return String representation of an OPERATIONALTEMPLATE document or null
      */
-    Optional<OPERATIONALTEMPLATE> retrieveOperationalTemplate(String key);
+    String retrieveOperationalTemplate(String key);
 
     WebTemplate getInternalTemplate(String templateId);
 

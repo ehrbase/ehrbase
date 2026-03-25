@@ -19,19 +19,18 @@ package org.ehrbase.api.knowledge;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public class TemplateMetaData {
-    private OPERATIONALTEMPLATE operationaltemplate;
+    private String operationaltemplate;
     private OffsetDateTime createdOn;
 
     private UUID internalId;
 
-    public OPERATIONALTEMPLATE getOperationaltemplate() {
+    public String getOperationaltemplate() {
         return operationaltemplate;
     }
 
-    public void setOperationalTemplate(OPERATIONALTEMPLATE operationaltemplate) {
+    public void setOperationalTemplate(String operationaltemplate) {
         this.operationaltemplate = operationaltemplate;
     }
 

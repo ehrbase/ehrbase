@@ -27,13 +27,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.cache.Cache;
 
 public interface CacheProvider {
     EhrBaseCache<String, Pair<WebTemplate, OffsetDateTime>> TEMPLATE_CACHE = new EhrBaseCache<>("templateCache");
-    EhrBaseCache<String, Pair<OPERATIONALTEMPLATE, OffsetDateTime>> TEMPLATE_OPT_CACHE =
-            new EhrBaseCache<>("templateOptCache");
+    EhrBaseCache<String, String> TEMPLATE_OPT_CACHE = new EhrBaseCache<>("templateOptCache");
     EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE = new EhrBaseCache<>("templateIdUuidCache");
     EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE = new EhrBaseCache<>("templateUuidIdCache");
 

@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import javax.xml.namespace.QName;
-import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -125,16 +123,10 @@ public class TemplateServiceImp implements TemplateService {
             throw new NotAcceptableException("Requested operational template type not supported");
         }
 
-        Optional<OPERATIONALTEMPLATE> existingTemplate =
-                this.templateCacheService.retrieveOperationalTemplate(templateId);
+        String existingTemplate = this.templateCacheService.retrieveOperationalTemplate(templateId);
 
-        return existingTemplate
+        return Optional.ofNullable(existingTemplate)
                 // XXX CDR-2305 should this be cached???
-                .map(template -> {
-                    XmlOptions opts = new XmlOptions();
-                    opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
-                    return template.xmlText(opts);
-                })
                 .orElseThrow(
                         () -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
     }
