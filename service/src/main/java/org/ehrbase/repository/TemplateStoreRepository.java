@@ -19,7 +19,6 @@ package org.ehrbase.repository;
 
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.tables.TemplateStore.TEMPLATE_STORE;
-import static org.ehrbase.jooq.pg.util.AdditionalSQLFunctions.regexp_match_single_group;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +27,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import javax.xml.namespace.QName;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
@@ -42,7 +40,6 @@ import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
 import org.ehrbase.service.TimeProvider;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
-import org.jooq.Field;
 import org.jooq.Record3;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Repository;
@@ -60,10 +57,10 @@ public class TemplateStoreRepository {
 
     public TemplateMetaData store(OPERATIONALTEMPLATE operationaltemplate) {
         TemplateStoreRecord templateStoreRecord = context.newRecord(TEMPLATE_STORE);
-        setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(UuidGenerator.randomUUID()));
-        templateStoreRecord.setCreationTime(timeProvider.getNow());
+        templateStoreRecord.setId(UuidGenerator.randomUUID());
+        setTemplateFields(operationaltemplate, templateStoreRecord, timeProvider);
         templateStoreRecord.store();
-        return TemplateStoreRepository.buildMetadata(
+        return buildMetadata(
                 templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
@@ -75,24 +72,20 @@ public class TemplateStoreRepository {
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "OPERATIONALTEMPLATE", "No template with id = %s".formatted(templateId)));
 
-        setTemplate(operationaltemplate, templateStoreRecord, rec -> rec.setId(rec.getId()));
-        templateStoreRecord.setCreationTime(timeProvider.getNow());
+        setTemplateFields(operationaltemplate, templateStoreRecord, timeProvider);
         templateStoreRecord.update();
-        return TemplateStoreRepository.buildMetadata(
+        return buildMetadata(
                 templateStoreRecord.getId(), templateStoreRecord.getCreationTime(), templateStoreRecord.getContent());
     }
 
     public List<TemplateService.TemplateDetails> findAllTemplates() {
         TemplateStore templateStore = TEMPLATE_STORE.as("s");
-        Field<String> xmlContent = templateStore.CONTENT;
         return context.select(
                         templateStore.ID,
                         templateStore.TEMPLATE_ID,
                         templateStore.CREATION_TIME,
-                        regexp_match_single_group(xmlContent, "<(?:\\w+:)?concept>\\s*([^<]*[^<\\s])\\s*<"),
-                        regexp_match_single_group(
-                                xmlContent,
-                                "<(?:\\w+:)?archetype_id>\\s*<(?:\\w+:)?value>\\s*(openEHR-EHR-COMPOSITION\\.[\\w.-]+)\\s*<"))
+                        templateStore.CONCEPT,
+                        templateStore.ROOT_ARCHETYPE)
                 .from(templateStore)
                 .fetch(r -> new TemplateService.TemplateDetails(
                         r.component1(), r.component2(), r.component3(), r.component4(), r.component5()));
@@ -169,15 +162,19 @@ public class TemplateStoreRepository {
         return document.getTemplate();
     }
 
-    private static void setTemplate(
-            OPERATIONALTEMPLATE template,
-            TemplateStoreRecord templateStoreRecord,
-            Consumer<TemplateStoreRecord> setId) {
-        setId.accept(templateStoreRecord);
+    private static void setTemplateFields(
+            OPERATIONALTEMPLATE template, TemplateStoreRecord templateStoreRecord, TimeProvider timeProvider) {
         templateStoreRecord.setTemplateId(template.getTemplateId().getValue());
+        templateStoreRecord.setCreationTime(timeProvider.getNow());
+
         XmlOptions opts = new XmlOptions();
-        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
+        opts.setSaveSyntheticDocumentElement(
+                new QName("http://schemas.openehr.org/v1", "template")); // XXX CDR-2305 v2???
         templateStoreRecord.setContent(template.xmlText(opts));
+
+        templateStoreRecord.setConcept(template.getConcept());
+        templateStoreRecord.setRootArchetype(
+                template.getDefinition().getArchetypeId().getValue());
     }
 
     public List<String> getTemplateUsages() {
