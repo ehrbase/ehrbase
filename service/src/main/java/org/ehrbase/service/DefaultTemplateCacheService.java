@@ -18,10 +18,12 @@
 package org.ehrbase.service;
 
 import java.text.MessageFormat;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
@@ -46,7 +48,6 @@ import org.springframework.stereotype.Service;
 /**
  * Lookup and caching for Web and Operational Templates.<br>
  * A list of existing templates is cached separately from the templates that are being used.<br>
- * TODO CDR-2305 During startup both can be initialized? Or better only WebTemplates?
  *
  * Szenarios:
  * <ol>
@@ -73,24 +74,30 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final TemplateStorage templateStorage;
-    private final CacheProvider cacheProvider;
+    // TODO CDR-2305 merge TemplateServiceImp, DefaultTemplateCacheService, TemplateDBStorageService;
+    //  TODO CDR-2305 remove TemplateStorage; refine TemplateCacheService
+    private final CacheHelper cacheHelper;
 
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
     public DefaultTemplateCacheService(TemplateStorage templateStorage, CacheProvider cacheProvider) {
         this.templateStorage = templateStorage;
-        this.cacheProvider = cacheProvider;
+        this.cacheHelper = new CacheHelper(cacheProvider);
     }
 
     @PostConstruct
     public void init() {
         if (initTemplateCache) {
+            // TODO CDR-2305 customizable preload strategy; fill templateId/uuid caches
+
             // TODO CDR-2305 initTemplateCache lists templateIds
             String[] templateIds = templateStorage.findAllTemplates().stream()
                     .map(TemplateService.TemplateDetails::templateId)
                     .toArray(String[]::new);
-            cacheTemplates(templateIds);
+            List<TemplateMetaData> templateMetaData = templateStorage.readTemplates(templateIds);
+            log.info("Preparing WebTemplate cache for {} templates", templateMetaData.size());
+            templateMetaData.forEach(this::addWebTemplateToCache);
         }
     }
 
@@ -129,10 +136,10 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
 
         if (canOverwrite) {
             // Caches might be containing wrong data
-            invalidateCaches(templateId, templateMetaData.getInternalId());
+            cacheHelper.invalidateCaches(templateId, templateMetaData.getInternalId());
         }
         log.info("Updating WebTemplate cache for template: {}", templateId);
-        addToCache(templateMetaData);
+        addWebTemplateToCache(templateMetaData);
 
         return templateId;
     }
@@ -147,46 +154,27 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         return addOperationalTemplateIntern(template, true);
     }
 
-    private void addToCache(TemplateMetaData template) {
+    private void addWebTemplateToCache(TemplateMetaData template) {
         OPERATIONALTEMPLATE operationaltemplate =
                 TemplateService.buildOperationalTemplate(template.getOperationaltemplate());
         String templateId = TemplateUtils.getTemplateId(operationaltemplate);
-        // FIXME CDR-2305 cache must be clear: web or opt
-        CacheProvider.TEMPLATE_CACHE.put(
-                cacheProvider, templateId, Pair.of(buildWebTemplate(operationaltemplate), template.getCreatedOn()));
-        CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, template.getInternalId(), templateId);
-        CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, templateId, template.getInternalId());
-    }
+        WebTemplate tpl = buildWebTemplate(operationaltemplate);
 
-    private void invalidateCaches(String templateId, UUID internalId) {
-        CacheProvider.TEMPLATE_CACHE.evict(cacheProvider, templateId);
-        CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
-        CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
-        CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
-    }
-
-    @Override
-    public List<TemplateMetaData> cacheTemplates(String... templateIds) {
-        List<TemplateMetaData> templateMetaData = templateStorage.readTemplates(templateIds);
-        // CDR-2305 FIXME
-        log.info("Updating WebTemplate cache for {} templates", templateMetaData.size());
-        templateMetaData.forEach(this::addToCache);
-        return templateMetaData;
+        cacheHelper.addToCache(template.getInternalId(), templateId, tpl, template.getCreatedOn());
     }
 
     @Override
     public List<TemplateService.TemplateDetails> findAllTemplates() {
-        // TODO CDR-2305 cache
+        // TODO CDR-2305 cache ???
         return templateStorage.findAllTemplates();
     }
 
     public String retrieveOperationalTemplate(String templateId) {
         log.trace("retrieveOperationalTemplate({})", templateId);
-        return CacheProvider.TEMPLATE_OPT_CACHE.get(
-                cacheProvider,
+        return cacheHelper.retrieveOperationalTemplate(
                 templateId,
-                () -> templateStorage
-                        .readTemplate(templateId)
+                tid -> templateStorage
+                        .readTemplate(tid)
                         .map(TemplateMetaData::getOperationaltemplate)
                         .orElse(null));
     }
@@ -199,10 +187,7 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         // Remove template from storage
         findTemplateIdByUuid(uuid).ifPresent(templateId -> {
             templateStorage.deleteTemplate(uuid);
-            CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, uuid);
-            CacheProvider.TEMPLATE_CACHE.evict(cacheProvider, templateId);
-            CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
-            CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
+            cacheHelper.invalidateCaches(templateId, uuid);
         });
     }
 
@@ -210,24 +195,15 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     public int deleteAllOperationalTemplates() {
         List<TemplateService.TemplateDetails> deletedTemplates = templateStorage.deleteAllTemplates();
 
-        deletedTemplates.forEach(t -> {
-            CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, t.id());
-            CacheProvider.TEMPLATE_CACHE.evict(cacheProvider, t.templateId());
-            CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, t.templateId());
-            CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, t.templateId());
-        });
+        deletedTemplates.forEach(t -> cacheHelper.invalidateCaches(t.templateId(), t.id()));
         return deletedTemplates.size();
     }
 
     @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
-            return Optional.of(CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, uuid, () -> {
-                String templateId = templateStorage.findTemplateIdByUuid(uuid).orElseThrow();
-                // reverse cache
-                CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> uuid);
-                return templateId;
-            }));
+            return Optional.of(cacheHelper.findTemplateIdByUuid(
+                    uuid, u -> templateStorage.findTemplateIdByUuid(u).orElseThrow()));
         } catch (Cache.ValueRetrievalException ex) {
             return handleCacheMismatch(ex);
         }
@@ -236,13 +212,8 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
-            return Optional.of(CacheProvider.TEMPLATE_ID_UUID_CACHE.get(cacheProvider, templateId, () -> {
-                UUID internalId =
-                        templateStorage.findUuidByTemplateId(templateId).orElseThrow();
-                // reverse cache
-                CacheProvider.TEMPLATE_UUID_ID_CACHE.get(cacheProvider, internalId, () -> templateId);
-                return internalId;
-            }));
+            return Optional.of(cacheHelper.findUuidByTemplateId(
+                    templateId, tid -> templateStorage.findUuidByTemplateId(tid).orElseThrow()));
         } catch (Cache.ValueRetrievalException ex) {
             return handleCacheMismatch(ex);
         }
@@ -250,17 +221,17 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
 
     public WebTemplate getInternalTemplate(String templateId) {
         try {
-            return CacheProvider.TEMPLATE_CACHE
-                    .get(cacheProvider, templateId, () -> {
-                        log.info("Updating WebTemplate cache for template: {}", templateId);
+            return cacheHelper
+                    .getInternalTemplate(templateId, tid -> {
+                        log.info("Updating WebTemplate cache for template: {}", tid);
                         return templateStorage
-                                .readTemplate(templateId)
+                                .readTemplate(tid)
                                 .map(d -> Pair.of(
                                         buildWebTemplate(
                                                 TemplateService.buildOperationalTemplate(d.getOperationaltemplate())),
                                         d.getCreatedOn()))
                                 .orElseThrow(() -> new IllegalArgumentException(
-                                        "Could not retrieve template for template Id: " + templateId));
+                                        "Could not retrieve template for template Id: " + tid));
                     })
                     .getLeft();
         } catch (Cache.ValueRetrievalException ex) {
@@ -281,7 +252,7 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
      *
      * @param template the template to validate
      */
-    private void validateTemplate(OPERATIONALTEMPLATE template) {
+    private static void validateTemplate(OPERATIONALTEMPLATE template) {
         if (template == null) {
             throw new InvalidApiParameterException("Could not parse input template");
         }
@@ -317,5 +288,57 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
             case RuntimeException re -> throw re;
             default -> throw ex;
         };
+    }
+
+    private static final class CacheHelper {
+        private final CacheProvider cacheProvider;
+
+        public CacheHelper(CacheProvider cacheProvider) {
+            this.cacheProvider = cacheProvider;
+        }
+
+        public void addToCache(UUID internalId, String templateId, WebTemplate tpl, OffsetDateTime createdOn) {
+            CacheProvider.TEMPLATE_CACHE.put(cacheProvider, templateId, Pair.of(tpl, createdOn));
+            CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, internalId, templateId);
+            CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, templateId, internalId);
+        }
+
+        public void invalidateCaches(String templateId, UUID internalId) {
+            CacheProvider.TEMPLATE_CACHE.evict(cacheProvider, templateId);
+            CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
+            CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
+            CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
+        }
+
+        public String retrieveOperationalTemplate(String templateId, Function<String, String> loader) {
+            return find(CacheProvider.TEMPLATE_OPT_CACHE, templateId, loader);
+        }
+
+        public String findTemplateIdByUuid(UUID uuid, Function<UUID, String> loader) {
+            return find(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, u -> {
+                String tid = loader.apply(u);
+                // reverse cache
+                CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, tid, u);
+                return tid;
+            });
+        }
+
+        public UUID findUuidByTemplateId(String templateId, Function<String, UUID> loader) {
+            return find(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, tid -> {
+                UUID u = loader.apply(tid);
+                // reverse cache
+                CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, u, tid);
+                return u;
+            });
+        }
+
+        public Pair<WebTemplate, OffsetDateTime> getInternalTemplate(
+                String templateId, Function<String, Pair<WebTemplate, OffsetDateTime>> loader) {
+            return find(CacheProvider.TEMPLATE_CACHE, templateId, loader);
+        }
+
+        private <K, V> V find(CacheProvider.EhrBaseCache<K, V> cache, K key, Function<K, V> loader) {
+            return cache.get(cacheProvider, key, () -> loader.apply(key));
+        }
     }
 }

@@ -28,8 +28,6 @@ public interface TemplateCacheService {
 
     String addOperationalTemplate(OPERATIONALTEMPLATE template);
 
-    List<TemplateMetaData> cacheTemplates(String... templateIds);
-
     List<TemplateService.TemplateDetails> findAllTemplates();
 
     /**
