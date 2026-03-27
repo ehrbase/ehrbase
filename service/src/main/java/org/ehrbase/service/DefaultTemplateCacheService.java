@@ -36,6 +36,7 @@ import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
+import org.ehrbase.repository.TemplateStoreRepository;
 import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.TemplateDocument;
@@ -73,7 +74,9 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
      */
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private final TemplateStorage templateStorage;
+    private final TemplateStoreRepository templateStoreRepository;
+
+    private final TemplateDBStorageService templateStorage;
     // TODO CDR-2305 merge TemplateServiceImp, DefaultTemplateCacheService, TemplateDBStorageService;
     //  TODO CDR-2305 remove TemplateStorage; refine TemplateCacheService
     private final CacheHelper cacheHelper;
@@ -81,7 +84,11 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
-    public DefaultTemplateCacheService(TemplateStorage templateStorage, CacheProvider cacheProvider) {
+    public DefaultTemplateCacheService(
+            TemplateStoreRepository templateStoreRepository,
+            TemplateDBStorageService templateStorage,
+            CacheProvider cacheProvider) {
+        this.templateStoreRepository = templateStoreRepository;
         this.templateStorage = templateStorage;
         this.cacheHelper = new CacheHelper(cacheProvider);
     }
@@ -92,10 +99,10 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
             // TODO CDR-2305 customizable preload strategy; fill templateId/uuid caches
 
             // TODO CDR-2305 initTemplateCache lists templateIds
-            String[] templateIds = templateStorage.findAllTemplates().stream()
+            String[] templateIds = templateStoreRepository.findAllTemplates().stream()
                     .map(TemplateService.TemplateDetails::templateId)
                     .toArray(String[]::new);
-            List<TemplateMetaData> templateMetaData = templateStorage.readTemplates(templateIds);
+            List<TemplateMetaData> templateMetaData = templateStoreRepository.findByTemplateIds(templateIds);
             log.info("Preparing WebTemplate cache for {} templates", templateMetaData.size());
             templateMetaData.forEach(this::addWebTemplateToCache);
         }
@@ -165,16 +172,25 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
 
     @Override
     public List<TemplateService.TemplateDetails> findAllTemplates() {
-        // TODO CDR-2305 cache ???
-        return templateStorage.findAllTemplates();
+        // TODO CDR-2305 cache? For AQL absolutely; for REST unclear
+        return templateStoreRepository.findAllTemplates();
+    }
+
+    /**
+     * Find and return a saved Template by templateId
+     * @param templateId
+     * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
+     */
+    private Optional<TemplateMetaData> readTemplate(String templateId) {
+        return templateStoreRepository.findByTemplateIds(templateId).stream().findFirst();
     }
 
     public String retrieveOperationalTemplate(String templateId) {
         log.trace("retrieveOperationalTemplate({})", templateId);
         return cacheHelper.retrieveOperationalTemplate(
                 templateId,
-                tid -> templateStorage
-                        .readTemplate(tid)
+                tid -> templateStoreRepository.findByTemplateIds(tid).stream()
+                        .findFirst()
                         .map(TemplateMetaData::getOperationaltemplate)
                         .orElse(null));
     }
@@ -203,7 +219,7 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         try {
             return Optional.of(cacheHelper.findTemplateIdByUuid(
-                    uuid, u -> templateStorage.findTemplateIdByUuid(u).orElseThrow()));
+                    uuid, u -> templateStoreRepository.findTemplateIdByUuid(u).orElseThrow()));
         } catch (Cache.ValueRetrievalException ex) {
             return handleCacheMismatch(ex);
         }
@@ -213,7 +229,8 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         try {
             return Optional.of(cacheHelper.findUuidByTemplateId(
-                    templateId, tid -> templateStorage.findUuidByTemplateId(tid).orElseThrow()));
+                    templateId,
+                    tid -> templateStoreRepository.findUuidByTemplateId(tid).orElseThrow()));
         } catch (Cache.ValueRetrievalException ex) {
             return handleCacheMismatch(ex);
         }
@@ -224,8 +241,8 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
             return cacheHelper
                     .getInternalTemplate(templateId, tid -> {
                         log.info("Updating WebTemplate cache for template: {}", tid);
-                        return templateStorage
-                                .readTemplate(tid)
+                        return templateStoreRepository.findByTemplateIds(tid).stream()
+                                .findFirst()
                                 .map(d -> Pair.of(
                                         buildWebTemplate(
                                                 TemplateService.buildOperationalTemplate(d.getOperationaltemplate())),

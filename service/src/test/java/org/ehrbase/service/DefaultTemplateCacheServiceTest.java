@@ -31,6 +31,7 @@ import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.repository.TemplateStoreRepository;
 import org.ehrbase.test.fixtures.TemplateFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,14 @@ import org.springframework.cache.support.SimpleCacheManager;
 
 class DefaultTemplateCacheServiceTest {
 
-    private final TemplateStorage mockTemplateStorage = mock();
+    private final TemplateStoreRepository mockTemplateStoreRepository = mock();
+    private final TemplateDBStorageService mockTemplateStore = mock();
     private SimpleCacheManager cacheManager;
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(mockTemplateStorage);
+        Mockito.reset(mockTemplateStoreRepository);
+        Mockito.reset(mockTemplateStore);
 
         cacheManager = new SimpleCacheManager();
         cacheManager.setCaches(List.of(
@@ -60,7 +63,8 @@ class DefaultTemplateCacheServiceTest {
 
     private TemplateCacheService service() {
 
-        return new DefaultTemplateCacheService(mockTemplateStorage, new CacheProviderImp(cacheManager));
+        return new DefaultTemplateCacheService(
+                mockTemplateStoreRepository, mockTemplateStore, new CacheProviderImp(cacheManager));
     }
 
     @Test
@@ -77,9 +81,8 @@ class DefaultTemplateCacheServiceTest {
 
         TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        doReturn(Optional.of(UUID.randomUUID()))
-                .when(mockTemplateStorage)
-                .findUuidByTemplateId(testTemplate.templateId());
+        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+                .thenReturn(Optional.of(UUID.randomUUID()));
 
         TemplateCacheService service = service();
         OPERATIONALTEMPLATE operationaltemplate = testTemplate.operationaltemplate();
@@ -91,13 +94,11 @@ class DefaultTemplateCacheServiceTest {
 
     @Test
     void addOperationalTemplateAllowOverwrite() {
-
         TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        doReturn(Optional.of(testTemplate.metaData()))
-                .when(mockTemplateStorage)
-                .readTemplate(testTemplate.templateId());
-        doReturn(true).when(mockTemplateStorage).allowTemplateOverwrite();
+        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+                .thenReturn(List.of(testTemplate.metaData()));
+        Mockito.when(mockTemplateStore.allowTemplateOverwrite()).thenReturn(true);
 
         TemplateCacheService service = spy(service());
         String templateId = service.addOperationalTemplate(testTemplate.operationaltemplate());
@@ -109,7 +110,7 @@ class DefaultTemplateCacheServiceTest {
 
         TemplateFixture.TestTemplate testTemplate = TemplateFixture.fixtureTemplate(operationalTemplateTestData);
 
-        doReturn(testTemplate.metaData()).when(mockTemplateStorage).storeTemplate(testTemplate.operationaltemplate());
+        doReturn(testTemplate.metaData()).when(mockTemplateStore).storeTemplate(testTemplate.operationaltemplate());
         return testTemplate;
     }
 }

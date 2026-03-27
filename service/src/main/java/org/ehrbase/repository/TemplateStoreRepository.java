@@ -37,8 +37,10 @@ import org.jooq.DSLContext;
 import org.jooq.Record3;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
+@Transactional
 public class TemplateStoreRepository {
 
     private final DSLContext context;
@@ -121,6 +123,11 @@ public class TemplateStoreRepository {
         }
     }
 
+    /**
+     * Find and returns saved Templates by templateId
+     * @param templateIds
+     * @return the templates
+     */
     public List<TemplateMetaData> findByTemplateIds(String... templateIds) {
 
         if (templateIds.length == 0) return List.of();

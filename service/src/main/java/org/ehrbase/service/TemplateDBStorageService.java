@@ -18,7 +18,6 @@
 package org.ehrbase.service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
@@ -36,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
-public class TemplateDBStorageService implements TemplateStorage {
+public class TemplateDBStorageService {
 
     private static final String PROP_ALLOW_TEMPLATE_OVERWRITE = "ehrbase.template.allow-overwrite";
 
@@ -64,20 +63,23 @@ public class TemplateDBStorageService implements TemplateStorage {
         }
     }
 
-    @Override
+    /**
+     * Determinate if template overwriting is enabled for this storage
+     * @return allowTemplateOverwrite
+     */
     public boolean allowTemplateOverwrite() {
         return allowTemplateOverwrite;
     }
 
-    @Override
-    public List<TemplateDetails> findAllTemplates() {
-        return templateStoreRepository.findAllTemplates();
-    }
-
-    @Override
+    /**
+     * Save a template in the store
+     *
+     * @param template @see {@link OPERATIONALTEMPLATE}
+     * @throws RuntimeException template Id or uuid are not unique
+     */
     public TemplateMetaData storeTemplate(OPERATIONALTEMPLATE template) {
         String templateId = TemplateUtils.getTemplateId(template);
-        if (findUuidByTemplateId(templateId).isEmpty()) {
+        if (templateStoreRepository.findUuidByTemplateId(templateId).isEmpty()) {
             return templateStoreRepository.store(template);
         } else {
             boolean templateUsed = compositionRepository.isTemplateUsed(templateId);
@@ -98,11 +100,6 @@ public class TemplateDBStorageService implements TemplateStorage {
         }
     }
 
-    @Override
-    public List<TemplateMetaData> readTemplates(String... templateIds) {
-        return templateStoreRepository.findByTemplateIds(templateIds);
-    }
-
     private void checkUsages() {
         List<String> usedTemplateIds = templateStoreRepository.getTemplateUsages();
         if (!usedTemplateIds.isEmpty()) {
@@ -116,21 +113,22 @@ public class TemplateDBStorageService implements TemplateStorage {
     }
 
     /**
-     * {@inheritDoc}
+     * Deletes an operational template from template storage. The template will be removed physically so ensure that
+     * there are no compositions referencing the template.
+     *
+     * @param uuid - Template pkey to delete from storage
      */
-    @Override
     public void deleteTemplate(UUID uuid) {
         if (compositionRepository.isTemplateUsed(uuid)) {
             // There are compositions using this template -> Return list of uuids
             throw new UnprocessableEntityException(
                     "Cannot delete template %s since it is used by at least one composition"
-                            .formatted(findTemplateIdByUuid(uuid)));
+                            .formatted(templateStoreRepository.findTemplateIdByUuid(uuid)));
         } else {
             templateStoreRepository.delete(uuid);
         }
     }
 
-    @Override
     public List<TemplateDetails> deleteAllTemplates() {
         checkUsages();
 
@@ -138,15 +136,5 @@ public class TemplateDBStorageService implements TemplateStorage {
         allTemplates.forEach(d -> templateStoreRepository.delete(d.id()));
 
         return allTemplates;
-    }
-
-    @Override
-    public Optional<String> findTemplateIdByUuid(UUID uuid) {
-        return templateStoreRepository.findTemplateIdByUuid(uuid);
-    }
-
-    @Override
-    public Optional<UUID> findUuidByTemplateId(String templateId) {
-        return templateStoreRepository.findUuidByTemplateId(templateId);
     }
 }
