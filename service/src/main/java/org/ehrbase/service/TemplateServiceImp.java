@@ -20,7 +20,6 @@ package org.ehrbase.service;
 import com.nedap.archie.rm.composition.Composition;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -36,7 +35,6 @@ import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorToCompositionWal
 import org.ehrbase.openehr.sdk.generator.commons.shareddefinition.Language;
 import org.ehrbase.openehr.sdk.generator.commons.shareddefinition.Setting;
 import org.ehrbase.openehr.sdk.generator.commons.shareddefinition.Territory;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.serialisation.walker.FlatHelper;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValuePath;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValues;
@@ -58,24 +56,8 @@ public class TemplateServiceImp implements TemplateService {
     }
 
     @Override
-    public List<TemplateMetaDataDto> getAllTemplates() {
-        return templateCacheService.findAllTemplates().stream()
-                .map(TemplateServiceImp::mapToDto)
-                .toList();
-    }
-
-    @Override
     public Collection<TemplateDetails> findAllTemplates() {
         return templateCacheService.findAllTemplates();
-    }
-
-    private static TemplateMetaDataDto mapToDto(TemplateDetails data) {
-        TemplateMetaDataDto dto = new TemplateMetaDataDto();
-        dto.setCreatedOn(data.creationTime());
-        dto.setTemplateId(data.templateId());
-        dto.setArchetypeId(data.archetypeId());
-        dto.setConcept(data.concept());
-        return dto;
     }
 
     @Override
@@ -155,7 +137,6 @@ public class TemplateServiceImp implements TemplateService {
      */
     @Override
     public String adminUpdateTemplate(String templateId, String content) {
-        // XXX CDR-2305 Why is this not based on OPERATIONALTEMPLATE?
         templateCacheService
                 .findUuidByTemplateId(templateId)
                 .orElseThrow(() -> new ObjectNotFoundException(

@@ -111,6 +111,15 @@ public class OpenehrTemplateController extends BaseController implements Templat
         }
     }
 
+    private static TemplateMetaDataDto mapToDto(TemplateService.TemplateDetails data) {
+        TemplateMetaDataDto dto = new TemplateMetaDataDto();
+        dto.setCreatedOn(data.creationTime());
+        dto.setTemplateId(data.templateId());
+        dto.setArchetypeId(data.archetypeId());
+        dto.setConcept(data.concept());
+        return dto;
+    }
+
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
     // significantly
     @GetMapping(
@@ -124,7 +133,9 @@ public class OpenehrTemplateController extends BaseController implements Templat
         URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
         MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML);
 
-        List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
+        List<TemplateMetaDataDto> templates = templateService.findAllTemplates().stream()
+                .map(OpenehrTemplateController::mapToDto)
+                .toList();
 
         // returns 200 with all templates
         return ResponseEntity.ok().location(uri).contentType(mediaType).body(templates);
