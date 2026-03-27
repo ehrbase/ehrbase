@@ -139,11 +139,16 @@ public class ValidationConfiguration {
                             cacheProvider, uri, () -> super.internalGet(uri));
                 } catch (Cache.ValueRetrievalException e) {
                     final Throwable cause = e.getCause();
-                    // Something went wrong during downstream request - Forward as bad Gateway. We could also catch
-                    // WebClientResponseException and add our own error message. The WebClientException happens also
-                    // in case the connection is refused or the DNS lookup fails.
+                    // Something went wrong during downstream request - if failOnError is false, 
+                    // let the FhirTerminologyValidation handle the exception according to its logic
                     if (cause instanceof WebClientException) {
-                        throw new BadGatewayException(cause.getMessage(), cause);
+                        if (properties.isFailOnError()) {
+                            throw new BadGatewayException(cause.getMessage(), cause);
+                        } else {
+                            // Re-throw the original WebClientException so FhirTerminologyValidation 
+                            // can handle it according to its failOnError logic
+                            throw (WebClientException) cause;
+                        }
                     } else {
                         throw new InternalServerException(
                                 "Failure during fhir terminology request: %s".formatted(cause.getMessage()), cause);
