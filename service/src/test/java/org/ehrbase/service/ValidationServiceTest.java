@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
@@ -53,6 +54,8 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -626,6 +629,67 @@ class ValidationServiceTest {
             return ContributionUtils.unmarshalContribution(IOUtils.toString(in, UTF_8));
         } catch (IOException e) {
             throw new UncheckedIOException(e.getMessage(), e);
+        }
+    }
+
+    @Test
+    void checkLocalizedCompositionValid() throws Exception {
+        Composition composition = buildLocalizedComposition("es");
+        composition.setUid(new ObjectVersionId("85379aa8-a16a-4d5b-97ad-242880066803", "test-system", "42"));
+
+        WebTemplate webTemplate = loadLocalizedWebTemplate();
+        doReturn(webTemplate).when(knowledgeCacheService).getInternalTemplate("localized_template");
+
+        assertThatNoException().isThrownBy(() -> service().check(composition));
+    }
+
+    @Test
+    void checkLocalizedLanguageCodeIsValid() {
+        Composition composition = buildLocalizedComposition("es");
+
+        assertThat(composition.getLanguage()).isNotNull();
+        assertThat(composition.getLanguage().getCodeString()).isEqualTo("es");
+        assertThat(composition.getLanguage().getTerminologyId().getValue()).isEqualTo("ISO_639-1");
+    }
+
+    @Test
+    void checkInvalidLanguageCodeFails() {
+        assertThatThrownBy(() -> runCheckComposition(composition -> {
+            composition.setLanguage(new CodePhrase(new TerminologyId("ISO_639-1"), "XX"));
+        }))
+                .isInstanceOf(ConstraintViolationException.class)
+                .extracting(t -> ((ConstraintViolationException) t).getConstraintViolations())
+                .asList()
+                .extracting(Object::toString)
+                .anyMatch(s -> s.toString().contains("Language_valid"));
+    }
+
+    private static Composition buildLocalizedComposition(String languageCode) {
+        Composition composition = new Composition();
+        composition.setName(new DvText("localized_template"));
+        composition.setArchetypeNodeId("openEHR-EHR-COMPOSITION.localized_composition.v0");
+        composition.setArchetypeDetails(new Archetyped(
+                new ArchetypeID("openEHR-EHR-COMPOSITION.localized_composition.v0"),
+                new TemplateId(),
+                "1.0.4"));
+        composition.getArchetypeDetails().getTemplateId().setValue("localized_template");
+        composition.setLanguage(new CodePhrase(new TerminologyId("ISO_639-1"), languageCode));
+        composition.setTerritory(new CodePhrase(new TerminologyId("ISO_3166-1"), "DE"));
+        composition.setCategory(new DvCodedText("event", new CodePhrase(new TerminologyId("openehr"), "433")));
+        composition.setComposer(new PartySelf());
+        return composition;
+    }
+
+    private static WebTemplate loadLocalizedWebTemplate() {
+        try (InputStream in = ValidationServiceTest.class.getResourceAsStream("/localized_template.opt")) {
+            if (in == null) {
+                throw new IOException("Localized template test resource not found");
+            }
+            TemplateDocument document = TemplateDocument.Factory.parse(in);
+            OPERATIONALTEMPLATE template = document.getTemplate();
+            return new OPTParser(template).parse();
+        } catch (IOException | XmlException e) {
+            throw new RuntimeException("Failed to load localized web template", e);
         }
     }
 }
