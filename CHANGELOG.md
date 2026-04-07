@@ -7,8 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
- ### Fixed 
+- Added metrics for external FHIR terminology server HTTP calls
+ ### Changed
+ ### Fixed
 
 ## [2.30.0]
  ### Added
