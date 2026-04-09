@@ -17,19 +17,18 @@
  */
 package org.ehrbase.service;
 
-import java.text.MessageFormat;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
@@ -39,12 +38,12 @@ import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.ehrbase.repository.TemplateStoreRepository;
 import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.openehr.schemas.v1.TemplateDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Lookup and caching for Web and Operational Templates.<br>
@@ -68,28 +67,24 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
      * - uuid -> templateId [sync TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
      * - templateId -> WebTemplate [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
      * - templateId -> OPT [TEMPLATE_OPT_CACHE]
-     * - () -> template details [no dedicated cache? sync TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE?]
+     * - () -> template details [no dedicated cache?? sync TEMPLATE_ID_UUID_CACHE?, sync TEMPLATE_UUID_ID_CACHE?]
      * - startup: fill WebTemplate cache [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
      * - startup: fill id maps? [TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
      */
+
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private final TemplateStoreRepository templateStoreRepository;
 
-    private final TemplateDBStorageService templateStorage;
-    // TODO CDR-2305 merge TemplateServiceImp, DefaultTemplateCacheService, TemplateDBStorageService;
-    //  TODO CDR-2305 remove TemplateStorage; refine TemplateCacheService
+    // TODO CDR-2305 merge TemplateServiceImp, DefaultTemplateCacheService;
+    //  TODO CDR-2305 refine TemplateCacheService
     private final CacheHelper cacheHelper;
 
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
-    public DefaultTemplateCacheService(
-            TemplateStoreRepository templateStoreRepository,
-            TemplateDBStorageService templateStorage,
-            CacheProvider cacheProvider) {
+    public DefaultTemplateCacheService(TemplateStoreRepository templateStoreRepository, CacheProvider cacheProvider) {
         this.templateStoreRepository = templateStoreRepository;
-        this.templateStorage = templateStorage;
         this.cacheHelper = new CacheHelper(cacheProvider);
     }
 
@@ -108,66 +103,66 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         }
     }
 
-    private static OPERATIONALTEMPLATE buildOperationalTemplate(String content) {
-        try {
-            return TemplateDocument.Factory.parse(content).getTemplate();
-        } catch (XmlException e) {
-            throw new InvalidApiParameterException(e.getMessage());
-        }
-    }
-
     @Override
-    public String addOperationalTemplate(OPERATIONALTEMPLATE template) {
-        return addOperationalTemplateIntern(template, false);
-    }
-
-    private String addOperationalTemplateIntern(OPERATIONALTEMPLATE template, boolean overwrite) {
-        validateTemplate(template);
-
-        String templateId;
-        try {
-            templateId = TemplateUtils.getTemplateId(template);
-        } catch (IllegalArgumentException _) {
-            throw new InvalidApiParameterException("Invalid template input content");
-        }
-
-        boolean canOverwrite = templateStorage.allowTemplateOverwrite() || overwrite;
+    @Transactional
+    public String addOperationalTemplate(TemplateMetaData templateData, boolean allowOverwrite) {
 
         // pre-check: if already existing throw proper exception
-        if (!canOverwrite && findUuidByTemplateId(templateId).isPresent()) {
+        String templateId = templateData.meta().templateId();
+        Optional<UUID> existingTid = findUuidByTemplateId(templateId);
+        boolean mustUpdate = existingTid.isPresent();
+        if (mustUpdate && !allowOverwrite) {
             throw new StateConflictException(
                     "Operational template with this template ID already exists: " + templateId);
         }
 
-        TemplateMetaData templateMetaData = templateStorage.storeTemplate(template);
+        TemplateMetaData templateMetaData = storeTemplate(templateData, existingTid.orElse(null));
 
-        if (canOverwrite) {
+        if (allowOverwrite) {
             // Caches might be containing wrong data
-            cacheHelper.invalidateCaches(templateId, templateMetaData.getInternalId());
+            cacheHelper.invalidateCaches(templateId, templateMetaData.meta().id());
         }
         log.info("Updating WebTemplate cache for template: {}", templateId);
         addWebTemplateToCache(templateMetaData);
 
         return templateId;
     }
-    // XXX CDR-2305 Why is this not based on OPERATIONALTEMPLATE?
-    @Override
-    public String adminUpdateOperationalTemplate(String templateId, String content) {
-        OPERATIONALTEMPLATE template = buildOperationalTemplate(content);
-        String newTemplateId = template.getTemplateId().getValue();
-        if (!templateId.equals(newTemplateId)) {
-            throw new ValidationException("Inconsistent template_id");
+
+    /**
+     * Save a template in the store
+     *
+     * @param templateData
+     * @param existingTid
+     */
+    private TemplateMetaData storeTemplate(TemplateMetaData templateData, UUID existingTid) {
+        if (existingTid == null) {
+            return templateStoreRepository.store(templateData);
         }
-        return addOperationalTemplateIntern(template, true);
+        if (templateStoreRepository.isTemplateUsed(existingTid)) {
+            log.warn(
+                    "Updating template {} that is in use by at least one composition because {} is enabled",
+                    templateData.meta().templateId(),
+                    TemplateService.PROP_ALLOW_TEMPLATE_OVERWRITE);
+            /* XXX CDR-2305 what about this option? Updating is only allowed if the template is not in use
+             * throw new UnprocessableEntityException(
+             * "Cannot update template %s since it is used by at least one composition".formatted(templateId));
+             */
+        }
+        return templateStoreRepository.update(templateData);
     }
 
     private void addWebTemplateToCache(TemplateMetaData template) {
-        OPERATIONALTEMPLATE operationaltemplate =
-                TemplateService.buildOperationalTemplate(template.getOperationaltemplate());
+        OPERATIONALTEMPLATE operationaltemplate;
+        try {
+            operationaltemplate = TemplateService.buildOperationalTemplate(template.operationalTemplate());
+        } catch (XmlException e) {
+            throw new InternalServerException(e.getMessage(), e);
+        }
         String templateId = TemplateUtils.getTemplateId(operationaltemplate);
         WebTemplate tpl = buildWebTemplate(operationaltemplate);
 
-        cacheHelper.addToCache(template.getInternalId(), templateId, tpl, template.getCreatedOn());
+        cacheHelper.addToCache(
+                template.meta().id(), templateId, tpl, template.meta().creationTime());
     }
 
     @Override
@@ -176,22 +171,13 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         return templateStoreRepository.findAllTemplates();
     }
 
-    /**
-     * Find and return a saved Template by templateId
-     * @param templateId
-     * @return the template @see {@link OPERATIONALTEMPLATE} or {@link Optional#empty()} if not found.
-     */
-    private Optional<TemplateMetaData> readTemplate(String templateId) {
-        return templateStoreRepository.findByTemplateIds(templateId).stream().findFirst();
-    }
-
     public String retrieveOperationalTemplate(String templateId) {
         log.trace("retrieveOperationalTemplate({})", templateId);
         return cacheHelper.retrieveOperationalTemplate(
                 templateId,
                 tid -> templateStoreRepository.findByTemplateIds(tid).stream()
                         .findFirst()
-                        .map(TemplateMetaData::getOperationaltemplate)
+                        .map(TemplateMetaData::operationalTemplate)
                         .orElse(null));
     }
 
@@ -199,41 +185,34 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
      * {@inheritDoc}
      */
     @Override
+    @Transactional
     public void deleteOperationalTemplate(UUID uuid) {
         // Remove template from storage
         findTemplateIdByUuid(uuid).ifPresent(templateId -> {
-            templateStorage.deleteTemplate(uuid);
+            templateStoreRepository.deleteTemplate(uuid);
             cacheHelper.invalidateCaches(templateId, uuid);
         });
     }
 
     @Override
+    @Transactional
     public int deleteAllOperationalTemplates() {
-        List<TemplateService.TemplateDetails> deletedTemplates = templateStorage.deleteAllTemplates();
-
-        deletedTemplates.forEach(t -> cacheHelper.invalidateCaches(t.templateId(), t.id()));
-        return deletedTemplates.size();
+        int deleted = templateStoreRepository.deleteAllTemplates();
+        cacheHelper.clearCaches();
+        return deleted;
     }
 
     @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
-        try {
-            return Optional.of(cacheHelper.findTemplateIdByUuid(
-                    uuid, u -> templateStoreRepository.findTemplateIdByUuid(u).orElseThrow()));
-        } catch (Cache.ValueRetrievalException ex) {
-            return handleCacheMismatch(ex);
-        }
+        return Optional.ofNullable(cacheHelper.findTemplateIdByUuid(
+                uuid, u -> templateStoreRepository.findTemplateIdByUuid(u).orElseThrow()));
     }
 
     @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
-        try {
-            return Optional.of(cacheHelper.findUuidByTemplateId(
-                    templateId,
-                    tid -> templateStoreRepository.findUuidByTemplateId(tid).orElseThrow()));
-        } catch (Cache.ValueRetrievalException ex) {
-            return handleCacheMismatch(ex);
-        }
+        return Optional.ofNullable(cacheHelper.findUuidByTemplateId(
+                templateId,
+                tid -> templateStoreRepository.findUuidByTemplateId(tid).orElseThrow()));
     }
 
     public WebTemplate getInternalTemplate(String templateId) {
@@ -243,10 +222,18 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
                         log.info("Updating WebTemplate cache for template: {}", tid);
                         return templateStoreRepository.findByTemplateIds(tid).stream()
                                 .findFirst()
-                                .map(d -> Pair.of(
-                                        buildWebTemplate(
-                                                TemplateService.buildOperationalTemplate(d.getOperationaltemplate())),
-                                        d.getCreatedOn()))
+                                .map(d -> {
+                                    OPERATIONALTEMPLATE operationaltemplate;
+                                    try {
+                                        operationaltemplate =
+                                                TemplateService.buildOperationalTemplate(d.operationalTemplate());
+                                    } catch (XmlException e) {
+                                        throw new InternalServerException(e.getMessage(), e);
+                                    }
+                                    return Pair.of(
+                                            buildWebTemplate(operationaltemplate),
+                                            d.meta().creationTime());
+                                })
                                 .orElseThrow(() -> new IllegalArgumentException(
                                         "Could not retrieve template for template Id: " + tid));
                     })
@@ -262,49 +249,6 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         } catch (RuntimeException e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
         }
-    }
-
-    /**
-     * Validates that the given template is valid and supported by EHRbase.
-     *
-     * @param template the template to validate
-     */
-    private static void validateTemplate(OPERATIONALTEMPLATE template) {
-        if (template == null) {
-            throw new InvalidApiParameterException("Could not parse input template");
-        }
-
-        if (template.getConcept() == null || template.getConcept().isEmpty()) {
-            throw new IllegalArgumentException("Supplied template has nil or empty concept");
-        }
-
-        if (template.getLanguage() == null || template.getLanguage().isNil()) {
-            throw new IllegalArgumentException("Supplied template has nil or empty language");
-        }
-
-        if (template.getDefinition() == null || template.getDefinition().isNil()) {
-            throw new IllegalArgumentException("Supplied template has nil or empty definition");
-        }
-
-        if (template.getDescription() == null || !template.getDescription().validate()) {
-            throw new IllegalArgumentException("Supplied template has nil or empty description");
-        }
-
-        if (!TemplateUtils.isSupported(template)) {
-            throw new IllegalArgumentException(MessageFormat.format(
-                    "The supplied template is not supported (unsupported types: {0})",
-                    String.join(",", TemplateUtils.UNSUPPORTED_RM_TYPES)));
-        }
-    }
-
-    private static <T> Optional<T> handleCacheMismatch(Cache.ValueRetrievalException ex) {
-        Throwable cause = ex.getCause();
-        return switch (cause) {
-            // No template with that UUID exists
-            case NoSuchElementException _ -> Optional.empty();
-            case RuntimeException re -> throw re;
-            default -> throw ex;
-        };
     }
 
     private static final class CacheHelper {
@@ -327,26 +271,53 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
             CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
         }
 
+        public void clearCaches() {
+            Stream.of(
+                            CacheProvider.TEMPLATE_CACHE,
+                            CacheProvider.TEMPLATE_OPT_CACHE,
+                            CacheProvider.TEMPLATE_ID_UUID_CACHE,
+                            CacheProvider.TEMPLATE_UUID_ID_CACHE)
+                    .forEach(c -> c.clear(cacheProvider));
+        }
+
         public String retrieveOperationalTemplate(String templateId, Function<String, String> loader) {
             return find(CacheProvider.TEMPLATE_OPT_CACHE, templateId, loader);
         }
 
+        private static <T> T handleCacheMismatch(Cache.ValueRetrievalException ex) {
+            Throwable cause = ex.getCause();
+            return switch (cause) {
+                // No template with that UUID exists
+                case NoSuchElementException _ -> null;
+                case RuntimeException re -> throw re;
+                default -> throw ex;
+            };
+        }
+
         public String findTemplateIdByUuid(UUID uuid, Function<UUID, String> loader) {
-            return find(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, u -> {
-                String tid = loader.apply(u);
-                // reverse cache
-                CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, tid, u);
-                return tid;
-            });
+            try {
+                return find(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, u -> {
+                    String tid = loader.apply(u);
+                    // reverse cache
+                    CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, tid, u);
+                    return tid;
+                });
+            } catch (Cache.ValueRetrievalException ex) {
+                return handleCacheMismatch(ex);
+            }
         }
 
         public UUID findUuidByTemplateId(String templateId, Function<String, UUID> loader) {
-            return find(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, tid -> {
-                UUID u = loader.apply(tid);
-                // reverse cache
-                CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, u, tid);
-                return u;
-            });
+            try {
+                return find(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, tid -> {
+                    UUID u = loader.apply(tid);
+                    // reverse cache
+                    CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, u, tid);
+                    return u;
+                });
+            } catch (Cache.ValueRetrievalException ex) {
+                return handleCacheMismatch(ex);
+            }
         }
 
         public Pair<WebTemplate, OffsetDateTime> getInternalTemplate(

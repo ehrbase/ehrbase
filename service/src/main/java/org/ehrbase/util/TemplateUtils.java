@@ -20,7 +20,6 @@ package org.ehrbase.util;
 import java.util.List;
 import java.util.Optional;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
-import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -32,17 +31,6 @@ public class TemplateUtils {
     public static final List<String> UNSUPPORTED_RM_TYPES = List.of("ITEM_TABLE");
 
     private TemplateUtils() {}
-
-    /**
-     * Check whether the given OPT template is supported.
-     *
-     * @param template the candidate template
-     * @return <code>true</code> if the template is supported
-     */
-    public static boolean isSupported(OPERATIONALTEMPLATE template) {
-        var webTemplate = new OPTParser(template).parse();
-        return isSupported(webTemplate);
-    }
 
     /**
      * Check whether the given WebTemplate is supported.

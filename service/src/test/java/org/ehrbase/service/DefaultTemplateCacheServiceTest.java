@@ -19,15 +19,18 @@ package org.ehrbase.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
+import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
@@ -36,20 +39,17 @@ import org.ehrbase.test.fixtures.TemplateFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 
 class DefaultTemplateCacheServiceTest {
 
     private final TemplateStoreRepository mockTemplateStoreRepository = mock();
-    private final TemplateDBStorageService mockTemplateStore = mock();
     private SimpleCacheManager cacheManager;
 
     @BeforeEach
     void setUp() {
         Mockito.reset(mockTemplateStoreRepository);
-        Mockito.reset(mockTemplateStore);
 
         cacheManager = new SimpleCacheManager();
         cacheManager.setCaches(List.of(
@@ -63,33 +63,33 @@ class DefaultTemplateCacheServiceTest {
 
     private TemplateCacheService service() {
 
-        return new DefaultTemplateCacheService(
-                mockTemplateStoreRepository, mockTemplateStore, new CacheProviderImp(cacheManager));
+        return new DefaultTemplateCacheService(mockTemplateStoreRepository, new CacheProviderImp(cacheManager));
     }
 
     @Test
     void addOperationalTemplate() {
-
         TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
-        String templateId = service().addOperationalTemplate(testTemplate.operationaltemplate());
+        String templateId = service().addOperationalTemplate(testTemplate.metaData(), false);
 
+        verify(mockTemplateStoreRepository, times(1)).store(testTemplate.metaData());
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
     }
 
     @Test
     void addOperationalTemplateCanNotBeOverwritten() {
-
         TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
 
         Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(UUID.randomUUID()));
 
         TemplateCacheService service = service();
-        OPERATIONALTEMPLATE operationaltemplate = testTemplate.operationaltemplate();
-        assertThatThrownBy(() -> service.addOperationalTemplate(operationaltemplate))
+        TemplateMetaData templateData = testTemplate.metaData();
+        assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("Operational template with this template ID already exists: %s"
                         .formatted(testTemplate.templateId()));
+
+        verify(mockTemplateStoreRepository, times(1)).findUuidByTemplateId(anyString());
     }
 
     @Test
@@ -98,19 +98,16 @@ class DefaultTemplateCacheServiceTest {
 
         Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
-        Mockito.when(mockTemplateStore.allowTemplateOverwrite()).thenReturn(true);
 
         TemplateCacheService service = spy(service());
-        String templateId = service.addOperationalTemplate(testTemplate.operationaltemplate());
+        String templateId = service.addOperationalTemplate(testTemplate.metaData(), true);
 
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
     }
 
     private TemplateFixture.TestTemplate parse(OperationalTemplateTestData operationalTemplateTestData) {
-
         TemplateFixture.TestTemplate testTemplate = TemplateFixture.fixtureTemplate(operationalTemplateTestData);
-
-        doReturn(testTemplate.metaData()).when(mockTemplateStore).storeTemplate(testTemplate.operationaltemplate());
+        Mockito.when(mockTemplateStoreRepository.store(testTemplate.metaData())).thenReturn(testTemplate.metaData());
         return testTemplate;
     }
 }

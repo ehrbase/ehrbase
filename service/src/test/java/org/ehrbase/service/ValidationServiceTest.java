@@ -64,6 +64,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.ContributionUtils;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
@@ -86,7 +87,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.ObjectProvider;
 
 class ValidationServiceTest {
@@ -97,7 +97,7 @@ class ValidationServiceTest {
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 
-    private class NopTerminologyValidation implements ExternalTerminologyValidation {
+    private static class NopTerminologyValidation implements ExternalTerminologyValidation {
 
         private final ConstraintViolation err = new ConstraintViolation("Terminology validation is disabled");
 
@@ -611,13 +611,12 @@ class ValidationServiceTest {
 
     private static WebTemplate loadWebTemplate(OperationalTemplateTestData data) {
         return webTemplates.computeIfAbsent(data, d -> {
-            TemplateDocument document;
-            try (var in = d.getStream()) {
-                document = TemplateDocument.Factory.parse(in);
-            } catch (IOException | XmlException e) {
+            OPERATIONALTEMPLATE template;
+            try {
+                template = TemplateService.buildOperationalTemplate(d.getStream());
+            } catch (XmlException e) {
                 throw new RuntimeException(e);
             }
-            OPERATIONALTEMPLATE template = document.getTemplate();
             return new OPTParser(template).parse();
         });
     }

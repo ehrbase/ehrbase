@@ -18,12 +18,14 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.UUID;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -31,6 +33,8 @@ public interface TemplateService {
 
     record TemplateDetails(
             UUID id, String templateId, OffsetDateTime creationTime, String concept, String archetypeId) {}
+
+    final String PROP_ALLOW_TEMPLATE_OVERWRITE = "ehrbase.template.allow-overwrite";
 
     Collection<TemplateDetails> findAllTemplates();
 
@@ -64,11 +68,10 @@ public interface TemplateService {
      * Replaces a given template in the storage and updates the cache with the new template content.
      * Will be rejected if the template has referencing Compositions.
      *
-     * @param templateId - Tempalte id to update, e.g. "IDCR Allergies List.v0"
-     * @param content - New content to overwrite the template with
+     * @param template - New content to overwrite the template with
      * @return - New template id
      */
-    String adminUpdateTemplate(String templateId, String content);
+    String adminUpdateTemplate(OPERATIONALTEMPLATE template);
 
     /**
      * Deletes all templates from target template storage and returns the number of deleted templates.
@@ -79,12 +82,16 @@ public interface TemplateService {
      */
     int adminDeleteAllTemplates();
 
-    static OPERATIONALTEMPLATE buildOperationalTemplate(String content) {
+    static OPERATIONALTEMPLATE buildOperationalTemplate(String content) throws XmlException {
+        return org.openehr.schemas.v1.TemplateDocument.Factory.parse(content).getTemplate();
+    }
+
+    static OPERATIONALTEMPLATE buildOperationalTemplate(InputStream in) throws XmlException {
         org.openehr.schemas.v1.TemplateDocument document;
-        try {
-            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(content);
-        } catch (XmlException e) {
-            throw new InternalServerException(e.getMessage());
+        try (in) {
+            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
         return document.getTemplate();
     }

@@ -18,12 +18,10 @@
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -37,7 +35,7 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
-import org.openehr.schemas.v1.TemplateDocument;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
@@ -90,12 +88,13 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // create template
         String templateId;
-        try (var in = IOUtils.toInputStream(template, StandardCharsets.UTF_8)) {
-            TemplateDocument document = TemplateDocument.Factory.parse(in);
-            templateId = templateService.create(document.getTemplate());
-        } catch (XmlException | IOException e) {
+        OPERATIONALTEMPLATE tpl;
+        try {
+            tpl = TemplateService.buildOperationalTemplate(template);
+        } catch (XmlException e) {
             throw new InvalidApiParameterException(e.getMessage());
         }
+        templateId = templateService.create(tpl);
 
         // initialize HTTP 201 Created body builder
         ResponseEntity.BodyBuilder bodyBuilder =

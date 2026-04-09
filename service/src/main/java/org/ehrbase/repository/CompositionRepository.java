@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
@@ -57,13 +56,10 @@ public class CompositionRepository
         extends AbstractVersionedObjectRepository<
                 CompVersionRecord, CompDataRecord, CompVersionHistoryRecord, Composition, Void> {
 
-    private final TemplateCacheService templateCache;
-
     public CompositionRepository(
             DSLContext context,
             ContributionRepository contributionRepository,
             SystemService systemService,
-            TemplateCacheService templateCache,
             TimeProvider timeProvider) {
         super(
                 AuditDetailsTargetType.COMPOSITION,
@@ -74,7 +70,6 @@ public class CompositionRepository
                 contributionRepository,
                 systemService,
                 timeProvider);
-        this.templateCache = templateCache;
     }
 
     @Override
@@ -115,30 +110,6 @@ public class CompositionRepository
                 contributionId,
                 auditId,
                 "No Composition found with: %s ".formatted(compId));
-    }
-
-    public boolean isTemplateUsed(String templateId) {
-        return templateCache
-                .findUuidByTemplateId(templateId)
-                .filter(this::isTemplateUsed)
-                .isPresent();
-    }
-
-    public boolean isTemplateUsed(UUID templateUuid) {
-        CompVersion vTable = COMP_VERSION.as("v");
-        CompVersionHistory hTable = COMP_VERSION_HISTORY.as("h");
-
-        return context.select(vTable.VO_ID)
-                .from(vTable)
-                .where(vTable.TEMPLATE_ID.eq(templateUuid))
-                .limit(1)
-                .unionAll(context.select(hTable.VO_ID)
-                        .from(hTable)
-                        .where(hTable.TEMPLATE_ID.eq(templateUuid))
-                        .limit(1))
-                .limit(1)
-                .fetchOptional()
-                .isPresent();
     }
 
     @Transactional

@@ -22,9 +22,11 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
@@ -45,14 +47,22 @@ public class TemplateFixture {
             throw new UncheckedIOException(e);
         }
 
-        TemplateMetaData metaData = new TemplateMetaData();
-        metaData.setOperationalTemplate(templateDocument);
-        metaData.setInternalId(internalUUID);
-        metaData.setCreatedOn(OffsetDateTime.parse("2020-10-10T12:00:00Z"));
+        OPERATIONALTEMPLATE operationaltemplate;
+        try {
+            operationaltemplate = TemplateService.buildOperationalTemplate(templateDocument);
+        } catch (XmlException e) {
+            throw new RuntimeException(e);
+        }
 
-        return new TestTemplate(
-                operationalTemplateTestData.getTemplateId(),
-                TemplateService.buildOperationalTemplate(templateDocument),
-                metaData);
+        TemplateMetaData metaData = new TemplateMetaData(
+                templateDocument,
+                new TemplateService.TemplateDetails(
+                        internalUUID,
+                        TemplateUtils.getTemplateId(operationaltemplate),
+                        OffsetDateTime.parse("2020-10-10T12:00:00Z"),
+                        operationaltemplate.getConcept(),
+                        operationaltemplate.getDefinition().getArchetypeId().getValue()));
+
+        return new TestTemplate(operationalTemplateTestData.getTemplateId(), operationaltemplate, metaData);
     }
 }

@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.client.openehrclient.OpenEhrClientConfig;
 import org.ehrbase.openehr.sdk.client.openehrclient.defaultrestclient.DefaultRestClient;
@@ -31,7 +32,6 @@ import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplate
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.templateprovider.TemplateProvider;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.openehr.schemas.v1.TemplateDocument;
 
 public class TemplateSupport {
 
@@ -43,10 +43,8 @@ public class TemplateSupport {
             public Optional<OPERATIONALTEMPLATE> find(String templateId) {
                 try (InputStream in =
                         OperationalTemplateTestData.findByTemplateId(templateId).getStream()) {
-                    OPERATIONALTEMPLATE template =
-                            TemplateDocument.Factory.parse(in).getTemplate();
-                    return Optional.of(template);
-                } catch (XmlException | IOException e) {
+                    return Optional.of(TemplateService.buildOperationalTemplate(in));
+                } catch (IOException | XmlException e) {
                     throw new RuntimeException(e);
                 }
             }

@@ -22,11 +22,10 @@ import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
-import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateCacheService {
 
-    String addOperationalTemplate(OPERATIONALTEMPLATE template);
+    String addOperationalTemplate(TemplateMetaData templateData, boolean allowOverwrite);
 
     List<TemplateService.TemplateDetails> findAllTemplates();
 
@@ -44,15 +43,13 @@ public interface TemplateCacheService {
      * Deletes a given operational template physically from cache and from template storage and from cache.
      * Can only be executed if the template is no longer referenced by any Composition.
      *
-     * @param templateUuid - Internalö id of template instance to delete
+     * @param templateUuid - Internal id of template instance to delete
      */
     void deleteOperationalTemplate(UUID templateUuid);
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 
     Optional<UUID> findUuidByTemplateId(String templateId);
-
-    String adminUpdateOperationalTemplate(String templateId, String content);
 
     int deleteAllOperationalTemplates();
 }

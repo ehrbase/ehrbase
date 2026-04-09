@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.composition.Composition;
 import java.util.List;
@@ -31,7 +32,6 @@ import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,17 +80,18 @@ class OpenehrTemplateControllerTest {
     @CsvSource({"application/json", "application/xml"})
     void getTemplatesADL1_4(String accept) {
 
-        TemplateMetaDataDto metaDataDto = new TemplateMetaDataDto();
-        metaDataDto.setTemplateId(SAMPLE_ID);
+        var templateDetails = new TemplateService.TemplateDetails(null, SAMPLE_ID, null, null, null);
 
-        doReturn(List.of(metaDataDto)).when(mockTemplateService).getAllTemplates();
+        when(mockTemplateService.findAllTemplates()).thenReturn(List.of(templateDetails));
 
         var response = controller().getTemplatesClassic("1.0.3", null, accept);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
                 .containsEntry(HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/definition/template/adl1.4"));
-        assertThat(response.getBody()).isEqualTo(List.of(metaDataDto));
+        assertThat(response.getBody())
+                .hasSize(1)
+                .allMatch(m -> m.getTemplateId().equals(SAMPLE_ID));
     }
 
     @ParameterizedTest

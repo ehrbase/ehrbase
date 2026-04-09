@@ -104,7 +104,7 @@ class CompositionRepositoryTest {
         }
 
         public Update() {
-            super(spy(new CompositionRepository(mock(), mock(), () -> SYSTEM_ID, null, OffsetDateTime::now)));
+            super(spy(new CompositionRepository(mock(), mock(), () -> SYSTEM_ID, OffsetDateTime::now)));
         }
 
         @Override
@@ -139,7 +139,7 @@ class CompositionRepositoryTest {
         Mockito.when(timeProvider.getNow()).thenReturn(now);
 
         DefaultDSLContext context = new DefaultDSLContext(SQLDialect.POSTGRES);
-        CompositionRepository repo = new CompositionRepository(context, null, null, null, timeProvider);
+        CompositionRepository repo = new CompositionRepository(context, null, null, timeProvider);
 
         VersionDataDbRecord versionData = repo.toRecords(EHR_ID, versionDataObject, CONTRIBUTION_ID, AUDIT_ID);
 

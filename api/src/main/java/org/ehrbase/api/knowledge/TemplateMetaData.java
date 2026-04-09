@@ -17,36 +17,6 @@
  */
 package org.ehrbase.api.knowledge;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import org.ehrbase.api.service.TemplateService;
 
-public class TemplateMetaData {
-    private String operationaltemplate;
-    private OffsetDateTime createdOn;
-
-    private UUID internalId;
-
-    public String getOperationaltemplate() {
-        return operationaltemplate;
-    }
-
-    public void setOperationalTemplate(String operationaltemplate) {
-        this.operationaltemplate = operationaltemplate;
-    }
-
-    public OffsetDateTime getCreatedOn() {
-        return createdOn;
-    }
-
-    public void setCreatedOn(OffsetDateTime createdOn) {
-        this.createdOn = createdOn;
-    }
-
-    public void setInternalId(UUID internalId) {
-        this.internalId = internalId;
-    }
-
-    public UUID getInternalId() {
-        return internalId;
-    }
-}
+public record TemplateMetaData(String operationalTemplate, TemplateService.TemplateDetails meta) {}
