@@ -23,9 +23,10 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.definitions.OperationalTemplateFormat;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -38,7 +39,7 @@ public interface TemplateService {
 
     Collection<TemplateDetails> findAllTemplates();
 
-    Composition buildExample(String templateId);
+    WebTemplate getInternalTemplate(String templateId);
 
     WebTemplate findWebTemplate(String templateId);
 
@@ -46,14 +47,16 @@ public interface TemplateService {
      * Finds and returns the given operational template as string represented in requested format.
      *
      * @param templateId - Unique name of operational template
-     * @param format - As enum value from {@link OperationalTemplateFormat}
      * @return
-     * @throws RuntimeException When the template couldn't be found, the format isn't support or in
-     *     case of another error.
+     * @throws ObjectNotFoundException When the template couldn't be found
      */
-    String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws RuntimeException;
+    String findOperationalTemplate(String templateId);
 
     String create(OPERATIONALTEMPLATE content);
+
+    Optional<String> findTemplateIdByUuid(UUID uuid);
+
+    Optional<UUID> findUuidByTemplateId(String templateId);
 
     /**
      * Deletes a given template from storage physically. The template is no longer available. If you
@@ -81,6 +84,8 @@ public interface TemplateService {
      * @return - Number of deleted templates
      */
     int adminDeleteAllTemplates();
+
+    Composition buildExample(String templateId);
 
     static OPERATIONALTEMPLATE buildOperationalTemplate(String content) throws XmlException {
         return org.openehr.schemas.v1.TemplateDocument.Factory.parse(content).getTemplate();

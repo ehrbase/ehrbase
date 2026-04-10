@@ -70,9 +70,9 @@ class OpenehrTemplateControllerTest {
     }
 
     private OpenehrTemplateController controller() {
-        doReturn(SAMPLE_ID).when(mockTemplateService).create(any());
-        doReturn(SAMPLE_OPT).when(mockTemplateService).findOperationalTemplate(any(), any());
-        doReturn(SAMPLE_WEB_TEMPLATE).when(mockTemplateService).findWebTemplate(SAMPLE_ID);
+        when(mockTemplateService.create(any())).thenReturn(SAMPLE_ID);
+        when(mockTemplateService.findOperationalTemplate(any())).thenReturn(SAMPLE_OPT);
+        when(mockTemplateService.findWebTemplate(SAMPLE_ID)).thenReturn(SAMPLE_WEB_TEMPLATE);
         return spyController;
     }
 

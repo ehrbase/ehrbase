@@ -21,9 +21,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.archetyped.Archetyped;
@@ -63,7 +63,6 @@ import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.ValidationException;
-import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.ContributionUtils;
@@ -91,7 +90,7 @@ import org.springframework.beans.factory.ObjectProvider;
 
 class ValidationServiceTest {
 
-    private final TemplateCacheService templateCacheService = mock();
+    private final TemplateService templateService = mock();
 
     private final ValidationProperties serverConfig = new ValidationProperties(true, true, true);
 
@@ -115,12 +114,12 @@ class ValidationServiceTest {
     }
 
     private final ValidationService spyService = spy(new ValidationServiceImp(
-            templateCacheService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
+            templateService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(templateCacheService, objectProvider, spyService);
-        doReturn(new NopTerminologyValidation()).when(objectProvider).getIfAvailable();
+        Mockito.reset(templateService, objectProvider, spyService);
+        when(objectProvider.getIfAvailable()).thenReturn(new NopTerminologyValidation());
     }
 
     private ValidationService service() {
@@ -259,7 +258,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(templateCacheService).getInternalTemplate(templateID);
+        when(templateService.getInternalTemplate(templateID)).thenReturn(webTemplate);
         service().check(composition);
     }
 
@@ -293,7 +292,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(templateCacheService).getInternalTemplate(templateID);
+        when(templateService.getInternalTemplate(templateID)).thenReturn(webTemplate);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(composition)).isInstanceOf(ConstraintViolationException.class);

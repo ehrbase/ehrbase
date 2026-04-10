@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.aql.AqlConditionAsPredicatePostProcessor;
@@ -65,7 +64,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 class AqlSqlQueryBuilderTest {
 
-    private final TemplateCacheService mockTemplateCacheService = mock();
+    private final TemplateService mockTemplateService = mock();
 
     private AqlSqlQueryBuilder aqlSqlQueryBuilder() {
         TemplateService templateService = mock();
@@ -85,8 +84,8 @@ class AqlSqlQueryBuilderTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(mockTemplateCacheService);
-        Mockito.when(mockTemplateCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+        Mockito.reset(mockTemplateService);
+        Mockito.when(mockTemplateService.findUuidByTemplateId(ArgumentMatchers.anyString()))
                 .thenReturn(Optional.of(UUID.randomUUID()));
     }
 
@@ -122,7 +121,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         new AslCleanupPostProcessor().afterBuildAsl(aslQuery, aqlQuery, queryWrapper, null);
 
@@ -154,7 +153,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
@@ -261,7 +260,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
     void aslGraphRegression(String name, String aql, String aslGraph) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);
     }
@@ -283,7 +282,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
     }
 
     private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 

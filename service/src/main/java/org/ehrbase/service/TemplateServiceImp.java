@@ -28,10 +28,7 @@ import javax.xml.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
-import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
@@ -58,7 +55,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@Transactional
 public class TemplateServiceImp implements TemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateServiceImp.class);
@@ -87,7 +83,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public Composition buildExample(String templateId) {
-        WebTemplate webTemplate = findInternalTemplate(templateId);
+        WebTemplate webTemplate = getInternalTemplate(templateId);
         Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
 
         ExampleGeneratorConfig object = new ExampleGeneratorConfig();
@@ -108,34 +104,20 @@ public class TemplateServiceImp implements TemplateService {
         return composition;
     }
 
-    public WebTemplate findInternalTemplate(String templateId) {
-        try {
-            return templateCacheService.getInternalTemplate(templateId);
-        } catch (NullPointerException | IllegalArgumentException e) {
-            throw new ObjectNotFoundException("template", "Template with the specified id does not exist", e);
-        } catch (Exception e) {
-            throw new InternalServerException("Could not generate web template", e);
-        }
+    @Override
+    public WebTemplate getInternalTemplate(String templateId) {
+        return templateCacheService.getInternalTemplate(templateId);
     }
 
     @Override
     public WebTemplate findWebTemplate(String templateId) {
-        return new Filter().filter(this.findInternalTemplate(templateId));
+        WebTemplate internalTemplate = this.getInternalTemplate(templateId);
+        return new Filter().filter(internalTemplate);
     }
 
     @Override
-    public String findOperationalTemplate(String templateId, OperationalTemplateFormat format)
-            throws ObjectNotFoundException, InvalidApiParameterException, InternalServerException {
-        if (format != OperationalTemplateFormat.XML) {
-            throw new NotAcceptableException("Requested operational template type not supported");
-        }
-
-        String existingTemplate = this.templateCacheService.retrieveOperationalTemplate(templateId);
-
-        return Optional.ofNullable(existingTemplate)
-                // XXX CDR-2305 should this be cached???
-                .orElseThrow(
-                        () -> new ObjectNotFoundException("template", "Template with the specified id does not exist"));
+    public String findOperationalTemplate(String templateId) throws ObjectNotFoundException {
+        return templateCacheService.retrieveOperationalTemplate(templateId);
     }
 
     private static TemplateMetaData getTemplateFields(OPERATIONALTEMPLATE template) {
@@ -196,24 +178,29 @@ public class TemplateServiceImp implements TemplateService {
         return templateCacheService.addOperationalTemplate(templateMeta, allowTemplateOverwrite);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void adminDeleteTemplate(String templateId) {
-        UUID templateUuid = templateCacheService
-                .findUuidByTemplateId(templateId)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
+    public Optional<String> findTemplateIdByUuid(UUID uuid) {
+        return templateCacheService.findTemplateIdByUuid(uuid);
+    }
 
-        // Delete template if not used
-        templateCacheService.deleteOperationalTemplate(templateUuid);
+    @Override
+    public Optional<UUID> findUuidByTemplateId(String templateId) {
+        return templateCacheService.findUuidByTemplateId(templateId);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    public void adminDeleteTemplate(String templateId) {
+        templateCacheService.deleteOperationalTemplate(templateId);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
         TemplateMetaData templateMeta = getTemplateFields(template);
         String templateId = templateMeta.meta().templateId();
@@ -222,7 +209,6 @@ public class TemplateServiceImp implements TemplateService {
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId)));
 
-        // Replace content
         return templateCacheService.addOperationalTemplate(templateMeta, true);
     }
 

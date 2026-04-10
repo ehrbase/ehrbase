@@ -29,7 +29,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.knowledge.TemplateCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.aql.AqlEhrPathPostProcessor;
 import org.ehrbase.openehr.aqlengine.aql.AqlFromEhrOptimisationPostProcessor;
@@ -51,7 +51,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class AslCleanupPostProcessorTest {
 
-    private final TemplateCacheService mockTemplateCacheService = mock();
+    private final TemplateService mockTemplateService = mock();
     private final AqlSqlQueryBuilder sqlBuilder = new AqlSqlQueryBuilder(
             TestConfig.aqlConfigurationProperties(),
             new DefaultDSLContext(SQLDialect.POSTGRES),
@@ -379,7 +379,7 @@ class AslCleanupPostProcessorTest {
         }
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         return new AslResult(aqlQuery, queryWrapper, aslQuery);
     }

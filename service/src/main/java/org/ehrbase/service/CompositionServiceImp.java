@@ -45,10 +45,10 @@ import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
-import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
@@ -118,7 +118,7 @@ public class CompositionServiceImp implements CompositionService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ValidationService validationService;
-    private final TemplateCacheService templateCacheService;
+    private final TemplateService templateService;
     private final EhrService ehrService;
 
     private final CompositionRepository compositionRepository;
@@ -127,7 +127,7 @@ public class CompositionServiceImp implements CompositionService {
     private final SystemService systemService;
 
     public CompositionServiceImp(
-            TemplateCacheService templateCacheService,
+            TemplateService templateService,
             ValidationService validationService,
             EhrService ehrService,
             SystemService systemService,
@@ -136,7 +136,7 @@ public class CompositionServiceImp implements CompositionService {
 
         this.validationService = validationService;
         this.ehrService = ehrService;
-        this.templateCacheService = templateCacheService;
+        this.templateService = templateService;
         this.compositionRepository = compositionRepository;
         this.itemTagRepository = itemTagRepository;
         this.systemService = systemService;
@@ -275,7 +275,7 @@ public class CompositionServiceImp implements CompositionService {
 
         String existingTemplateId = compositionRepository
                 .findTemplateId(compId)
-                .flatMap(templateCacheService::findTemplateIdByUuid)
+                .flatMap(templateService::findTemplateIdByUuid)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "composition", "No COMPOSITION with given id: %s".formatted(compId)));
 
@@ -293,7 +293,7 @@ public class CompositionServiceImp implements CompositionService {
     private @NonNull UUID getTemplateUuid(Composition composition) {
         return Optional.of(composition)
                 .map(LocatableUtils::getTemplateId)
-                .flatMap(templateCacheService::findUuidByTemplateId)
+                .flatMap(templateService::findUuidByTemplateId)
                 .orElseThrow(
                         () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
     }
@@ -485,8 +485,6 @@ public class CompositionServiceImp implements CompositionService {
         return composition;
     }
 
-    //    private
-
     private TemplateProvider createTemplateProvider() {
         return new TemplateProvider() {
             @Override
@@ -496,10 +494,11 @@ public class CompositionServiceImp implements CompositionService {
 
             @Override
             public Optional<WebTemplate> buildIntrospect(String templateId) {
-                if (templateId == null) {
+                try {
+                    return Optional.ofNullable(templateId).map(templateService::getInternalTemplate);
+                } catch (ObjectNotFoundException _) {
                     return Optional.empty();
                 }
-                return Optional.ofNullable(templateCacheService.getInternalTemplate(templateId));
             }
         };
     }
@@ -528,7 +527,7 @@ public class CompositionServiceImp implements CompositionService {
     public String retrieveTemplateId(UUID compositionId) {
         return compositionRepository
                 .findTemplateId(compositionId)
-                .flatMap(templateCacheService::findTemplateIdByUuid)
+                .flatMap(templateService::findTemplateIdByUuid)
                 .orElseThrow();
     }
 

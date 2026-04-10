@@ -39,17 +39,11 @@ public interface TemplateCacheService {
 
     WebTemplate getInternalTemplate(String templateId);
 
-    /**
-     * Deletes a given operational template physically from cache and from template storage and from cache.
-     * Can only be executed if the template is no longer referenced by any Composition.
-     *
-     * @param templateUuid - Internal id of template instance to delete
-     */
-    void deleteOperationalTemplate(UUID templateUuid);
+    void deleteOperationalTemplate(String templateId);
+
+    int deleteAllOperationalTemplates();
 
     Optional<String> findTemplateIdByUuid(UUID uuid);
 
     Optional<UUID> findUuidByTemplateId(String templateId);
-
-    int deleteAllOperationalTemplates();
 }

@@ -28,6 +28,7 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
@@ -60,6 +61,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 // This service is not @Transactional since we only want to get DB connections when we really need to and an already
 // running transaction is propagated anyway
+// There are few instances where a transaction is needed.
+// Also, there are few instances where a transaction is not available.
 public class DefaultTemplateCacheService implements TemplateCacheService {
     /*
      * CDR-2305 template cache landscape
@@ -76,8 +79,6 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
 
     private final TemplateStoreRepository templateStoreRepository;
 
-    // TODO CDR-2305 merge TemplateServiceImp, DefaultTemplateCacheService;
-    //  TODO CDR-2305 refine TemplateCacheService
     private final CacheHelper cacheHelper;
 
     @Value("${ehrbase.cache.template-init-on-startup:false}")
@@ -171,27 +172,17 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         return templateStoreRepository.findAllTemplates();
     }
 
-    public String retrieveOperationalTemplate(String templateId) {
-        log.trace("retrieveOperationalTemplate({})", templateId);
-        return cacheHelper.retrieveOperationalTemplate(
-                templateId,
-                tid -> templateStoreRepository.findByTemplateIds(tid).stream()
-                        .findFirst()
-                        .map(TemplateMetaData::operationalTemplate)
-                        .orElse(null));
-    }
-
     /**
      * {@inheritDoc}
      */
     @Override
     @Transactional
-    public void deleteOperationalTemplate(UUID uuid) {
-        // Remove template from storage
-        findTemplateIdByUuid(uuid).ifPresent(templateId -> {
-            templateStoreRepository.deleteTemplate(uuid);
-            cacheHelper.invalidateCaches(templateId, uuid);
-        });
+    public void deleteOperationalTemplate(String templateId) {
+        UUID templateUuid = findUuidByTemplateId(templateId)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
+        templateStoreRepository.deleteTemplate(templateUuid);
+        cacheHelper.invalidateCaches(templateId, templateUuid);
     }
 
     @Override
@@ -215,6 +206,29 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
                 tid -> templateStoreRepository.findUuidByTemplateId(tid).orElseThrow()));
     }
 
+    public String retrieveOperationalTemplate(String templateId) {
+        log.trace("retrieveOperationalTemplate({})", templateId);
+        try {
+            return cacheHelper.retrieveOperationalTemplate(
+                    templateId,
+                    tid -> templateStoreRepository.findByTemplateIds(tid).stream()
+                            .findFirst()
+                            .map(TemplateMetaData::operationalTemplate)
+                            .orElseThrow(() -> new ObjectNotFoundException(
+                                    "template", "Template with the specified id does not exist")));
+        } catch (Cache.ValueRetrievalException ex) {
+            // unwrap exception
+            throw (RuntimeException) ex.getCause();
+        }
+    }
+
+    /**
+     *
+     * @param templateId
+     * @return
+     * @throws ObjectNotFoundException if the template is missing
+     * @throws InternalServerException if the OPT cannot be parsed
+     */
     public WebTemplate getInternalTemplate(String templateId) {
         try {
             return cacheHelper
@@ -228,17 +242,19 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
                                         operationaltemplate =
                                                 TemplateService.buildOperationalTemplate(d.operationalTemplate());
                                     } catch (XmlException e) {
-                                        throw new InternalServerException(e.getMessage(), e);
+                                        throw new InternalServerException(
+                                                "Cannot process template: " + e.getMessage(), e);
                                     }
                                     return Pair.of(
                                             buildWebTemplate(operationaltemplate),
                                             d.meta().creationTime());
                                 })
-                                .orElseThrow(() -> new IllegalArgumentException(
-                                        "Could not retrieve template for template Id: " + tid));
+                                .orElseThrow(() -> new ObjectNotFoundException(
+                                        "template", "Template with the specified id does not exist"));
                     })
                     .getLeft();
         } catch (Cache.ValueRetrievalException ex) {
+            // unwrap exception
             throw (RuntimeException) ex.getCause();
         }
     }
@@ -251,7 +267,7 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         }
     }
 
-    private static final class CacheHelper {
+    static final class CacheHelper {
         private final CacheProvider cacheProvider;
 
         public CacheHelper(CacheProvider cacheProvider) {

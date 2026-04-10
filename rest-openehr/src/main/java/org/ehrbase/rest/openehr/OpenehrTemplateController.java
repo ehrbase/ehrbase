@@ -102,8 +102,7 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            String responseTemplate =
-                    templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+            String responseTemplate = templateService.findOperationalTemplate(templateId);
             return bodyBuilder.body(responseTemplate);
         } else {
             return bodyBuilder.build();
@@ -167,8 +166,11 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return the original XML based OPT format (if called with the Accept: application/xml request header),
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            String operationalTemplate = templateService.findOperationalTemplate(templateId, format);
-            return bodyBuilder.body(operationalTemplate);
+            if (format == OperationalTemplateFormat.XML) {
+                return bodyBuilder.body(templateService.findOperationalTemplate(templateId));
+            } else {
+                throw new NotAcceptableException("Requested operational template type not supported");
+            }
         }
         // return simplified JSON-based “web template” format (if called with the Accept: application/json or
         // application/openehr.wt+json request header)
