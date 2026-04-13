@@ -23,16 +23,19 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.service.TemplateCacheService;
 import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 public class TemplateFixture {
 
-    public record TestTemplate(String templateId, OPERATIONALTEMPLATE operationaltemplate, TemplateMetaData metaData) {}
+    public record TestTemplate(
+            String templateId,
+            OPERATIONALTEMPLATE operationaltemplate,
+            TemplateCacheService.TemplateMetaData metaData) {}
 
     public static TestTemplate fixtureTemplate(OperationalTemplateTestData operationalTemplateTestData) {
         return fixtureTemplate(operationalTemplateTestData, UUID.fromString("b65165e8-b4a6-4c23-84a0-ec58cfb481c1"));
@@ -54,7 +57,7 @@ public class TemplateFixture {
             throw new RuntimeException(e);
         }
 
-        TemplateMetaData metaData = new TemplateMetaData(
+        TemplateCacheService.TemplateMetaData metaData = new TemplateCacheService.TemplateMetaData(
                 templateDocument,
                 new TemplateService.TemplateDetails(
                         internalUUID,

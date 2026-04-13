@@ -30,8 +30,6 @@ import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.knowledge.TemplateCacheService;
-import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorToCompositionWalker;
@@ -120,7 +118,7 @@ public class TemplateServiceImp implements TemplateService {
         return templateCacheService.retrieveOperationalTemplate(templateId);
     }
 
-    private static TemplateMetaData getTemplateFields(OPERATIONALTEMPLATE template) {
+    private static TemplateCacheService.TemplateMetaData getTemplateFields(OPERATIONALTEMPLATE template) {
 
         validateTemplate(template);
         String templateId = TemplateUtils.getTemplateId(template);
@@ -132,7 +130,7 @@ public class TemplateServiceImp implements TemplateService {
 
         String concept = template.getConcept();
         String archetypeId = template.getDefinition().getArchetypeId().getValue();
-        return new TemplateMetaData(
+        return new TemplateCacheService.TemplateMetaData(
                 template.xmlText(opts), new TemplateDetails(null, templateId, null, concept, archetypeId));
     }
 
@@ -174,7 +172,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public String create(OPERATIONALTEMPLATE template) {
-        TemplateMetaData templateMeta = getTemplateFields(template);
+        TemplateCacheService.TemplateMetaData templateMeta = getTemplateFields(template);
         // TODO CDR-2305 clarify PROP_ALLOW_TEMPLATE_OVERWRITE
         return templateCacheService.addOperationalTemplate(
                 templateMeta, allowTemplateOverwrite, allowTemplateOverwrite);
@@ -204,7 +202,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
-        TemplateMetaData templateMeta = getTemplateFields(template);
+        TemplateCacheService.TemplateMetaData templateMeta = getTemplateFields(template);
         String templateId = templateMeta.meta().templateId();
         templateCacheService
                 .findUuidByTemplateId(templateId)

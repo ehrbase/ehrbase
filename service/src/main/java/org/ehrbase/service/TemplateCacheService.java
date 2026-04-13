@@ -31,8 +31,6 @@ import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
-import org.ehrbase.api.knowledge.TemplateCacheService;
-import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
@@ -64,7 +62,9 @@ import org.springframework.transaction.annotation.Transactional;
 // running transaction is propagated anyway
 // There are few instances where a transaction is needed.
 // Also, there are few instances where a transaction is not available.
-public class DefaultTemplateCacheService implements TemplateCacheService {
+public class TemplateCacheService {
+
+    public record TemplateMetaData(String operationalTemplate, TemplateService.TemplateDetails meta) {}
     /*
      * CDR-2305 template cache landscape
      * - templateId -> uuid [TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
@@ -85,13 +85,13 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
-    public DefaultTemplateCacheService(TemplateStoreRepository templateStoreRepository, CacheProvider cacheProvider) {
+    public TemplateCacheService(TemplateStoreRepository templateStoreRepository, CacheProvider cacheProvider) {
         this.templateStoreRepository = templateStoreRepository;
         this.cacheHelper = new CacheHelper(cacheProvider);
     }
 
     @PostConstruct
-    public void init() {
+    void init() {
         if (initTemplateCache) {
             // TODO CDR-2305 customizable preload strategy; fill templateId/uuid caches
 
@@ -105,7 +105,6 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         }
     }
 
-    @Override
     @Transactional
     public String addOperationalTemplate(
             TemplateMetaData templateData, boolean allowTemplateOverwrite, boolean allowUsedTemplateOverwrite) {
@@ -159,7 +158,6 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
                 template.meta().id(), templateId, tpl, template.meta().creationTime());
     }
 
-    @Override
     public List<TemplateService.TemplateDetails> findAllTemplates() {
         // TODO CDR-2305 cache? For AQL absolutely; for REST unclear
         return templateStoreRepository.findAllTemplates();
@@ -168,7 +166,6 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
     /**
      * {@inheritDoc}
      */
-    @Override
     @Transactional
     public void deleteOperationalTemplate(String templateId) {
         UUID templateUuid = findUuidByTemplateId(templateId)
@@ -178,7 +175,6 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         cacheHelper.invalidateCaches(templateId, templateUuid);
     }
 
-    @Override
     @Transactional
     public int deleteAllOperationalTemplates() {
         int deleted = templateStoreRepository.deleteAllTemplates();
@@ -186,19 +182,24 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
         return deleted;
     }
 
-    @Override
     public Optional<String> findTemplateIdByUuid(UUID uuid) {
         return Optional.ofNullable(cacheHelper.findTemplateIdByUuid(
                 uuid, u -> templateStoreRepository.findTemplateIdByUuid(u).orElseThrow()));
     }
 
-    @Override
     public Optional<UUID> findUuidByTemplateId(String templateId) {
         return Optional.ofNullable(cacheHelper.findUuidByTemplateId(
                 templateId,
                 tid -> templateStoreRepository.findUuidByTemplateId(tid).orElseThrow()));
     }
 
+    /**
+     * retrieve an operational template document
+     *
+     * @param templateId the template_id of the operational template
+     * @return String representation of an OPERATIONALTEMPLATE
+     * @throws ObjectNotFoundException if the template is missing
+     */
     public String retrieveOperationalTemplate(String templateId) {
         log.trace("retrieveOperationalTemplate({})", templateId);
         try {

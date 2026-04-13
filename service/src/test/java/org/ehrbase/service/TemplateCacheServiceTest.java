@@ -29,8 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.StateConflictException;
-import org.ehrbase.api.knowledge.TemplateCacheService;
-import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
@@ -42,7 +40,7 @@ import org.mockito.Mockito;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 
-class DefaultTemplateCacheServiceTest {
+class TemplateCacheServiceTest {
 
     private final TemplateStoreRepository mockTemplateStoreRepository = mock();
     private SimpleCacheManager cacheManager;
@@ -63,7 +61,7 @@ class DefaultTemplateCacheServiceTest {
 
     private TemplateCacheService service() {
 
-        return new DefaultTemplateCacheService(mockTemplateStoreRepository, new CacheProviderImp(cacheManager));
+        return new TemplateCacheService(mockTemplateStoreRepository, new CacheProviderImp(cacheManager));
     }
 
     @Test
@@ -83,7 +81,7 @@ class DefaultTemplateCacheServiceTest {
                 .thenReturn(Optional.of(UUID.randomUUID()));
 
         TemplateCacheService service = service();
-        TemplateMetaData templateData = testTemplate.metaData();
+        TemplateCacheService.TemplateMetaData templateData = testTemplate.metaData();
         assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false, false))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("Operational template with this template ID already exists: %s"
