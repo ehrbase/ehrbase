@@ -91,7 +91,7 @@ public class TemplateServiceImp implements TemplateService {
      * - startup: fill id maps? [TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
      */
 
-    public record TemplateMetaData(String operationalTemplate, TemplateService.TemplateDetails meta) {}
+    public record TemplateWithDetails(String operationalTemplate, TemplateDetails meta) {}
 
     public static final String PROP_INIT_TEMPLATE_CACHE = "ehrbase.cache.template-init-on-startup";
 
@@ -132,15 +132,15 @@ public class TemplateServiceImp implements TemplateService {
 
             // TODO CDR-2305 initTemplateCache lists templateIds
             String[] templateIds = templateStoreRepository.findAllTemplates().stream()
-                    .map(TemplateService.TemplateDetails::templateId)
+                    .map(TemplateDetails::templateId)
                     .toArray(String[]::new);
-            List<TemplateMetaData> templateMetaData = templateStoreRepository.findByTemplateIds(templateIds);
+            List<TemplateWithDetails> templateMetaData = templateStoreRepository.findByTemplateIds(templateIds);
             log.info("Preparing WebTemplate cache for {} templates", templateMetaData.size());
             templateMetaData.forEach(this::addWebTemplateToCache);
         }
     }
 
-    private void addWebTemplateToCache(TemplateMetaData template) {
+    private void addWebTemplateToCache(TemplateWithDetails template) {
         OPERATIONALTEMPLATE operationaltemplate;
         try {
             operationaltemplate = TemplateService.buildOperationalTemplate(template.operationalTemplate());
@@ -155,13 +155,13 @@ public class TemplateServiceImp implements TemplateService {
     }
 
     String addOperationalTemplate(
-            TemplateMetaData templateData, boolean allowTemplateOverwrite, boolean allowUsedTemplateOverwrite) {
+            TemplateWithDetails templateData, boolean allowTemplateOverwrite, boolean allowUsedTemplateOverwrite) {
 
         // pre-check: if already existing throw proper exception
         String templateId = templateData.meta().templateId();
         Optional<UUID> existingTid = findUuidByTemplateId(templateId);
 
-        TemplateMetaData templateMetaData;
+        TemplateWithDetails templateMetaData;
         boolean mustUpdate = existingTid.isPresent();
         if (mustUpdate) {
             if (!allowTemplateOverwrite) {
@@ -265,7 +265,7 @@ public class TemplateServiceImp implements TemplateService {
                     templateId,
                     tid -> templateStoreRepository.findByTemplateIds(tid).stream()
                             .findFirst()
-                            .map(TemplateMetaData::operationalTemplate)
+                            .map(TemplateWithDetails::operationalTemplate)
                             .orElseThrow(() -> new ObjectNotFoundException(
                                     "template", "Template with the specified id does not exist")));
         } catch (Cache.ValueRetrievalException ex) {
@@ -274,7 +274,7 @@ public class TemplateServiceImp implements TemplateService {
         }
     }
 
-    private static TemplateMetaData getTemplateFields(OPERATIONALTEMPLATE template) {
+    private static TemplateWithDetails getTemplateFields(OPERATIONALTEMPLATE template) {
         String templateId = TemplateUtils.getTemplateId(template);
 
         XmlOptions opts = new XmlOptions();
@@ -284,7 +284,7 @@ public class TemplateServiceImp implements TemplateService {
 
         String concept = template.getConcept();
         String archetypeId = template.getDefinition().getArchetypeId().getValue();
-        return new TemplateMetaData(
+        return new TemplateWithDetails(
                 template.xmlText(opts), new TemplateDetails(null, templateId, null, concept, archetypeId));
     }
 
@@ -328,7 +328,7 @@ public class TemplateServiceImp implements TemplateService {
     @Transactional
     public String create(OPERATIONALTEMPLATE template) {
         validateTemplate(template);
-        TemplateMetaData templateMeta = getTemplateFields(template);
+        TemplateWithDetails templateMeta = getTemplateFields(template);
         // TODO CDR-2305 clarify PROP_ALLOW_TEMPLATE_OVERWRITE
         return addOperationalTemplate(templateMeta, allowTemplateOverwrite, allowTemplateOverwrite);
     }
@@ -366,7 +366,7 @@ public class TemplateServiceImp implements TemplateService {
     @Transactional
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
         validateTemplate(template);
-        TemplateMetaData templateMeta = getTemplateFields(template);
+        TemplateWithDetails templateMeta = getTemplateFields(template);
         String templateId = templateMeta.meta().templateId();
         findUuidByTemplateId(templateId)
                 .orElseThrow(() -> new ObjectNotFoundException(

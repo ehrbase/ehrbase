@@ -31,7 +31,7 @@ import org.ehrbase.jooq.pg.tables.CompVersion;
 import org.ehrbase.jooq.pg.tables.CompVersionHistory;
 import org.ehrbase.jooq.pg.tables.TemplateStore;
 import org.ehrbase.jooq.pg.tables.records.TemplateStoreRecord;
-import org.ehrbase.service.TemplateServiceImp.TemplateMetaData;
+import org.ehrbase.service.TemplateServiceImp.TemplateWithDetails;
 import org.ehrbase.service.TimeProvider;
 import org.ehrbase.util.UuidGenerator;
 import org.jooq.DSLContext;
@@ -53,7 +53,7 @@ public class TemplateStoreRepository {
         this.timeProvider = timeProvider;
     }
 
-    public TemplateMetaData store(TemplateMetaData templateData) {
+    public TemplateWithDetails store(TemplateWithDetails templateData) {
         TemplateStoreRecord templateStoreRecord = context.newRecord(TEMPLATE_STORE);
         templateStoreRecord.setId(UuidGenerator.randomUUID());
         setTemplateFields(templateData, templateStoreRecord, timeProvider);
@@ -61,7 +61,7 @@ public class TemplateStoreRepository {
         return buildMetadata(templateStoreRecord);
     }
 
-    public TemplateMetaData update(TemplateMetaData templateData) {
+    public TemplateWithDetails update(TemplateWithDetails templateData) {
         String templateId = templateData.meta().templateId();
         TemplateStoreRecord templateStoreRecord = context.selectFrom(TEMPLATE_STORE)
                 .where(TEMPLATE_STORE.TEMPLATE_ID.eq(templateId))
@@ -108,8 +108,8 @@ public class TemplateStoreRepository {
                         r.component1(), r.component2(), r.component3(), r.component4(), r.component5()));
     }
 
-    private static TemplateMetaData buildMetadata(TemplateStoreRecord rec) {
-        return new TemplateMetaData(
+    private static TemplateWithDetails buildMetadata(TemplateStoreRecord rec) {
+        return new TemplateWithDetails(
                 rec.getContent(),
                 new TemplateService.TemplateDetails(
                         rec.getId(),
@@ -152,7 +152,7 @@ public class TemplateStoreRepository {
      * @param templateIds
      * @return the templates
      */
-    public List<TemplateMetaData> findByTemplateIds(String... templateIds) {
+    public List<TemplateWithDetails> findByTemplateIds(String... templateIds) {
 
         if (templateIds.length == 0) return List.of();
 
@@ -176,7 +176,7 @@ public class TemplateStoreRepository {
     }
 
     private static void setTemplateFields(
-            TemplateMetaData templateData, TemplateStoreRecord templateStoreRecord, TimeProvider timeProvider) {
+            TemplateWithDetails templateData, TemplateStoreRecord templateStoreRecord, TimeProvider timeProvider) {
         templateStoreRecord.setTemplateId(templateData.meta().templateId());
         templateStoreRecord.setCreationTime(timeProvider.getNow());
         templateStoreRecord.setContent(templateData.operationalTemplate());

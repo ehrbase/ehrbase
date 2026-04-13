@@ -81,7 +81,7 @@ class TemplateServiceImpTest {
                 .thenReturn(Optional.of(UUID.randomUUID()));
 
         TemplateServiceImp service = service();
-        TemplateServiceImp.TemplateMetaData templateData = testTemplate.metaData();
+        TemplateServiceImp.TemplateWithDetails templateData = testTemplate.metaData();
         assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false, false))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("Operational template with this template ID already exists: %s"
@@ -105,7 +105,7 @@ class TemplateServiceImpTest {
 
     private TemplateFixture.TestTemplate parseAndMock(OperationalTemplateTestData operationalTemplateTestData) {
         TemplateFixture.TestTemplate testTemplate = TemplateFixture.fixtureTemplate(operationalTemplateTestData);
-        TemplateServiceImp.TemplateMetaData data = testTemplate.metaData();
+        TemplateServiceImp.TemplateWithDetails data = testTemplate.metaData();
         Mockito.when(mockTemplateStoreRepository.store(data)).thenReturn(data);
         Mockito.when(mockTemplateStoreRepository.update(data)).thenReturn(data);
         return testTemplate;
