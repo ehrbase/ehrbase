@@ -108,6 +108,8 @@ class DefaultTemplateCacheServiceTest {
     private TemplateFixture.TestTemplate parse(OperationalTemplateTestData operationalTemplateTestData) {
         TemplateFixture.TestTemplate testTemplate = TemplateFixture.fixtureTemplate(operationalTemplateTestData);
         Mockito.when(mockTemplateStoreRepository.store(testTemplate.metaData())).thenReturn(testTemplate.metaData());
+        Mockito.when(mockTemplateStoreRepository.update(testTemplate.metaData()))
+                .thenReturn(testTemplate.metaData());
         return testTemplate;
     }
 }

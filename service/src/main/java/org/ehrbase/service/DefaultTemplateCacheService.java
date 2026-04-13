@@ -136,7 +136,7 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
             templateMetaData = templateStoreRepository.update(templateData);
             cacheHelper.invalidateCaches(templateId, templateMetaData.meta().id());
         } else {
-            templateMetaData = templateStoreRepository.update(templateData);
+            templateMetaData = templateStoreRepository.store(templateData);
         }
 
         log.debug("Updating WebTemplate cache for template: {}", templateId);
