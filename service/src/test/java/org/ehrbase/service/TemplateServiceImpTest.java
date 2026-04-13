@@ -40,7 +40,7 @@ import org.mockito.Mockito;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 import org.springframework.cache.support.SimpleCacheManager;
 
-class TemplateCacheServiceTest {
+class TemplateServiceImpTest {
 
     private final TemplateStoreRepository mockTemplateStoreRepository = mock();
     private SimpleCacheManager cacheManager;
@@ -59,14 +59,14 @@ class TemplateCacheServiceTest {
         cacheManager.initializeCaches();
     }
 
-    private TemplateCacheService service() {
+    private TemplateServiceImp service() {
 
-        return new TemplateCacheService(mockTemplateStoreRepository, new CacheProviderImp(cacheManager));
+        return new TemplateServiceImp(mockTemplateStoreRepository, new CacheProviderImp(cacheManager), false, false);
     }
 
     @Test
     void addOperationalTemplate() {
-        TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
+        TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         String templateId = service().addOperationalTemplate(testTemplate.metaData(), false, false);
 
         verify(mockTemplateStoreRepository, times(1)).store(testTemplate.metaData());
@@ -75,13 +75,13 @@ class TemplateCacheServiceTest {
 
     @Test
     void addOperationalTemplateCanNotBeOverwritten() {
-        TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
+        TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
         Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(UUID.randomUUID()));
 
-        TemplateCacheService service = service();
-        TemplateCacheService.TemplateMetaData templateData = testTemplate.metaData();
+        TemplateServiceImp service = service();
+        TemplateServiceImp.TemplateMetaData templateData = testTemplate.metaData();
         assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false, false))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("Operational template with this template ID already exists: %s"
@@ -92,22 +92,22 @@ class TemplateCacheServiceTest {
 
     @Test
     void addOperationalTemplateAllowOverwrite() {
-        TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
+        TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
         Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
-        TemplateCacheService service = spy(service());
+        TemplateServiceImp service = spy(service());
         String templateId = service.addOperationalTemplate(testTemplate.metaData(), true, true);
 
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
     }
 
-    private TemplateFixture.TestTemplate parse(OperationalTemplateTestData operationalTemplateTestData) {
+    private TemplateFixture.TestTemplate parseAndMock(OperationalTemplateTestData operationalTemplateTestData) {
         TemplateFixture.TestTemplate testTemplate = TemplateFixture.fixtureTemplate(operationalTemplateTestData);
-        Mockito.when(mockTemplateStoreRepository.store(testTemplate.metaData())).thenReturn(testTemplate.metaData());
-        Mockito.when(mockTemplateStoreRepository.update(testTemplate.metaData()))
-                .thenReturn(testTemplate.metaData());
+        TemplateServiceImp.TemplateMetaData data = testTemplate.metaData();
+        Mockito.when(mockTemplateStoreRepository.store(data)).thenReturn(data);
+        Mockito.when(mockTemplateStoreRepository.update(data)).thenReturn(data);
         return testTemplate;
     }
 }

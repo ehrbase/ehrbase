@@ -35,8 +35,6 @@ public interface TemplateService {
     record TemplateDetails(
             UUID id, String templateId, OffsetDateTime creationTime, String concept, String archetypeId) {}
 
-    final String PROP_ALLOW_TEMPLATE_OVERWRITE = "ehrbase.template.allow-overwrite";
-
     Collection<TemplateDetails> findAllTemplates();
 
     WebTemplate getInternalTemplate(String templateId);
