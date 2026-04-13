@@ -175,7 +175,9 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     public String create(OPERATIONALTEMPLATE template) {
         TemplateMetaData templateMeta = getTemplateFields(template);
-        return templateCacheService.addOperationalTemplate(templateMeta, allowTemplateOverwrite);
+        // TODO CDR-2305 clarify PROP_ALLOW_TEMPLATE_OVERWRITE
+        return templateCacheService.addOperationalTemplate(
+                templateMeta, allowTemplateOverwrite, allowTemplateOverwrite);
     }
 
     @Override
@@ -209,7 +211,7 @@ public class TemplateServiceImp implements TemplateService {
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId)));
 
-        return templateCacheService.addOperationalTemplate(templateMeta, true);
+        return templateCacheService.addOperationalTemplate(templateMeta, true, allowTemplateOverwrite);
     }
 
     /**

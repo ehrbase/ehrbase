@@ -141,7 +141,7 @@ public class TemplateStoreRepository {
         if (isTemplateUsed(uuid)) {
             throw new UnprocessableEntityException(
                     "Cannot delete template %s since it is used by at least one composition"
-                            .formatted(findTemplateIdByUuid(uuid)));
+                            .formatted(findTemplateIdByUuid(uuid).orElse("(unknown)")));
         } else {
             delete(uuid);
         }

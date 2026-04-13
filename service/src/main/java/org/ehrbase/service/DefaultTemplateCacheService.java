@@ -30,6 +30,7 @@ import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.knowledge.TemplateCacheService;
 import org.ehrbase.api.knowledge.TemplateMetaData;
 import org.ehrbase.api.service.TemplateService;
@@ -106,50 +107,42 @@ public class DefaultTemplateCacheService implements TemplateCacheService {
 
     @Override
     @Transactional
-    public String addOperationalTemplate(TemplateMetaData templateData, boolean allowOverwrite) {
+    public String addOperationalTemplate(
+            TemplateMetaData templateData, boolean allowTemplateOverwrite, boolean allowUsedTemplateOverwrite) {
 
         // pre-check: if already existing throw proper exception
         String templateId = templateData.meta().templateId();
         Optional<UUID> existingTid = findUuidByTemplateId(templateId);
+
+        TemplateMetaData templateMetaData;
         boolean mustUpdate = existingTid.isPresent();
-        if (mustUpdate && !allowOverwrite) {
-            throw new StateConflictException(
-                    "Operational template with this template ID already exists: " + templateId);
-        }
-
-        TemplateMetaData templateMetaData = storeTemplate(templateData, existingTid.orElse(null));
-
-        if (allowOverwrite) {
-            // Caches might be containing wrong data
+        if (mustUpdate) {
+            if (!allowTemplateOverwrite) {
+                throw new StateConflictException(
+                        "Operational template with this template ID already exists: " + templateId);
+            }
+            if (templateStoreRepository.isTemplateUsed(existingTid.get())) {
+                if (allowUsedTemplateOverwrite) {
+                    log.warn(
+                            "Updating template {} that is in use by at least one composition because {} is enabled",
+                            templateData.meta().templateId(),
+                            TemplateService.PROP_ALLOW_TEMPLATE_OVERWRITE);
+                } else {
+                    throw new UnprocessableEntityException(
+                            "Cannot update template %s since it is used by at least one composition"
+                                    .formatted(templateId));
+                }
+            }
+            templateMetaData = templateStoreRepository.update(templateData);
             cacheHelper.invalidateCaches(templateId, templateMetaData.meta().id());
+        } else {
+            templateMetaData = templateStoreRepository.update(templateData);
         }
-        log.info("Updating WebTemplate cache for template: {}", templateId);
+
+        log.debug("Updating WebTemplate cache for template: {}", templateId);
         addWebTemplateToCache(templateMetaData);
 
         return templateId;
-    }
-
-    /**
-     * Save a template in the store
-     *
-     * @param templateData
-     * @param existingTid
-     */
-    private TemplateMetaData storeTemplate(TemplateMetaData templateData, UUID existingTid) {
-        if (existingTid == null) {
-            return templateStoreRepository.store(templateData);
-        }
-        if (templateStoreRepository.isTemplateUsed(existingTid)) {
-            log.warn(
-                    "Updating template {} that is in use by at least one composition because {} is enabled",
-                    templateData.meta().templateId(),
-                    TemplateService.PROP_ALLOW_TEMPLATE_OVERWRITE);
-            /* XXX CDR-2305 what about this option? Updating is only allowed if the template is not in use
-             * throw new UnprocessableEntityException(
-             * "Cannot update template %s since it is used by at least one composition".formatted(templateId));
-             */
-        }
-        return templateStoreRepository.update(templateData);
     }
 
     private void addWebTemplateToCache(TemplateMetaData template) {

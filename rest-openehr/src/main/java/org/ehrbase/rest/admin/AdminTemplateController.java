@@ -95,7 +95,6 @@ public class AdminTemplateController extends BaseController {
                     @PathVariable(value = "template_id")
                     String templateId,
             @Parameter(description = "New template content to replace old one with") @RequestBody() String content) {
-
         OPERATIONALTEMPLATE template;
         try {
             template = TemplateService.buildOperationalTemplate(content);

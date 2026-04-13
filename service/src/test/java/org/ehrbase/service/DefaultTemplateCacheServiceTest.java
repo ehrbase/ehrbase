@@ -69,7 +69,7 @@ class DefaultTemplateCacheServiceTest {
     @Test
     void addOperationalTemplate() {
         TemplateFixture.TestTemplate testTemplate = parse(OperationalTemplateTestData.MINIMAL_ACTION);
-        String templateId = service().addOperationalTemplate(testTemplate.metaData(), false);
+        String templateId = service().addOperationalTemplate(testTemplate.metaData(), false, false);
 
         verify(mockTemplateStoreRepository, times(1)).store(testTemplate.metaData());
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
@@ -84,7 +84,7 @@ class DefaultTemplateCacheServiceTest {
 
         TemplateCacheService service = service();
         TemplateMetaData templateData = testTemplate.metaData();
-        assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false))
+        assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false, false))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("Operational template with this template ID already exists: %s"
                         .formatted(testTemplate.templateId()));
@@ -100,7 +100,7 @@ class DefaultTemplateCacheServiceTest {
                 .thenReturn(List.of(testTemplate.metaData()));
 
         TemplateCacheService service = spy(service());
-        String templateId = service.addOperationalTemplate(testTemplate.metaData(), true);
+        String templateId = service.addOperationalTemplate(testTemplate.metaData(), true, true);
 
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
     }

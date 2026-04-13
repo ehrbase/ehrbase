@@ -25,7 +25,8 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 
 public interface TemplateCacheService {
 
-    String addOperationalTemplate(TemplateMetaData templateData, boolean allowOverwrite);
+    String addOperationalTemplate(
+            TemplateMetaData templateData, boolean allowOverwrite, boolean allowUsedTemplateOverwrite);
 
     List<TemplateService.TemplateDetails> findAllTemplates();
 
