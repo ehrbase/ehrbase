@@ -239,4 +239,12 @@ public class EhrRepository
         versionedComposition.setTimeCreated(new DvDateTime(record.getSysPeriodLower()));
         return versionedComposition;
     }
+
+    public String getSubjectExternalRef(final UUID uuid) {
+        EhrStatusData data = EHR_STATUS_DATA.as("data");
+        return context.select(jsonDataField(data, SUBJECT_ID_JSON_PATH))
+                .from(data)
+                .where(data.EHR_ID.eq(uuid), dataRootCondition(data))
+                .fetchOne(Record1::value1);
+    }
 }

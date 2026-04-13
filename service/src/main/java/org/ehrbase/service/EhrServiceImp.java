@@ -25,12 +25,9 @@ import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.ehr.VersionedEhrStatus;
-import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.generic.RevisionHistory;
 import com.nedap.archie.rm.support.identification.ArchetypeID;
-import com.nedap.archie.rm.support.identification.ObjectId;
-import com.nedap.archie.rm.support.identification.ObjectRef;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rm.support.identification.PartyRef;
 import java.time.OffsetDateTime;
@@ -269,12 +266,7 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public String getSubjectExtRef(String ehrId) {
-        EhrStatus ehrStatus = getEhrStatus(UUID.fromString(ehrId));
-        return Optional.of(ehrStatus.getSubject())
-                .map(PartyProxy::getExternalRef)
-                .map(ObjectRef::getId)
-                .map(ObjectId::getValue)
-                .orElse(null);
+        return ehrRepository.getSubjectExternalRef(UUID.fromString(ehrId));
     }
 
     @Override
