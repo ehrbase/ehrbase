@@ -54,7 +54,8 @@ public class TemplateUtils {
         if (template == null) {
             throw new IllegalArgumentException("Template must not be null");
         }
-        return Optional.ofNullable(template.getTemplateId())
+        return Optional.of(template)
+                .map(OPERATIONALTEMPLATE::getTemplateId)
                 .map(OBJECTID::getValue)
                 .orElseThrow(() -> new IllegalArgumentException("Template ID must not be null for the given template"));
     }

@@ -87,14 +87,13 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestBody String template) {
 
         // create template
-        String templateId;
         OPERATIONALTEMPLATE tpl;
         try {
             tpl = TemplateService.buildOperationalTemplate(template);
         } catch (XmlException e) {
             throw new InvalidApiParameterException(e.getMessage());
         }
-        templateId = templateService.create(tpl);
+        String templateId = templateService.create(tpl);
 
         // initialize HTTP 201 Created body builder
         ResponseEntity.BodyBuilder bodyBuilder =

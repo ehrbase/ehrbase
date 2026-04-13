@@ -80,37 +80,13 @@ public class TemplateServiceImp implements TemplateService {
     }
 
     @Override
-    public Composition buildExample(String templateId) {
-        WebTemplate webTemplate = getInternalTemplate(templateId);
-        Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
-
-        ExampleGeneratorConfig object = new ExampleGeneratorConfig();
-
-        DefaultValues defaultValues = new DefaultValues();
-        defaultValues.addDefaultValue(DefaultValuePath.TIME, OffsetDateTime.now());
-        defaultValues.addDefaultValue(
-                DefaultValuePath.LANGUAGE,
-                FlatHelper.findEnumValueOrThrow(webTemplate.getDefaultLanguage(), Language.class));
-        defaultValues.addDefaultValue(DefaultValuePath.TERRITORY, Territory.DE);
-        defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.OTHER_CARE);
-        defaultValues.addDefaultValue(DefaultValuePath.COMPOSER_NAME, "Max Mustermann");
-
-        ExampleGeneratorToCompositionWalker walker = new ExampleGeneratorToCompositionWalker();
-        walker.walk(composition, object, webTemplate, defaultValues, templateId);
-
-        composition.setTerritory(Territory.DE.toCodePhrase());
-        return composition;
-    }
-
-    @Override
     public WebTemplate getInternalTemplate(String templateId) {
         return templateCacheService.getInternalTemplate(templateId);
     }
 
     @Override
     public WebTemplate findWebTemplate(String templateId) {
-        WebTemplate internalTemplate = this.getInternalTemplate(templateId);
-        return new Filter().filter(internalTemplate);
+        return new Filter().filter(templateCacheService.getInternalTemplate(templateId));
     }
 
     @Override
@@ -119,8 +95,6 @@ public class TemplateServiceImp implements TemplateService {
     }
 
     private static TemplateCacheService.TemplateMetaData getTemplateFields(OPERATIONALTEMPLATE template) {
-
-        validateTemplate(template);
         String templateId = TemplateUtils.getTemplateId(template);
 
         XmlOptions opts = new XmlOptions();
@@ -172,6 +146,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public String create(OPERATIONALTEMPLATE template) {
+        validateTemplate(template);
         TemplateCacheService.TemplateMetaData templateMeta = getTemplateFields(template);
         // TODO CDR-2305 clarify PROP_ALLOW_TEMPLATE_OVERWRITE
         return templateCacheService.addOperationalTemplate(
@@ -202,6 +177,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
+        validateTemplate(template);
         TemplateCacheService.TemplateMetaData templateMeta = getTemplateFields(template);
         String templateId = templateMeta.meta().templateId();
         templateCacheService
@@ -218,5 +194,28 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     public int adminDeleteAllTemplates() {
         return this.templateCacheService.deleteAllOperationalTemplates();
+    }
+
+    @Override
+    public Composition buildExample(String templateId) {
+        WebTemplate webTemplate = getInternalTemplate(templateId);
+        Composition composition = WebTemplateSkeletonBuilder.build(webTemplate, false);
+
+        ExampleGeneratorConfig object = new ExampleGeneratorConfig();
+
+        DefaultValues defaultValues = new DefaultValues();
+        defaultValues.addDefaultValue(DefaultValuePath.TIME, OffsetDateTime.now());
+        defaultValues.addDefaultValue(
+                DefaultValuePath.LANGUAGE,
+                FlatHelper.findEnumValueOrThrow(webTemplate.getDefaultLanguage(), Language.class));
+        defaultValues.addDefaultValue(DefaultValuePath.TERRITORY, Territory.DE);
+        defaultValues.addDefaultValue(DefaultValuePath.SETTING, Setting.OTHER_CARE);
+        defaultValues.addDefaultValue(DefaultValuePath.COMPOSER_NAME, "Max Mustermann");
+
+        ExampleGeneratorToCompositionWalker walker = new ExampleGeneratorToCompositionWalker();
+        walker.walk(composition, object, webTemplate, defaultValues, templateId);
+
+        composition.setTerritory(Territory.DE.toCodePhrase());
+        return composition;
     }
 }

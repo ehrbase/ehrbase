@@ -17,13 +17,9 @@
  */
 package org.ehrbase.service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Stream;
 import javax.annotation.PostConstruct;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
@@ -80,14 +76,14 @@ public class TemplateCacheService {
 
     private final TemplateStoreRepository templateStoreRepository;
 
-    private final CacheHelper cacheHelper;
+    private final TemplateCacheHelper cacheHelper;
 
     @Value("${ehrbase.cache.template-init-on-startup:false}")
     private boolean initTemplateCache;
 
     public TemplateCacheService(TemplateStoreRepository templateStoreRepository, CacheProvider cacheProvider) {
         this.templateStoreRepository = templateStoreRepository;
-        this.cacheHelper = new CacheHelper(cacheProvider);
+        this.cacheHelper = new TemplateCacheHelper(cacheProvider);
     }
 
     @PostConstruct
@@ -253,90 +249,12 @@ public class TemplateCacheService {
         }
     }
 
-    private WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate) {
+    private static WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate) {
         try {
             return new OPTParser(operationaltemplate).parse();
+            // TODO CDR-2305 when from DB: illegal state, when from api: illegal argument?
         } catch (RuntimeException e) {
             throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
-        }
-    }
-
-    static final class CacheHelper {
-        private final CacheProvider cacheProvider;
-
-        public CacheHelper(CacheProvider cacheProvider) {
-            this.cacheProvider = cacheProvider;
-        }
-
-        public void addToCache(UUID internalId, String templateId, WebTemplate tpl, OffsetDateTime createdOn) {
-            CacheProvider.TEMPLATE_CACHE.put(cacheProvider, templateId, Pair.of(tpl, createdOn));
-            CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, internalId, templateId);
-            CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, templateId, internalId);
-        }
-
-        public void invalidateCaches(String templateId, UUID internalId) {
-            CacheProvider.TEMPLATE_CACHE.evict(cacheProvider, templateId);
-            CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
-            CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
-            CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
-        }
-
-        public void clearCaches() {
-            Stream.of(
-                            CacheProvider.TEMPLATE_CACHE,
-                            CacheProvider.TEMPLATE_OPT_CACHE,
-                            CacheProvider.TEMPLATE_ID_UUID_CACHE,
-                            CacheProvider.TEMPLATE_UUID_ID_CACHE)
-                    .forEach(c -> c.clear(cacheProvider));
-        }
-
-        public String retrieveOperationalTemplate(String templateId, Function<String, String> loader) {
-            return find(CacheProvider.TEMPLATE_OPT_CACHE, templateId, loader);
-        }
-
-        private static <T> T handleCacheMismatch(Cache.ValueRetrievalException ex) {
-            Throwable cause = ex.getCause();
-            return switch (cause) {
-                // No template with that UUID exists
-                case NoSuchElementException _ -> null;
-                case RuntimeException re -> throw re;
-                default -> throw ex;
-            };
-        }
-
-        public String findTemplateIdByUuid(UUID uuid, Function<UUID, String> loader) {
-            try {
-                return find(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, u -> {
-                    String tid = loader.apply(u);
-                    // reverse cache
-                    CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, tid, u);
-                    return tid;
-                });
-            } catch (Cache.ValueRetrievalException ex) {
-                return handleCacheMismatch(ex);
-            }
-        }
-
-        public UUID findUuidByTemplateId(String templateId, Function<String, UUID> loader) {
-            try {
-                return find(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, tid -> {
-                    UUID u = loader.apply(tid);
-                    // reverse cache
-                    CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, u, tid);
-                    return u;
-                });
-            } catch (Cache.ValueRetrievalException ex) {
-                return handleCacheMismatch(ex);
-            }
-        }
-
-        public Pair<WebTemplate, OffsetDateTime> getInternalTemplate(
-                String templateId, Function<String, Pair<WebTemplate, OffsetDateTime>> loader) {
-            return find(CacheProvider.TEMPLATE_CACHE, templateId, loader);
-        }
-
-        private <K, V> V find(CacheProvider.EhrBaseCache<K, V> cache, K key, Function<K, V> loader) {
-            return cache.get(cacheProvider, key, () -> loader.apply(key));
         }
     }
 }
