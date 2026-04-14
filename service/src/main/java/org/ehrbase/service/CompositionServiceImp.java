@@ -546,7 +546,7 @@ public class CompositionServiceImp implements CompositionService {
         return compositionRepository.getVersionedComposition(ehrId, composition).orElseGet(() -> {
             ehrService.checkEhrExists(ehrId);
             throw new ObjectNotFoundException(
-                    "versioned_composition", "No VERSIONED_COMPOSITION with given id: %s".formatted(composition));
+                    "VERSIONED_COMPOSITION", "No VERSIONED_COMPOSITION with given id: %s".formatted(composition));
         });
     }
 

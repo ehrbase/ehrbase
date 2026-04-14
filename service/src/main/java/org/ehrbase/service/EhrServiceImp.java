@@ -120,9 +120,9 @@ public class EhrServiceImp implements EhrService {
         try {
             ehrRepository.commit(ehrId, status, null, null);
         } catch (DuplicateKeyException e) {
-            checkEhrExistForParty(e, status);
+            handleDuplicatePartyRef(e, status);
             if (hasEhr(ehrId)) {
-                throw new StateConflictException("EHR with id %s already exists.".formatted(ehrId));
+                throw new StateConflictException("EHR with id %s already exists.".formatted(ehrId), e);
             } else {
                 throw e;
             }
@@ -147,7 +147,7 @@ public class EhrServiceImp implements EhrService {
         try {
             ehrRepository.update(ehrId, ehrStatus, contributionId, audit);
         } catch (DuplicateKeyException e) {
-            checkEhrExistForParty(e, ehrStatus);
+            handleDuplicatePartyRef(e, ehrStatus);
             throw e;
         }
 
@@ -162,13 +162,15 @@ public class EhrServiceImp implements EhrService {
     @Override
     public Optional<OriginalVersion<EhrStatus>> getEhrStatusAtVersion(
             UUID ehrId, UUID versionedObjectUid, int version) {
-        // pre-step: check for valid ehrId
-        checkEhrExists(ehrId);
-
-        return ehrRepository.getOriginalVersionStatus(ehrId, versionedObjectUid, version);
+        Optional<OriginalVersion<EhrStatus>> result =
+                ehrRepository.getOriginalVersionStatus(ehrId, versionedObjectUid, version);
+        if (result.isEmpty()) {
+            checkEhrExists(ehrId);
+        }
+        return result;
     }
 
-    private void checkEhrExistForParty(DuplicateKeyException e, EhrStatus status) throws StateConflictException {
+    private void handleDuplicatePartyRef(DuplicateKeyException e, EhrStatus status) throws StateConflictException {
         if (e.getMessage().contains("\"ehr_status_subject_idx\"")) {
             PartyRef pRef = status.getSubject().getExternalRef();
             throw new StateConflictException(
@@ -195,13 +197,11 @@ public class EhrServiceImp implements EhrService {
 
     @Override
     public ObjectVersionId getEhrStatusVersionByTimestamp(UUID ehrId, OffsetDateTime timestamp) {
-        // pre-step: check for valid ehrId
-        checkEhrExists(ehrId);
-
-        return ehrRepository
-                .findVersionByTime(ehrId, timestamp)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "ehr_status", "No EHR_STATUS with given timestamp: %s".formatted(timestamp)));
+        return ehrRepository.findVersionByTime(ehrId, timestamp).orElseGet(() -> {
+            checkEhrExists(ehrId);
+            throw new ObjectNotFoundException(
+                    "EHR_STATUS", "No EHR_STATUS with given timestamp: %s".formatted(timestamp));
+        });
     }
 
     public ObjectVersionId getLatestVersionUidOfStatus(UUID ehrId) {
@@ -214,10 +214,11 @@ public class EhrServiceImp implements EhrService {
     }
 
     public DvDateTime getCreationTime(UUID ehrId) {
-        // pre-step: check for valid ehrId
-        checkEhrExists(ehrId);
-
-        return new DvDateTime(ehrRepository.findEhrCreationTime(ehrId));
+        OffsetDateTime creationTime = ehrRepository.findEhrCreationTime(ehrId);
+        if (creationTime == null) {
+            throw ehrNotFoundException(ehrId);
+        }
+        return new DvDateTime(creationTime);
     }
 
     @Override

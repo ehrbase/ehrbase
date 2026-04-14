@@ -188,8 +188,7 @@ public class EhrRepository
         return context.select(EHR_.CREATION_DATE)
                 .from(EHR_)
                 .where(EHR_.ID.eq(ehrId))
-                .fetchOne()
-                .value1();
+                .fetchOne(Record1::value1);
     }
 
     public void adminDelete(UUID ehrId) {
