@@ -265,8 +265,8 @@ public class EhrServiceImp implements EhrService {
     }
 
     @Override
-    public String getSubjectExtRef(String ehrId) {
-        return ehrRepository.getSubjectExternalRef(UUID.fromString(ehrId));
+    public String getSubjectExtRef(UUID ehrId) {
+        return ehrRepository.getSubjectExternalRef(ehrId);
     }
 
     @Override
