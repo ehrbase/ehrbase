@@ -205,10 +205,12 @@ public class EhrServiceImp implements EhrService {
     }
 
     public ObjectVersionId getLatestVersionUidOfStatus(UUID ehrId) {
-        // pre-step: check for valid ehrId
-        ensureEhrExist(ehrId);
+        Optional<ObjectVersionId> latestVersion = ehrRepository.findLatestVersion(ehrId);
+        if (latestVersion.isEmpty()) {
+            ensureEhrExist(ehrId);
+        }
 
-        return ehrRepository.findLatestVersion(ehrId).orElseThrow();
+        return latestVersion.orElseThrow();
     }
 
     public DvDateTime getCreationTime(UUID ehrId) {
