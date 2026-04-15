@@ -171,7 +171,7 @@ public class EhrServiceImp implements EhrService {
     }
 
     private void handleDuplicatePartyRef(DuplicateKeyException e, EhrStatus status) throws StateConflictException {
-        if (e.getMessage().contains("\"ehr_status_subject_idx\"")) {
+        if (e.getMessage().contains("ehr_status_subject_idx")) {
             PartyRef pRef = status.getSubject().getExternalRef();
             throw new StateConflictException(
                     "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s]."
