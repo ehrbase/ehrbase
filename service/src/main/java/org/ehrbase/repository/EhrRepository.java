@@ -239,11 +239,11 @@ public class EhrRepository
         return versionedComposition;
     }
 
-    public String getSubjectExternalRef(final UUID uuid) {
+    public String getSubjectExternalRef(final UUID ehrId) {
         EhrStatusData data = EHR_STATUS_DATA.as("data");
         return context.select(jsonDataField(data, SUBJECT_ID_JSON_PATH))
                 .from(data)
-                .where(data.EHR_ID.eq(uuid), dataRootCondition(data))
+                .where(data.EHR_ID.eq(ehrId), dataRootCondition(data))
                 .fetchOne(Record1::value1);
     }
 }
