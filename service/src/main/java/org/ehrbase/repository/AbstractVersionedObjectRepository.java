@@ -572,7 +572,7 @@ public abstract class AbstractVersionedObjectRepository<
 
         SelectConditionStep<Record> query = context.select(selectFields)
                 .from(versionDataJoin.joined())
-                .where(condition.apply(versionDataJoin.joined()));
+                .where(condition.apply(versionDataJoin.versionTable()));
         return (CollectionUtils.isEmpty(groupByFields) ? query : query.groupBy(groupByFields)).getQuery();
     }
 
