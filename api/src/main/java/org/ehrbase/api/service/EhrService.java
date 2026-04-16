@@ -153,7 +153,7 @@ public interface EhrService {
      * @return Linked external subject reference or null
      * @throws ObjectNotFoundException if no EHR is found
      */
-    String getSubjectExtRef(String ehrId);
+    String getSubjectExtRef(UUID ehrId);
 
     /**
      * Checks if an EHR with the given UUID exists.
