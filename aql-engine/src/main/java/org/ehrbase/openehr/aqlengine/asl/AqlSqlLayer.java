@@ -319,7 +319,9 @@ public class AqlSqlLayer {
         return switch (aslField.getExtractedColumn()) {
             case TEMPLATE_ID ->
                 AslUtils.templateIdConditionValues(
-                        comparison.rightComparisonOperands(), operator, templateService::findUuidByTemplateId);
+                        comparison.rightComparisonOperands(),
+                        operator,
+                        templateId -> Optional.of(templateId).map(templateService::findUuidByTemplateId));
             case ARCHETYPE_NODE_ID ->
                 AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator);
             case ROOT_CONCEPT ->

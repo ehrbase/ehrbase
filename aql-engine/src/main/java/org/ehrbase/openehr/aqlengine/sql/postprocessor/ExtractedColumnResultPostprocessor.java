@@ -91,9 +91,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
                     AD_DESCRIPTION_VALUE,
                     AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE,
                     EHR_SYSTEM_ID -> NOOP_PP;
-            case TEMPLATE_ID ->
-                create(columnValue ->
-                        templateService.findTemplateIdByUuid((UUID) columnValue).orElse(null));
+            case TEMPLATE_ID -> create(columnValue -> templateService.findTemplateIdByUuid((UUID) columnValue));
             case VO_ID -> create(columnValue -> restoreVoId((Record) columnValue, nodeName));
         };
     }

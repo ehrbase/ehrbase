@@ -19,6 +19,7 @@ package org.ehrbase.service;
 
 import java.time.OffsetDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -28,6 +29,18 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.springframework.cache.Cache;
 
 final class TemplateCacheHelper {
+
+    /*
+     * XXX CDR-2305 template cache landscape
+     * - templateId -> uuid [TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
+     * - uuid -> templateId [sync TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
+     * - templateId -> WebTemplate [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
+     * - templateId -> OPT [TEMPLATE_OPT_CACHE]
+     * - () -> template details [no dedicated cache?? sync TEMPLATE_ID_UUID_CACHE?, sync TEMPLATE_UUID_ID_CACHE?]
+     * - startup: fill WebTemplate cache [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
+     * - XXX startup: fill id maps? [TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
+     */
+
     private final CacheProvider cacheProvider;
 
     public TemplateCacheHelper(CacheProvider cacheProvider) {
@@ -70,10 +83,10 @@ final class TemplateCacheHelper {
         };
     }
 
-    public String findTemplateIdByUuid(UUID uuid, Function<UUID, String> loader) {
+    public String findTemplateIdByUuid(UUID uuid, Function<UUID, Optional<String>> loader) {
         try {
             return find(CacheProvider.TEMPLATE_UUID_ID_CACHE, uuid, u -> {
-                String tid = loader.apply(u);
+                String tid = loader.apply(u).orElseThrow();
                 // reverse cache
                 CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, tid, u);
                 return tid;
@@ -83,10 +96,10 @@ final class TemplateCacheHelper {
         }
     }
 
-    public UUID findUuidByTemplateId(String templateId, Function<String, UUID> loader) {
+    public UUID findUuidByTemplateId(String templateId, Function<String, Optional<UUID>> loader) {
         try {
             return find(CacheProvider.TEMPLATE_ID_UUID_CACHE, templateId, tid -> {
-                UUID u = loader.apply(tid);
+                UUID u = loader.apply(tid).orElseThrow();
                 // reverse cache
                 CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, u, tid);
                 return u;

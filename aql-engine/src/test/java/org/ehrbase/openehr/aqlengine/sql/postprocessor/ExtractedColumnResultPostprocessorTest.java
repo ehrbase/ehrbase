@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.sql.postprocessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
@@ -29,7 +30,6 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAccessor;
-import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
@@ -68,7 +68,7 @@ class ExtractedColumnResultPostprocessorTest {
     void templateId() {
 
         var uuid = UUID.fromString("93e01a9a-041e-4bf6-89c2-e63f8a74a4d5");
-        doReturn(Optional.of("test-template")).when(templateService).findTemplateIdByUuid(uuid);
+        when(templateService.findTemplateIdByUuid(uuid)).thenReturn("test-template");
         assertThat(processor(AslExtractedColumn.TEMPLATE_ID).postProcessColumn(uuid))
                 .isEqualTo("test-template");
     }

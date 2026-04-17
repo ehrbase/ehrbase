@@ -22,8 +22,10 @@ import java.text.MessageFormat;
 import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +48,7 @@ import org.ehrbase.openehr.sdk.generator.commons.shareddefinition.Territory;
 import org.ehrbase.openehr.sdk.serialisation.walker.FlatHelper;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValuePath;
 import org.ehrbase.openehr.sdk.serialisation.walker.defaultvalues.DefaultValues;
+import org.ehrbase.openehr.sdk.util.exception.SdkException;
 import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
@@ -76,24 +79,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 // This service is not @Transactional since we only want to get DB connections when we really need to and an already
 // running transaction is propagated anyway
-// There are few instances where a transaction is needed.
-// Also, there are few instances where a transaction is not available.
 public class TemplateServiceImp implements TemplateService {
-
-    /*
-     * CDR-2305 template cache landscape
-     * - templateId -> uuid [TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
-     * - uuid -> templateId [sync TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
-     * - templateId -> WebTemplate [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
-     * - templateId -> OPT [TEMPLATE_OPT_CACHE]
-     * - () -> template details [no dedicated cache?? sync TEMPLATE_ID_UUID_CACHE?, sync TEMPLATE_UUID_ID_CACHE?]
-     * - startup: fill WebTemplate cache [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
-     * - startup: fill id maps? [TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
-     */
 
     public record TemplateWithDetails(String operationalTemplate, TemplateDetails meta) {}
 
-    public static final String PROP_INIT_TEMPLATE_CACHE = "ehrbase.cache.template-init-on-startup";
+    public static final String PROP_TEMPLATE_CACHE_INIT = "ehrbase.cache.template-init-on-startup";
 
     public static final String PROP_ALLOW_TEMPLATE_OVERWRITE = "ehrbase.template.allow-overwrite";
 
@@ -103,19 +93,24 @@ public class TemplateServiceImp implements TemplateService {
 
     private final TemplateCacheHelper cacheHelper;
 
-    private final boolean initTemplateCache;
+    private final String[] initTemplateCache;
 
     private final boolean allowTemplateOverwrite;
 
     public TemplateServiceImp(
             TemplateStoreRepository templateStoreRepository,
             CacheProvider cacheProvider,
-            @Value("${" + PROP_INIT_TEMPLATE_CACHE + ":false}") boolean initTemplateCache,
+            @Value("${" + PROP_TEMPLATE_CACHE_INIT + ":}") String templateCacheInit,
             @Value("${" + PROP_ALLOW_TEMPLATE_OVERWRITE + ":false}") boolean allowTemplateOverwrite) {
         this.templateStoreRepository = templateStoreRepository;
         this.cacheHelper = new TemplateCacheHelper(cacheProvider);
 
-        this.initTemplateCache = initTemplateCache;
+        this.initTemplateCache = switch (templateCacheInit) {
+            case "false", "" -> null;
+            case null -> null;
+            case "true", "ALL" -> new String[0];
+            default -> templateCacheInit.split("\\s*,\\s*");
+        };
 
         this.allowTemplateOverwrite = allowTemplateOverwrite;
         if (allowTemplateOverwrite) {
@@ -127,48 +122,79 @@ public class TemplateServiceImp implements TemplateService {
 
     @PostConstruct
     void init() {
-        if (initTemplateCache) {
-            // TODO CDR-2305 customizable preload strategy; fill templateId/uuid caches
-
-            // TODO CDR-2305 initTemplateCache lists templateIds
-            String[] templateIds = templateStoreRepository.findAllTemplates().stream()
-                    .map(TemplateDetails::templateId)
-                    .toArray(String[]::new);
+        if (initTemplateCache != null) {
+            String[] templateIds = initTemplateCache.length > 0
+                    ? initTemplateCache
+                    : templateStoreRepository.findAllTemplates().stream()
+                            .map(TemplateDetails::templateId)
+                            .toArray(String[]::new);
             List<TemplateWithDetails> templateMetaData = templateStoreRepository.findByTemplateIds(templateIds);
-            log.info("Preparing WebTemplate cache for {} templates", templateMetaData.size());
-            templateMetaData.forEach(this::addWebTemplateToCache);
+            if (log.isInfoEnabled()) {
+                String templateIdsStr = templateMetaData.stream()
+                        .map(d -> d.meta().templateId())
+                        .sorted()
+                        .collect(Collectors.joining(", "));
+                log.info("Preparing WebTemplate cache for templates: {}", templateIdsStr);
+            }
+            templateMetaData.forEach(template -> addWebTemplateToCache(template, false));
         }
     }
 
-    private void addWebTemplateToCache(TemplateWithDetails template) {
+    private void addWebTemplateToCache(TemplateWithDetails template, boolean inbound) {
         OPERATIONALTEMPLATE operationaltemplate;
         try {
             operationaltemplate = TemplateService.buildOperationalTemplate(template.operationalTemplate());
         } catch (XmlException e) {
-            throw new InternalServerException(e.getMessage(), e);
+            String message = e.getMessage();
+            if (inbound) {
+                throw new IllegalArgumentException(message, e);
+            } else {
+                throw new InternalServerException(message, e);
+            }
         }
         String templateId = TemplateUtils.getTemplateId(operationaltemplate);
-        WebTemplate tpl = buildWebTemplate(operationaltemplate);
+        WebTemplate tpl = buildWebTemplate(operationaltemplate, inbound);
 
         cacheHelper.addToCache(
                 template.meta().id(), templateId, tpl, template.meta().creationTime());
     }
 
     String addOperationalTemplate(
-            TemplateWithDetails templateData, boolean allowTemplateOverwrite, boolean allowUsedTemplateOverwrite) {
+            OPERATIONALTEMPLATE template,
+            boolean allowTemplateOverwrite,
+            boolean allowUsedTemplateOverwrite,
+            boolean updateOnly) {
+
+        validateTemplate(template);
+        TemplateWithDetails templateData = getTemplateFields(template);
+
+        return addOperationalTemplate(templateData, allowTemplateOverwrite, allowUsedTemplateOverwrite, updateOnly);
+    }
+
+    String addOperationalTemplate(
+            TemplateWithDetails templateData,
+            boolean allowTemplateOverwrite,
+            boolean allowUsedTemplateOverwrite,
+            boolean updateOnly) {
+
+        String templateId = templateData.meta().templateId();
+
+        UUID existingTid = findUuidByTemplateId(templateId);
 
         // pre-check: if already existing throw proper exception
-        String templateId = templateData.meta().templateId();
-        Optional<UUID> existingTid = findUuidByTemplateId(templateId);
+        if (updateOnly && existingTid == null) {
+            throw new ObjectNotFoundException(
+                    "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId));
+        }
 
         TemplateWithDetails templateMetaData;
-        boolean mustUpdate = existingTid.isPresent();
-        if (mustUpdate) {
+        boolean performUpdate = existingTid != null;
+        if (performUpdate) {
             if (!allowTemplateOverwrite) {
                 throw new StateConflictException(
                         "Operational template with this template ID already exists: " + templateId);
             }
-            if (templateStoreRepository.isTemplateUsed(existingTid.get())) {
+            if (templateStoreRepository.isTemplateUsed(existingTid)) {
                 if (allowUsedTemplateOverwrite) {
                     log.warn(
                             "Updating template {} that is in use by at least one composition because {} is enabled",
@@ -187,18 +213,27 @@ public class TemplateServiceImp implements TemplateService {
         }
 
         log.debug("Updating WebTemplate cache for template: {}", templateId);
-        addWebTemplateToCache(templateMetaData);
+        addWebTemplateToCache(templateMetaData, true);
 
         return templateId;
     }
 
-    private static WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate) {
+    /**
+     *
+     * @param operationaltemplate
+     * @param inbound  for exception handling when from DB: illegal state, when from api: illegal argument
+     * @return
+     */
+    private static WebTemplate buildWebTemplate(OPERATIONALTEMPLATE operationaltemplate, boolean inbound) {
         try {
             return new OPTParser(operationaltemplate).parse();
-            // TODO CDR-2305 when from DB: illegal state, when from api: illegal argument?
-            // TODO CDR-2305 consolidate with ::validateTemplate
-        } catch (RuntimeException e) {
-            throw new IllegalArgumentException(String.format("Invalid template: %s", e.getMessage()));
+        } catch (SdkException | NoSuchElementException | IllegalArgumentException | IllegalStateException e) {
+            String message = "Invalid template: %s".formatted(e.getMessage());
+            if (inbound) {
+                throw new IllegalArgumentException(message, e);
+            } else {
+                throw new InternalServerException(message, e);
+            }
         }
     }
 
@@ -233,7 +268,7 @@ public class TemplateServiceImp implements TemplateService {
                                                 "Cannot process template: " + e.getMessage(), e);
                                     }
                                     return Pair.of(
-                                            buildWebTemplate(operationaltemplate),
+                                            buildWebTemplate(operationaltemplate, false),
                                             d.meta().creationTime());
                                 })
                                 .orElseThrow(() -> new ObjectNotFoundException(
@@ -316,7 +351,7 @@ public class TemplateServiceImp implements TemplateService {
             throw new IllegalArgumentException("Supplied template has nil or empty description");
         }
 
-        var webTemplate = new OPTParser(template).parse();
+        var webTemplate = buildWebTemplate(template, true);
         if (!TemplateUtils.isSupported(webTemplate)) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "The supplied template is not supported (unsupported types: {0})",
@@ -327,36 +362,18 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String create(OPERATIONALTEMPLATE template) {
-        validateTemplate(template);
-        TemplateWithDetails templateMeta = getTemplateFields(template);
         // TODO CDR-2305 clarify PROP_ALLOW_TEMPLATE_OVERWRITE
-        return addOperationalTemplate(templateMeta, allowTemplateOverwrite, allowTemplateOverwrite);
+        return addOperationalTemplate(template, allowTemplateOverwrite, allowTemplateOverwrite, false);
     }
 
     @Override
-    public Optional<String> findTemplateIdByUuid(UUID uuid) {
-        return Optional.ofNullable(cacheHelper.findTemplateIdByUuid(
-                uuid, u -> templateStoreRepository.findTemplateIdByUuid(u).orElseThrow()));
+    public String findTemplateIdByUuid(UUID uuid) {
+        return cacheHelper.findTemplateIdByUuid(uuid, templateStoreRepository::findTemplateIdByUuid);
     }
 
     @Override
-    public Optional<UUID> findUuidByTemplateId(String templateId) {
-        return Optional.ofNullable(cacheHelper.findUuidByTemplateId(
-                templateId,
-                tid -> templateStoreRepository.findUuidByTemplateId(tid).orElseThrow()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Transactional
-    public void adminDeleteTemplate(String templateId) {
-        UUID templateUuid = findUuidByTemplateId(templateId)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
-        templateStoreRepository.deleteTemplate(templateUuid);
-        cacheHelper.invalidateCaches(templateId, templateUuid);
+    public UUID findUuidByTemplateId(String templateId) {
+        return cacheHelper.findUuidByTemplateId(templateId, templateStoreRepository::findUuidByTemplateId);
     }
 
     /**
@@ -365,14 +382,21 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
-        validateTemplate(template);
-        TemplateWithDetails templateMeta = getTemplateFields(template);
-        String templateId = templateMeta.meta().templateId();
-        findUuidByTemplateId(templateId)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId)));
+        return addOperationalTemplate(template, true, allowTemplateOverwrite, true);
+    }
 
-        return addOperationalTemplate(templateMeta, true, allowTemplateOverwrite);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional
+    public void adminDeleteTemplate(String templateId) {
+        UUID templateUuid = Optional.of(templateId)
+                .map(this::findUuidByTemplateId)
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
+        templateStoreRepository.deleteTemplate(templateUuid);
+        cacheHelper.invalidateCaches(templateId, templateUuid);
     }
 
     /**

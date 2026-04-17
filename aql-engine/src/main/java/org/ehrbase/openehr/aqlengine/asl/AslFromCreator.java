@@ -354,7 +354,9 @@ public final class AslFromCreator {
         AslUtils.predicates(
                         containsWrapper.getPredicate(),
                         c -> AslUtils.structurePredicateCondition(
-                                c, aslStructureQuery, templateService::findUuidByTemplateId))
+                                c,
+                                aslStructureQuery,
+                                templateId -> Optional.of(templateId).map(templateService::findUuidByTemplateId)))
                 .ifPresent(aslStructureQuery::addConditionAnd);
 
         // num = 0 condition for roots gets added by the AqlSqlQueryBuilder

@@ -86,7 +86,7 @@ class AqlSqlQueryBuilderTest {
     void setUp() {
         Mockito.reset(mockTemplateService);
         Mockito.when(mockTemplateService.findUuidByTemplateId(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+                .thenReturn(UUID.randomUUID());
     }
 
     @Disabled

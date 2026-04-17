@@ -23,11 +23,11 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.time.OffsetDateTime;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.UUID;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.jspecify.annotations.Nullable;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateService {
@@ -52,9 +52,11 @@ public interface TemplateService {
 
     String create(OPERATIONALTEMPLATE content);
 
-    Optional<String> findTemplateIdByUuid(UUID uuid);
+    @Nullable
+    String findTemplateIdByUuid(UUID uuid);
 
-    Optional<UUID> findUuidByTemplateId(String templateId);
+    @Nullable
+    UUID findUuidByTemplateId(String templateId);
 
     /**
      * Deletes a given template from storage physically. The template is no longer available. If you

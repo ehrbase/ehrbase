@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
@@ -50,7 +49,7 @@ public class AqlSqlLayerTest {
     void setUp() {
         Mockito.reset(mockTemplateService);
         Mockito.when(mockTemplateService.findUuidByTemplateId(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+                .thenReturn(UUID.randomUUID());
     }
 
     @Disabled

@@ -593,7 +593,7 @@ final class AslPathCreator {
                     AslUtils.predicates(
                                     p.getRight(),
                                     cp -> AslUtils.structurePredicateCondition(
-                                            cp, sq, templateService::findUuidByTemplateId))
+                                            cp, sq, tid -> Optional.of(tid).map(templateService::findUuidByTemplateId)))
                             .orElse(new AslTrueQueryCondition())));
         }
     }
