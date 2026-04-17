@@ -48,6 +48,7 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.CompositionService;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
@@ -63,6 +64,7 @@ import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.experimental.ItemTagRepository;
 import org.ehrbase.util.SemVer;
 import org.ehrbase.util.UuidGenerator;
+import org.jspecify.annotations.NonNull;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +118,7 @@ public class CompositionServiceImp implements CompositionService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final ValidationService validationService;
-    private final KnowledgeCacheServiceImp knowledgeCacheService;
+    private final TemplateService templateService;
     private final EhrService ehrService;
 
     private final CompositionRepository compositionRepository;
@@ -125,7 +127,7 @@ public class CompositionServiceImp implements CompositionService {
     private final SystemService systemService;
 
     public CompositionServiceImp(
-            KnowledgeCacheServiceImp knowledgeCacheService,
+            TemplateService templateService,
             ValidationService validationService,
             EhrService ehrService,
             SystemService systemService,
@@ -134,7 +136,7 @@ public class CompositionServiceImp implements CompositionService {
 
         this.validationService = validationService;
         this.ehrService = ehrService;
-        this.knowledgeCacheService = knowledgeCacheService;
+        this.templateService = templateService;
         this.compositionRepository = compositionRepository;
         this.itemTagRepository = itemTagRepository;
         this.systemService = systemService;
@@ -164,34 +166,35 @@ public class CompositionServiceImp implements CompositionService {
      */
     private UUID createInternal(UUID ehrId, Composition composition, UUID contributionId, UUID audit) {
 
-        // pre-step: check for existing and modifiable ehr
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
-        // pre-step: validate
+        validate(composition);
+
+        final ObjectVersionId objectVersionId = checkOrConstructObjectVersionId(composition.getUid());
+
+        composition.setUid(objectVersionId);
+
+        final UUID compositionId = extractUid(objectVersionId);
+
+        compositionRepository.commit(ehrId, composition, contributionId, audit, getTemplateUuid(composition));
+
+        logger.debug("Composition created: id={}", compositionId);
+
+        return compositionId;
+    }
+
+    private void validate(Composition composition) {
         try {
             validationService.check(composition);
-
-        } catch (UnprocessableEntityException | ValidationException | BadGatewayException e) {
+        } catch (UnprocessableEntityException | ValidationException | BadGatewayException | InternalServerException e) {
             throw e; // forward exception
         } catch (org.ehrbase.openehr.sdk.validation.ValidationException e) {
             throw new UnprocessableEntityException(e.getMessage());
         } catch (IllegalArgumentException e) {
             throw new ValidationException(e);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             throw new InternalServerException(e);
         }
-
-        final ObjectVersionId objectVersionId = checkOrConstructObjectVersionId(composition.getUid());
-
-        composition.setUid(objectVersionId);
-        // actual creation
-        final UUID compositionId = extractUid(objectVersionId);
-
-        compositionRepository.commit(ehrId, composition, contributionId, audit);
-
-        logger.debug("Composition created: id={}", compositionId);
-
-        return compositionId;
     }
 
     private ObjectVersionId checkOrConstructObjectVersionId(UIDBasedId uid) {
@@ -249,28 +252,16 @@ public class CompositionServiceImp implements CompositionService {
     private UUID internalUpdate(
             UUID ehrId, ObjectVersionId compositionId, Composition composition, UUID contributionId, UUID audit) {
 
-        // pre-step: check for existing and modifiable ehr
         ehrService.checkEhrExistsAndIsModifiable(ehrId);
 
-        // pre-step: validate
-        try {
-            validationService.check(composition);
-
-        } catch (org.ehrbase.openehr.sdk.validation.ValidationException e) {
-            throw new UnprocessableEntityException(e.getMessage());
-        } catch (UnprocessableEntityException | ValidationException e) {
-            throw e;
-        } catch (IllegalArgumentException e) {
-            throw new ValidationException(e);
-        } catch (Exception e) {
-            throw new InternalServerException(e);
-        }
+        validate(composition);
 
         UUID compId = LocatableUtils.getUuid(compositionId);
         int version = LocatableUtils.getUidVersion(compositionId);
 
         String existingTemplateId = compositionRepository
                 .findTemplateId(compId)
+                .map(templateService::findTemplateIdByUuid)
                 .orElseThrow(() -> new ObjectNotFoundException(
                         "composition", "No COMPOSITION with given id: %s".formatted(compId)));
 
@@ -278,9 +269,17 @@ public class CompositionServiceImp implements CompositionService {
 
         composition.setUid(buildObjectVersionId(compId, version + 1, systemService));
 
-        compositionRepository.update(ehrId, composition, contributionId, audit);
+        compositionRepository.update(ehrId, composition, contributionId, audit, getTemplateUuid(composition));
 
         return compId;
+    }
+
+    private @NonNull UUID getTemplateUuid(Composition composition) {
+        return Optional.of(composition)
+                .map(LocatableUtils::getTemplateId)
+                .map(templateService::findUuidByTemplateId)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("Unknown or missing template in composition to be stored"));
     }
 
     /**
@@ -470,21 +469,20 @@ public class CompositionServiceImp implements CompositionService {
         return composition;
     }
 
-    //    private
-
     private TemplateProvider createTemplateProvider() {
         return new TemplateProvider() {
             @Override
             public Optional<OPERATIONALTEMPLATE> find(String s) {
-                return knowledgeCacheService.retrieveOperationalTemplate(s);
+                throw new UnsupportedOperationException();
             }
 
             @Override
             public Optional<WebTemplate> buildIntrospect(String templateId) {
-                if (templateId == null) {
+                try {
+                    return Optional.ofNullable(templateId).map(templateService::getInternalTemplate);
+                } catch (ObjectNotFoundException _) {
                     return Optional.empty();
                 }
-                return Optional.ofNullable(knowledgeCacheService.getInternalTemplate(templateId));
             }
         };
     }
@@ -511,8 +509,10 @@ public class CompositionServiceImp implements CompositionService {
 
     @Override
     public String retrieveTemplateId(UUID compositionId) {
-
-        return compositionRepository.findTemplateId(compositionId).orElseThrow();
+        return compositionRepository
+                .findTemplateId(compositionId)
+                .map(templateService::findTemplateIdByUuid)
+                .orElseThrow();
     }
 
     @Override

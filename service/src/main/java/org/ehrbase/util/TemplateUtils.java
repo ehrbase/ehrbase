@@ -20,7 +20,6 @@ package org.ehrbase.util;
 import java.util.List;
 import java.util.Optional;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
-import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.openehr.schemas.v1.OBJECTID;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
@@ -34,17 +33,6 @@ public class TemplateUtils {
     private TemplateUtils() {}
 
     /**
-     * Check whether the given OPT template is supported.
-     *
-     * @param template the candidate template
-     * @return <code>true</code> if the template is supported
-     */
-    public static boolean isSupported(OPERATIONALTEMPLATE template) {
-        var webTemplate = new OPTParser(template).parse();
-        return isSupported(webTemplate);
-    }
-
-    /**
      * Check whether the given WebTemplate is supported.
      *
      * @param template the candidate template
@@ -52,8 +40,8 @@ public class TemplateUtils {
      */
     public static boolean isSupported(WebTemplate template) {
         return template.getTree()
-                .findMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
-                .isEmpty();
+                .streamMatching(node -> UNSUPPORTED_RM_TYPES.contains(node.getRmType()))
+                .noneMatch(_ -> true);
     }
 
     /**
@@ -66,7 +54,8 @@ public class TemplateUtils {
         if (template == null) {
             throw new IllegalArgumentException("Template must not be null");
         }
-        return Optional.ofNullable(template.getTemplateId())
+        return Optional.of(template)
+                .map(OPERATIONALTEMPLATE::getTemplateId)
                 .map(OBJECTID::getValue)
                 .orElseThrow(() -> new IllegalArgumentException("Template ID must not be null for the given template"));
     }

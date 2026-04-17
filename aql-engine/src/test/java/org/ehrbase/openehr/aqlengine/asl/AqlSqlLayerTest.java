@@ -21,10 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslField;
 import org.ehrbase.openehr.aqlengine.asl.model.field.AslRmPathField;
@@ -44,13 +43,13 @@ import org.mockito.Mockito;
 
 public class AqlSqlLayerTest {
 
-    private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+    private final TemplateService mockTemplateService = mock();
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(mockKnowledgeCacheService);
-        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+        Mockito.reset(mockTemplateService);
+        Mockito.when(mockTemplateService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(UUID.randomUUID());
     }
 
     @Disabled
@@ -751,7 +750,7 @@ public class AqlSqlLayerTest {
         AqlQuery aqlQuery = AqlQueryParser.parse(query);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, pathSkipping);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslRootQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         new AslCleanupPostProcessor().afterBuildAsl(aslRootQuery, aqlQuery, queryWrapper, null);
         return aslRootQuery;

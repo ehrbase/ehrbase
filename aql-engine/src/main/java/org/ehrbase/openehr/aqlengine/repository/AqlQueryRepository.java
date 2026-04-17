@@ -25,9 +25,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.ehrbase.api.dto.AqlQueryContext;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.AqlQueryService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper;
@@ -57,17 +57,17 @@ public class AqlQueryRepository {
 
     private static final AqlSqlResultPostprocessor NOOP_POSTPROCESSOR = v -> v;
     private final SystemService systemService;
-    private final KnowledgeCacheService knowledgeCache;
+    private final TemplateService templateService;
     private final AqlSqlQueryBuilder queryBuilder;
     private final AqlQueryContext queryContext;
 
     public AqlQueryRepository(
             SystemService systemService,
-            KnowledgeCacheService knowledgeCache,
+            TemplateService templateService,
             AqlSqlQueryBuilder queryBuilder,
             AqlQueryContext queryContext) {
         this.systemService = systemService;
-        this.knowledgeCache = knowledgeCache;
+        this.templateService = templateService;
         this.queryBuilder = queryBuilder;
         this.queryContext = queryContext;
     }
@@ -167,7 +167,7 @@ public class AqlQueryRepository {
                                 select.root().getRmType()))
                         .filter(e -> "commit_audit".equals(nodes.getFirst().getAttribute())))
                 .<AqlSqlResultPostprocessor>map(
-                        ec -> ExtractedColumnResultPostprocessor.get(ec, knowledgeCache, systemService.getSystemId()))
+                        ec -> ExtractedColumnResultPostprocessor.get(ec, templateService, systemService.getSystemId()))
                 .orElse(DefaultResultPostprocessor.INSTANCE);
     }
 

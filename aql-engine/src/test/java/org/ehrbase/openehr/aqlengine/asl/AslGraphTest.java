@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.util.stream.IntStream;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslRootQuery;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class AslGraphTest {
 
-    private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+    private final TemplateService mockTemplateService = mock();
 
     @Test
     @Disabled
@@ -50,7 +50,7 @@ class AslGraphTest {
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AslRootQuery rootQuery = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext())
+        AslRootQuery rootQuery = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext())
                 .buildAslRootQuery(queryWrapper);
 
         System.out.println(AslGraph.createAslGraph(rootQuery));
@@ -102,7 +102,7 @@ class AslGraphTest {
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(sampleAqlQuery, false);
 
-        AslRootQuery rootQuery = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext())
+        AslRootQuery rootQuery = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext())
                 .buildAslRootQuery(queryWrapper);
 
         new AslCleanupPostProcessor().afterBuildAsl(rootQuery, sampleAqlQuery, queryWrapper, null);

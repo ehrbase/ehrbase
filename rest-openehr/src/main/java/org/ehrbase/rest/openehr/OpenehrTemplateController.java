@@ -18,12 +18,10 @@
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -37,7 +35,7 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
-import org.openehr.schemas.v1.TemplateDocument;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
@@ -89,13 +87,13 @@ public class OpenehrTemplateController extends BaseController implements Templat
             @RequestBody String template) {
 
         // create template
-        String templateId;
-        try (var in = IOUtils.toInputStream(template, StandardCharsets.UTF_8)) {
-            TemplateDocument document = TemplateDocument.Factory.parse(in);
-            templateId = templateService.create(document.getTemplate());
-        } catch (XmlException | IOException e) {
+        OPERATIONALTEMPLATE tpl;
+        try {
+            tpl = TemplateService.buildOperationalTemplate(template);
+        } catch (XmlException e) {
             throw new InvalidApiParameterException(e.getMessage());
         }
+        String templateId = templateService.create(tpl);
 
         // initialize HTTP 201 Created body builder
         ResponseEntity.BodyBuilder bodyBuilder =
@@ -103,12 +101,20 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            String responseTemplate =
-                    templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+            String responseTemplate = templateService.findOperationalTemplate(templateId);
             return bodyBuilder.body(responseTemplate);
         } else {
             return bodyBuilder.build();
         }
+    }
+
+    private static TemplateMetaDataDto mapToDto(TemplateService.TemplateDetails data) {
+        TemplateMetaDataDto dto = new TemplateMetaDataDto();
+        dto.setCreatedOn(data.creationTime());
+        dto.setTemplateId(data.templateId());
+        dto.setArchetypeId(data.archetypeId());
+        dto.setConcept(data.concept());
+        return dto;
     }
 
     // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
@@ -124,7 +130,9 @@ public class OpenehrTemplateController extends BaseController implements Templat
         URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
         MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML);
 
-        List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
+        List<TemplateMetaDataDto> templates = templateService.findAllTemplates().stream()
+                .map(OpenehrTemplateController::mapToDto)
+                .toList();
 
         // returns 200 with all templates
         return ResponseEntity.ok().location(uri).contentType(mediaType).body(templates);
@@ -157,8 +165,11 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return the original XML based OPT format (if called with the Accept: application/xml request header),
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            String operationalTemplate = templateService.findOperationalTemplate(templateId, format);
-            return bodyBuilder.body(operationalTemplate);
+            if (format == OperationalTemplateFormat.XML) {
+                return bodyBuilder.body(templateService.findOperationalTemplate(templateId));
+            } else {
+                throw new NotAcceptableException("Requested operational template type not supported");
+            }
         }
         // return simplified JSON-based “web template” format (if called with the Accept: application/json or
         // application/openehr.wt+json request header)

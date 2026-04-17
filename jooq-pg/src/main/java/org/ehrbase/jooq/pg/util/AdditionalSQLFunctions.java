@@ -145,4 +145,12 @@ public final class AdditionalSQLFunctions {
         return DSL.function(
                 "trim_array", (Class<T[]>) field.getType().getComponentType().arrayType(), field, elementsToTrim);
     }
+
+    public static Field<String> regexp_match_single_group(final Field<String> xmlContent, String regex) {
+        return DSL.arrayGet(regexp_match(xmlContent, regex), DSL.inline(1));
+    }
+
+    public static Field<String[]> regexp_match(final Field<String> xmlContent, String regex) {
+        return DSL.function("regexp_match", String[].class, xmlContent, DSL.inline(regex));
+    }
 }

@@ -18,18 +18,23 @@
 package org.ehrbase.cache;
 
 import com.jayway.jsonpath.DocumentContext;
+import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.springframework.cache.Cache;
 
 public interface CacheProvider {
-    EhrBaseCache<String, WebTemplate> INTROSPECT_CACHE = new EhrBaseCache<>("introspectCache");
-    EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE = new EhrBaseCache<>("TemplateIdUuidCache");
-    EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE = new EhrBaseCache<>("TemplateUuidIdCache");
+    EhrBaseCache<String, Pair<WebTemplate, OffsetDateTime>> TEMPLATE_CACHE = new EhrBaseCache<>("templateCache");
+    EhrBaseCache<String, String> TEMPLATE_OPT_CACHE = new EhrBaseCache<>("templateOptCache");
+    EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE = new EhrBaseCache<>("templateIdUuidCache");
+    EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE = new EhrBaseCache<>("templateUuidIdCache");
+
     EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
     EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
             new EhrBaseCache<>("externalFhirTerminologyCache");
@@ -50,6 +55,10 @@ public interface CacheProvider {
 
         public void put(CacheProvider cacheProvider, K key, V value) {
             cacheProvider.getCache(this).put(key, value);
+        }
+
+        public Optional<V> getCached(CacheProvider cacheProvider, K key) {
+            return Optional.ofNullable(cacheProvider.getCache(this).get(key)).map(w -> (V) w.get());
         }
 
         public void clear(CacheProvider cacheProvider) {
