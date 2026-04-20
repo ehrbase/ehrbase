@@ -189,8 +189,6 @@ public interface ItemTagApiSpecification {
     @Tag(name = "EHR_STATUS")
     @OperationTagUpsert
     ResponseEntity<Object> upsertEhrStatusItemTags(
-            String openehrVersion,
-            String openehrAuditDetails,
             @ParameterPrefer String prefer,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
@@ -200,8 +198,6 @@ public interface ItemTagApiSpecification {
     @Tag(name = "EHR_STATUS")
     @OperationTagsGet
     ResponseEntity<List<ItemTagDto>> getEhrStatusItemTags(
-            String openehrVersion,
-            String openehrAuditDetails,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterFilterIds List<String> ids,
@@ -211,8 +207,6 @@ public interface ItemTagApiSpecification {
     @Tag(name = "EHR_STATUS")
     @OperationTagsDelete
     ResponseEntity<Void> deleteEhrStatusItemTags(
-            String openehrVersion,
-            String openehrAuditDetails,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterDeleteIDs List<Object> itemTagsOrUUIDs
@@ -223,8 +217,6 @@ public interface ItemTagApiSpecification {
     @Tag(name = "ITEM_TAG")
     @OperationTagUpsert
     ResponseEntity<Object> upsertCompositionItemTags(
-            String openehrVersion,
-            String openehrAuditDetails,
             @ParameterPrefer String prefer,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
@@ -234,8 +226,6 @@ public interface ItemTagApiSpecification {
     @Tag(name = "ITEM_TAG")
     @OperationTagsGet
     ResponseEntity<List<ItemTagDto>> getCompositionItemTags(
-            String openehrVersion,
-            String openehrAuditDetails,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterFilterIds List<String> ids,
@@ -245,8 +235,6 @@ public interface ItemTagApiSpecification {
     @Tag(name = "ITEM_TAG")
     @OperationTagsDelete
     ResponseEntity<Void> deleteCompositionItemTags(
-            String openehrVersion,
-            String openehrAuditDetails,
             @ParameterEhrId String ehrIdString,
             @ParameterVersionedObjectId String versionedObjectUid,
             @ParameterDeleteIDs List<Object> itemTagsOrUUIDs

@@ -84,7 +84,7 @@ class OpenehrTemplateControllerTest {
 
         when(mockTemplateService.findAllTemplates()).thenReturn(List.of(templateDetails));
 
-        var response = controller().getTemplatesClassic("1.0.3", null, accept);
+        var response = controller().getTemplatesClassic(accept);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
@@ -98,7 +98,7 @@ class OpenehrTemplateControllerTest {
     @ValueSource(strings = {"", "return=minimal", "return=representation"})
     void createTemplateADL1_4(String prefer) {
 
-        var response = controller().createTemplateClassic("1.0.3", null, prefer, SAMPLE_OPT);
+        var response = controller().createTemplateClassic(prefer, SAMPLE_OPT);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getHeaders())
                 .containsEntry(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_XML_VALUE));
@@ -117,15 +117,14 @@ class OpenehrTemplateControllerTest {
     void createTemplateADL1_4_OPTInvalidError() {
 
         OpenehrTemplateController controller = controller();
-        assertThatThrownBy(() -> controller.createTemplateClassic("1.0.3", null, null, "not a xml"))
+        assertThatThrownBy(() -> controller.createTemplateClassic(null, "not a xml"))
                 .isInstanceOf(InvalidApiParameterException.class);
     }
 
     @Test
     void getTemplateADL1_4_OPT() {
 
-        ResponseEntity<?> response =
-                controller().getTemplateClassic("1.0.3", null, MediaType.APPLICATION_XML_VALUE, SAMPLE_ID);
+        ResponseEntity<?> response = controller().getTemplateClassic(MediaType.APPLICATION_XML_VALUE, SAMPLE_ID);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of("application/xml"));
         assertThat(response.getHeaders())
@@ -138,7 +137,7 @@ class OpenehrTemplateControllerTest {
     @CsvSource({"application/json", "application/openehr.wt+json"})
     void getTemplateADL1_4_WebTemplate(String accept) {
 
-        ResponseEntity<?> response = controller().getTemplateClassic("1.0.3", null, accept, SAMPLE_ID);
+        ResponseEntity<?> response = controller().getTemplateClassic(accept, SAMPLE_ID);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
         assertThat(response.getHeaders())
@@ -192,11 +191,9 @@ class OpenehrTemplateControllerTest {
     void templateADL2NotImplemented() {
 
         OpenehrTemplateController controller = controller();
-        assertThat(controller.getTemplatesNew(null, null, null).getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        assertThat(controller
-                        .createTemplateNew(null, null, null, null, null, null, null)
-                        .getStatusCode())
+        assertThat(controller.getTemplatesNew(null).getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
+        assertThat(controller.createTemplateNew(null, null, null, null, null).getStatusCode())
                 .isEqualTo(HttpStatus.NOT_IMPLEMENTED);
-        assertThat(controller.getTemplatesNew(null, null, null).getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
+        assertThat(controller.getTemplatesNew(null).getStatusCode()).isEqualTo(HttpStatus.NOT_IMPLEMENTED);
     }
 }
