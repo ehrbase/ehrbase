@@ -19,12 +19,14 @@ package org.ehrbase.cache;
 
 import com.jayway.jsonpath.DocumentContext;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.springframework.cache.Cache;
@@ -34,6 +36,8 @@ public interface CacheProvider {
     EhrBaseCache<String, String> TEMPLATE_OPT_CACHE = new EhrBaseCache<>("templateOptCache");
     EhrBaseCache<String, UUID> TEMPLATE_ID_UUID_CACHE = new EhrBaseCache<>("templateIdUuidCache");
     EhrBaseCache<UUID, String> TEMPLATE_UUID_ID_CACHE = new EhrBaseCache<>("templateUuidIdCache");
+    EhrBaseCache<Boolean, List<TemplateService.TemplateDetails>> TEMPLATE_LIST_CACHE =
+            new EhrBaseCache<>("templateListCache");
 
     EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
     EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =

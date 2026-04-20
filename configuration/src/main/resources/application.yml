@@ -129,8 +129,16 @@ httpclient:
 #proxyPort: 1234
 
 cache:
-  template-init-on-startup: false
+  template-init-on-startup: "false"
   stored-query-init-on-startup: false
+  operational-template-cache-config:
+    expire-after-access:
+      duration: 300
+      unit: SECONDS
+  template-list-cache-config:
+    expire-after-access:
+      duration: 300
+      unit: SECONDS
   user-id-cache-config:
     expire-after-access:
       duration: 300

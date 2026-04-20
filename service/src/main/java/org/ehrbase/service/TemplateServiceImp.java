@@ -39,6 +39,7 @@ import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.service.TemplateService;
+import org.ehrbase.cache.CacheProperties;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorConfig;
 import org.ehrbase.openehr.sdk.examplegenerator.ExampleGeneratorToCompositionWalker;
@@ -100,16 +101,17 @@ public class TemplateServiceImp implements TemplateService {
     public TemplateServiceImp(
             TemplateStoreRepository templateStoreRepository,
             CacheProvider cacheProvider,
-            @Value("${" + PROP_TEMPLATE_CACHE_INIT + ":}") String templateCacheInit,
+            CacheProperties cacheProperties,
             @Value("${" + PROP_ALLOW_TEMPLATE_OVERWRITE + ":false}") boolean allowTemplateOverwrite) {
         this.templateStoreRepository = templateStoreRepository;
         this.cacheHelper = new TemplateCacheHelper(cacheProvider);
 
-        this.initTemplateCache = switch (templateCacheInit) {
+        String templateInitOnStartup = cacheProperties.getTemplateInitOnStartup();
+        this.initTemplateCache = switch (templateInitOnStartup) {
             case "false", "" -> null;
             case null -> null;
             case "true", "ALL" -> new String[0];
-            default -> templateCacheInit.split("\\s*,\\s*");
+            default -> templateInitOnStartup.split("\\s*,\\s*");
         };
 
         this.allowTemplateOverwrite = allowTemplateOverwrite;
@@ -123,11 +125,12 @@ public class TemplateServiceImp implements TemplateService {
     @PostConstruct
     void init() {
         if (initTemplateCache != null) {
+            // side-effect: caches all details
+            Collection<TemplateDetails> allTemplates = findAllTemplates();
+
             String[] templateIds = initTemplateCache.length > 0
                     ? initTemplateCache
-                    : templateStoreRepository.findAllTemplates().stream()
-                            .map(TemplateDetails::templateId)
-                            .toArray(String[]::new);
+                    : allTemplates.stream().map(TemplateDetails::templateId).toArray(String[]::new);
             List<TemplateWithDetails> templateMetaData = templateStoreRepository.findByTemplateIds(templateIds);
             if (log.isInfoEnabled()) {
                 String templateIdsStr = templateMetaData.stream()
@@ -156,7 +159,7 @@ public class TemplateServiceImp implements TemplateService {
         WebTemplate tpl = buildWebTemplate(operationaltemplate, inbound);
 
         cacheHelper.addToCache(
-                template.meta().id(), templateId, tpl, template.meta().creationTime());
+                template.meta().id(), templateId, tpl, template.meta().creationTime(), inbound);
     }
 
     String addOperationalTemplate(
@@ -239,8 +242,7 @@ public class TemplateServiceImp implements TemplateService {
 
     @Override
     public Collection<TemplateDetails> findAllTemplates() {
-        // TODO CDR-2305 cache? For AQL absolutely; for REST unclear
-        return templateStoreRepository.findAllTemplates();
+        return cacheHelper.findAllTemplates(templateStoreRepository::findAllTemplates);
     }
 
     /**
@@ -313,8 +315,7 @@ public class TemplateServiceImp implements TemplateService {
         String templateId = TemplateUtils.getTemplateId(template);
 
         XmlOptions opts = new XmlOptions();
-        opts.setSaveSyntheticDocumentElement(
-                new QName("http://schemas.openehr.org/v1", "template")); // XXX CDR-2305 v2???
+        opts.setSaveSyntheticDocumentElement(new QName("http://schemas.openehr.org/v1", "template"));
         template.xmlText(opts);
 
         String concept = template.getConcept();
@@ -362,7 +363,6 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String create(OPERATIONALTEMPLATE template) {
-        // TODO CDR-2305 clarify PROP_ALLOW_TEMPLATE_OVERWRITE
         return addOperationalTemplate(template, allowTemplateOverwrite, allowTemplateOverwrite, false);
     }
 

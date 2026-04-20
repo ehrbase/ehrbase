@@ -62,10 +62,16 @@ public class CacheConfiguration {
                         .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.TEMPLATE_UUID_ID_CACHE),
-                Caffeine.newBuilder().build());
+                configureCache(Caffeine.newBuilder(), cacheProperties.getTemplateUuidIdCacheConfig())
+                        .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.TEMPLATE_ID_UUID_CACHE),
-                Caffeine.newBuilder().build());
+                configureCache(Caffeine.newBuilder(), cacheProperties.getTemplateIdUuidCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.TEMPLATE_LIST_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getTemplateListCacheConfig())
+                        .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.USER_ID_CACHE),
                 configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())

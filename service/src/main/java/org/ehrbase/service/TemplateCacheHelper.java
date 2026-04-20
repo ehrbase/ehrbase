@@ -18,39 +18,34 @@
 package org.ehrbase.service;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.springframework.cache.Cache;
 
 final class TemplateCacheHelper {
-
-    /*
-     * XXX CDR-2305 template cache landscape
-     * - templateId -> uuid [TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
-     * - uuid -> templateId [sync TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
-     * - templateId -> WebTemplate [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
-     * - templateId -> OPT [TEMPLATE_OPT_CACHE]
-     * - () -> template details [no dedicated cache?? sync TEMPLATE_ID_UUID_CACHE?, sync TEMPLATE_UUID_ID_CACHE?]
-     * - startup: fill WebTemplate cache [TEMPLATE_CACHE, sync TEMPLATE_ID_UUID_CACHE, sync TEMPLATE_UUID_ID_CACHE]
-     * - XXX startup: fill id maps? [TEMPLATE_ID_UUID_CACHE, TEMPLATE_UUID_ID_CACHE]
-     */
-
     private final CacheProvider cacheProvider;
 
     public TemplateCacheHelper(CacheProvider cacheProvider) {
         this.cacheProvider = cacheProvider;
     }
 
-    public void addToCache(UUID internalId, String templateId, WebTemplate tpl, OffsetDateTime createdOn) {
+    public void addToCache(
+            UUID internalId, String templateId, WebTemplate tpl, OffsetDateTime createdOn, boolean inbound) {
         CacheProvider.TEMPLATE_CACHE.put(cacheProvider, templateId, Pair.of(tpl, createdOn));
         CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, internalId, templateId);
         CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, templateId, internalId);
+        if (inbound) {
+            CacheProvider.TEMPLATE_LIST_CACHE.clear(cacheProvider);
+        }
     }
 
     public void invalidateCaches(String templateId, UUID internalId) {
@@ -58,6 +53,7 @@ final class TemplateCacheHelper {
         CacheProvider.TEMPLATE_OPT_CACHE.evict(cacheProvider, templateId);
         CacheProvider.TEMPLATE_ID_UUID_CACHE.evict(cacheProvider, templateId);
         CacheProvider.TEMPLATE_UUID_ID_CACHE.evict(cacheProvider, internalId);
+        CacheProvider.TEMPLATE_LIST_CACHE.clear(cacheProvider);
     }
 
     public void clearCaches() {
@@ -65,7 +61,8 @@ final class TemplateCacheHelper {
                         CacheProvider.TEMPLATE_CACHE,
                         CacheProvider.TEMPLATE_OPT_CACHE,
                         CacheProvider.TEMPLATE_ID_UUID_CACHE,
-                        CacheProvider.TEMPLATE_UUID_ID_CACHE)
+                        CacheProvider.TEMPLATE_UUID_ID_CACHE,
+                        CacheProvider.TEMPLATE_LIST_CACHE)
                 .forEach(c -> c.clear(cacheProvider));
     }
 
@@ -116,5 +113,10 @@ final class TemplateCacheHelper {
 
     private <K, V> V find(CacheProvider.EhrBaseCache<K, V> cache, K key, Function<K, V> loader) {
         return cache.get(cacheProvider, key, () -> loader.apply(key));
+    }
+
+    public List<TemplateService.TemplateDetails> findAllTemplates(
+            Supplier<List<TemplateService.TemplateDetails>> loader) {
+        return find(CacheProvider.TEMPLATE_LIST_CACHE, Boolean.TRUE, _ -> loader.get());
     }
 }

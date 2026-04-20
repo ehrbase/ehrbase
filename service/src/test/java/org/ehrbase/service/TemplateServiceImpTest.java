@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.cache.CacheProperties;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
@@ -50,18 +51,22 @@ class TemplateServiceImpTest {
         Mockito.reset(mockTemplateStoreRepository);
 
         cacheManager = new SimpleCacheManager();
+
         cacheManager.setCaches(List.of(
                 new ConcurrentMapCache(CacheProvider.TEMPLATE_ID_UUID_CACHE.name()),
                 new ConcurrentMapCache(CacheProvider.TEMPLATE_UUID_ID_CACHE.name()),
                 new ConcurrentMapCache(CacheProvider.TEMPLATE_OPT_CACHE.name()),
-                new ConcurrentMapCache(CacheProvider.TEMPLATE_CACHE.name()) // For WebTemplate representation
-                ));
+                new ConcurrentMapCache(CacheProvider.TEMPLATE_CACHE.name()),
+                new ConcurrentMapCache(CacheProvider.TEMPLATE_LIST_CACHE.name())));
         cacheManager.initializeCaches();
     }
 
     private TemplateServiceImp service() {
 
-        return new TemplateServiceImp(mockTemplateStoreRepository, new CacheProviderImp(cacheManager), "", false);
+        CacheProperties cacheProperties = new CacheProperties();
+        cacheProperties.setTemplateInitOnStartup("false");
+        return new TemplateServiceImp(
+                mockTemplateStoreRepository, new CacheProviderImp(cacheManager), cacheProperties, false);
     }
 
     @Test

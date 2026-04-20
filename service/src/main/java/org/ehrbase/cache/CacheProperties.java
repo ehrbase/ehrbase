@@ -32,20 +32,23 @@ public class CacheProperties {
     /**
      * Whether to initialize the caches during application startup.
      */
-    private boolean templateInitOnStartup = true;
+    private String templateInitOnStartup = Boolean.TRUE.toString();
 
     private boolean storedQueryInitOnStartup = true;
-    private CacheConfig operationalTemplateCacheConfig = new CacheConfig();
     private CacheConfig internalTemplateCacheConfig = new CacheConfig();
+    private CacheConfig operationalTemplateCacheConfig = new CacheConfig();
+    private CacheConfig templateIdUuidCacheConfig = new CacheConfig();
+    private CacheConfig templateUuidIdCacheConfig = new CacheConfig();
+    private CacheConfig templateListCacheConfig = new CacheConfig();
     private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
     private CacheConfig userIdCacheConfig = new CacheConfig();
     private CacheConfig storedQueryCacheConfig = new CacheConfig();
 
-    public boolean isTemplateInitOnStartup() {
+    public String getTemplateInitOnStartup() {
         return templateInitOnStartup;
     }
 
-    public void setTemplateInitOnStartup(boolean templateInitOnStartup) {
+    public void setTemplateInitOnStartup(String templateInitOnStartup) {
         this.templateInitOnStartup = templateInitOnStartup;
     }
 
@@ -71,6 +74,30 @@ public class CacheProperties {
 
     public void setOperationalTemplateCacheConfig(CacheConfig operationalTemplateCacheConfig) {
         this.operationalTemplateCacheConfig = operationalTemplateCacheConfig;
+    }
+
+    public CacheConfig getTemplateUuidIdCacheConfig() {
+        return templateUuidIdCacheConfig;
+    }
+
+    public void setTemplateUuidIdCacheConfig(CacheConfig templateUuidIdCacheConfig) {
+        this.templateUuidIdCacheConfig = templateUuidIdCacheConfig;
+    }
+
+    public CacheConfig getTemplateIdUuidCacheConfig() {
+        return templateIdUuidCacheConfig;
+    }
+
+    public void setTemplateIdUuidCacheConfig(CacheConfig templateIdUuidCacheConfig) {
+        this.templateIdUuidCacheConfig = templateIdUuidCacheConfig;
+    }
+
+    public CacheConfig getTemplateListCacheConfig() {
+        return templateListCacheConfig;
+    }
+
+    public void setTemplateListCacheConfig(CacheConfig templateListCacheConfig) {
+        this.templateListCacheConfig = templateListCacheConfig;
     }
 
     public CacheConfig getExternalFhirTerminologyCacheConfig() {
