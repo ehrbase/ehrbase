@@ -163,7 +163,7 @@ public class TemplateServiceImp implements TemplateService {
                 template.meta().id(), templateId, tpl, template.meta().creationTime(), inbound);
     }
 
-    String addOperationalTemplate(
+    String storeOperationalTemplate(
             OPERATIONALTEMPLATE template,
             boolean allowTemplateOverwrite,
             boolean allowUsedTemplateOverwrite,
@@ -172,10 +172,10 @@ public class TemplateServiceImp implements TemplateService {
         validateTemplate(template);
         TemplateWithDetails templateData = getTemplateFields(template);
 
-        return addOperationalTemplate(templateData, allowTemplateOverwrite, allowUsedTemplateOverwrite, updateOnly);
+        return storeOperationalTemplate(templateData, allowTemplateOverwrite, allowUsedTemplateOverwrite, updateOnly);
     }
 
-    String addOperationalTemplate(
+    String storeOperationalTemplate(
             TemplateWithDetails templateData,
             boolean allowTemplateOverwrite,
             boolean allowUsedTemplateOverwrite,
@@ -185,7 +185,6 @@ public class TemplateServiceImp implements TemplateService {
 
         UUID existingTid = findUuidByTemplateId(templateId);
 
-        // pre-check: if already existing throw proper exception
         if (updateOnly && existingTid == null) {
             throw templateNotFound(templateId);
         }
@@ -366,7 +365,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String create(OPERATIONALTEMPLATE template) {
-        return addOperationalTemplate(template, allowTemplateOverwrite, allowTemplateOverwrite, false);
+        return storeOperationalTemplate(template, allowTemplateOverwrite, allowTemplateOverwrite, false);
     }
 
     @Override
@@ -385,7 +384,7 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public String adminUpdateTemplate(OPERATIONALTEMPLATE template) {
-        return addOperationalTemplate(template, true, allowTemplateOverwrite, true);
+        return storeOperationalTemplate(template, true, allowTemplateOverwrite, true);
     }
 
     /**

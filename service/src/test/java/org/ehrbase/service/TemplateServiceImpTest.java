@@ -70,16 +70,16 @@ class TemplateServiceImpTest {
     }
 
     @Test
-    void addOperationalTemplate() {
+    void storeOperationalTemplate() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
-        String templateId = service().addOperationalTemplate(testTemplate.metaData(), false, false, false);
+        String templateId = service().storeOperationalTemplate(testTemplate.metaData(), false, false, false);
 
         verify(mockTemplateStoreRepository, times(1)).store(testTemplate.metaData());
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
     }
 
     @Test
-    void addOperationalTemplateCanNotBeOverwritten() {
+    void storeOperationalTemplateCanNotBeOverwritten() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
         Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
@@ -87,7 +87,7 @@ class TemplateServiceImpTest {
 
         TemplateServiceImp service = service();
         TemplateServiceImp.TemplateWithDetails templateData = testTemplate.metaData();
-        assertThatThrownBy(() -> service.addOperationalTemplate(templateData, false, false, false))
+        assertThatThrownBy(() -> service.storeOperationalTemplate(templateData, false, false, false))
                 .isInstanceOf(StateConflictException.class)
                 .hasMessage("Operational template with this template ID already exists: %s"
                         .formatted(testTemplate.templateId()));
@@ -96,14 +96,14 @@ class TemplateServiceImpTest {
     }
 
     @Test
-    void addOperationalTemplateAllowOverwrite() {
+    void storeOperationalTemplateAllowOverwrite() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
         Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         TemplateServiceImp service = spy(service());
-        String templateId = service.addOperationalTemplate(testTemplate.metaData(), true, true, false);
+        String templateId = service.storeOperationalTemplate(testTemplate.metaData(), true, true, false);
 
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
     }
