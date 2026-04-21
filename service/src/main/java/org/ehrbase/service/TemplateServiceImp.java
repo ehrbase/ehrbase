@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.xmlbeans.XmlException;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
@@ -84,8 +83,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemplateServiceImp implements TemplateService {
 
     public record TemplateWithDetails(String operationalTemplate, TemplateDetails meta) {}
-
-    public static final String PROP_TEMPLATE_CACHE_INIT = "ehrbase.cache.template-init-on-startup";
 
     public static final String PROP_ALLOW_TEMPLATE_OVERWRITE = "ehrbase.template.allow-overwrite";
 
@@ -159,8 +156,7 @@ public class TemplateServiceImp implements TemplateService {
         String templateId = TemplateUtils.getTemplateId(operationaltemplate);
         WebTemplate tpl = buildWebTemplate(operationaltemplate, inbound);
 
-        cacheHelper.addToCache(
-                template.meta().id(), templateId, tpl, template.meta().creationTime(), inbound);
+        cacheHelper.addToCache(template.meta().id(), templateId, tpl, inbound);
     }
 
     String storeOperationalTemplate(
@@ -254,27 +250,22 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     public WebTemplate getInternalTemplate(String templateId) {
         try {
-            return cacheHelper
-                    .getInternalTemplate(templateId, tid -> {
-                        log.info("Updating WebTemplate cache for template: {}", tid);
-                        return templateStoreRepository.findByTemplateIds(tid).stream()
-                                .findFirst()
-                                .map(d -> {
-                                    OPERATIONALTEMPLATE operationaltemplate;
-                                    try {
-                                        operationaltemplate =
-                                                TemplateService.buildOperationalTemplate(d.operationalTemplate());
-                                    } catch (XmlException e) {
-                                        throw new InternalServerException(
-                                                "Cannot process template: " + e.getMessage(), e);
-                                    }
-                                    return Pair.of(
-                                            buildWebTemplate(operationaltemplate, false),
-                                            d.meta().creationTime());
-                                })
-                                .orElseThrow(() -> templateNotFound(templateId));
-                    })
-                    .getLeft();
+            return cacheHelper.getInternalTemplate(templateId, tid -> {
+                log.info("Updating WebTemplate cache for template: {}", tid);
+                return templateStoreRepository.findByTemplateIds(tid).stream()
+                        .findFirst()
+                        .map(TemplateWithDetails::operationalTemplate)
+                        .map(t -> {
+                            OPERATIONALTEMPLATE operationaltemplate;
+                            try {
+                                operationaltemplate = TemplateService.buildOperationalTemplate(t);
+                            } catch (XmlException e) {
+                                throw new InternalServerException("Cannot process template: " + e.getMessage(), e);
+                            }
+                            return buildWebTemplate(operationaltemplate, false);
+                        })
+                        .orElseThrow(() -> templateNotFound(templateId));
+            });
         } catch (Cache.ValueRetrievalException ex) {
             // unwrap exception
             throw (RuntimeException) ex.getCause();

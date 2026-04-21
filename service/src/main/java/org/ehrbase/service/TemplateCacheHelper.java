@@ -17,7 +17,6 @@
  */
 package org.ehrbase.service;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -25,7 +24,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
@@ -38,9 +36,8 @@ final class TemplateCacheHelper {
         this.cacheProvider = cacheProvider;
     }
 
-    public void addToCache(
-            UUID internalId, String templateId, WebTemplate tpl, OffsetDateTime createdOn, boolean inbound) {
-        CacheProvider.TEMPLATE_CACHE.put(cacheProvider, templateId, Pair.of(tpl, createdOn));
+    public void addToCache(UUID internalId, String templateId, WebTemplate tpl, boolean inbound) {
+        CacheProvider.TEMPLATE_CACHE.put(cacheProvider, templateId, tpl);
         CacheProvider.TEMPLATE_UUID_ID_CACHE.put(cacheProvider, internalId, templateId);
         CacheProvider.TEMPLATE_ID_UUID_CACHE.put(cacheProvider, templateId, internalId);
         if (inbound) {
@@ -106,8 +103,7 @@ final class TemplateCacheHelper {
         }
     }
 
-    public Pair<WebTemplate, OffsetDateTime> getInternalTemplate(
-            String templateId, Function<String, Pair<WebTemplate, OffsetDateTime>> loader) {
+    public WebTemplate getInternalTemplate(String templateId, Function<String, WebTemplate> loader) {
         return find(CacheProvider.TEMPLATE_CACHE, templateId, loader);
     }
 
