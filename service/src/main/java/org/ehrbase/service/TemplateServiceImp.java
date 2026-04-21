@@ -56,6 +56,7 @@ import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
 import org.ehrbase.openehr.sdk.webtemplate.webtemplateskeletonbuilder.WebTemplateSkeletonBuilder;
 import org.ehrbase.repository.TemplateStoreRepository;
 import org.ehrbase.util.TemplateUtils;
+import org.jspecify.annotations.NonNull;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.openehr.schemas.v1.RESOURCEDESCRIPTION;
 import org.slf4j.Logger;
@@ -186,8 +187,7 @@ public class TemplateServiceImp implements TemplateService {
 
         // pre-check: if already existing throw proper exception
         if (updateOnly && existingTid == null) {
-            throw new ObjectNotFoundException(
-                    "ADMIN TEMPLATE UPDATE", String.format("Template with id %s does not exist", templateId));
+            throw templateNotFound(templateId);
         }
 
         TemplateWithDetails templateMetaData;
@@ -273,15 +273,18 @@ public class TemplateServiceImp implements TemplateService {
                                             buildWebTemplate(operationaltemplate, false),
                                             d.meta().creationTime());
                                 })
-                                .orElseThrow(() -> new ObjectNotFoundException(
-                                        "template",
-                                        "Template with template_id '%s' does not exist".formatted(templateId)));
+                                .orElseThrow(() -> templateNotFound(templateId));
                     })
                     .getLeft();
         } catch (Cache.ValueRetrievalException ex) {
             // unwrap exception
             throw (RuntimeException) ex.getCause();
         }
+    }
+
+    private static @NonNull ObjectNotFoundException templateNotFound(String templateId) {
+        return new ObjectNotFoundException(
+                "TEMPLATE", "Template with template_id '%s' does not exist".formatted(templateId));
     }
 
     @Override
@@ -304,8 +307,7 @@ public class TemplateServiceImp implements TemplateService {
                     tid -> templateStoreRepository.findByTemplateIds(tid).stream()
                             .findFirst()
                             .map(TemplateWithDetails::operationalTemplate)
-                            .orElseThrow(() -> new ObjectNotFoundException(
-                                    "template", "Template with the specified id does not exist")));
+                            .orElseThrow(() -> templateNotFound(templateId)));
         } catch (Cache.ValueRetrievalException ex) {
             // unwrap exception
             throw (RuntimeException) ex.getCause();
@@ -392,10 +394,8 @@ public class TemplateServiceImp implements TemplateService {
     @Override
     @Transactional
     public void adminDeleteTemplate(String templateId) {
-        UUID templateUuid = Optional.of(templateId)
-                .map(this::findUuidByTemplateId)
-                .orElseThrow(() -> new ObjectNotFoundException(
-                        "ADMIN TEMPLATE", String.format("Operational template with id %s not found.", templateId)));
+        UUID templateUuid =
+                Optional.of(templateId).map(this::findUuidByTemplateId).orElseThrow(() -> templateNotFound(templateId));
         templateStoreRepository.deleteTemplate(templateUuid);
         cacheHelper.invalidateCaches(templateId, templateUuid);
     }
