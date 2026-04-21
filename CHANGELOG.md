@@ -10,6 +10,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 
+## [2.30.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.30.0]
  ### Added
 - RM constraint validation for DIRECTORY (with feature toggle) [#1584](https://github.com/ehrbase/ehrbase/pull/1584)
@@ -286,4 +291,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.28.0]: https://github.com/ehrbase/ehrbase/compare/v2.27.0...v2.28.0
 [2.29.0]: https://github.com/ehrbase/ehrbase/compare/v2.28.0...v2.29.0
 [2.30.0]: https://github.com/ehrbase/ehrbase/compare/v2.29.0...v2.30.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.30.0...HEAD
+[2.30.1]: https://github.com/ehrbase/ehrbase/compare/v2.30.0...v2.30.1
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.30.1...HEAD
