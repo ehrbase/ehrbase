@@ -274,7 +274,8 @@ public class TemplateServiceImp implements TemplateService {
                                             d.meta().creationTime());
                                 })
                                 .orElseThrow(() -> new ObjectNotFoundException(
-                                        "template", "Template with the specified id does not exist"));
+                                        "template",
+                                        "Template with template_id '%s' does not exist".formatted(templateId)));
                     })
                     .getLeft();
         } catch (Cache.ValueRetrievalException ex) {
