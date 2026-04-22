@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -256,7 +255,7 @@ final class EncapsulatingQueryUtils {
 
     private static Field templateIdOrderField(Field templateUidField, TemplateService templateService) {
         // order lexicographically by template id
-        Map<UUID, String> templates = templateService.findAllTemplateIds();
+        var templates = templateService.findAllTemplates();
 
         if (templates.isEmpty()) {
             LOG.warn("No template ids found: Fallback to ordering by internal UUID");
@@ -264,9 +263,10 @@ final class EncapsulatingQueryUtils {
         }
 
         Map<Param<UUID>, Param<Integer>> templateIdOrderMap = new LinkedHashMap<>();
-        Iterator<UUID> it = templates.entrySet().stream()
-                .sorted(Comparator.comparing(Entry::getValue, Collator.getInstance(Locale.ENGLISH)))
-                .map(Entry::getKey)
+        Iterator<UUID> it = templates.stream()
+                .sorted(Comparator.comparing(
+                        TemplateService.TemplateDetails::templateId, Collator.getInstance(Locale.ENGLISH)))
+                .map(TemplateService.TemplateDetails::id)
                 .iterator();
         int pos = 0;
         while (it.hasNext()) {

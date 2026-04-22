@@ -7,7 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
+ ### Changed
+- Improved template cache configuration [#1618](https://github.com/ehrbase/ehrbase/pull/1618)
+- Improved performance of template service [#1618](https://github.com/ehrbase/ehrbase/pull/1618)
  ### Fixed 
 
 ## [2.30.1]

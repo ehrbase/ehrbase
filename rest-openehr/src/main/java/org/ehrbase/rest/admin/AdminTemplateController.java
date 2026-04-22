@@ -22,10 +22,14 @@ import io.swagger.v3.oas.annotations.headers.Header;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.exception.InvalidApiParameterException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminDeleteResponseData;
 import org.ehrbase.openehr.sdk.response.dto.admin.AdminStatusResponseData;
 import org.ehrbase.rest.BaseController;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -91,8 +95,17 @@ public class AdminTemplateController extends BaseController {
                     @PathVariable(value = "template_id")
                     String templateId,
             @Parameter(description = "New template content to replace old one with") @RequestBody() String content) {
-
-        String updatedTemplate = this.templateService.adminUpdateTemplate(templateId, content);
+        OPERATIONALTEMPLATE template;
+        try {
+            template = TemplateService.buildOperationalTemplate(content);
+        } catch (XmlException e) {
+            throw new InvalidApiParameterException(e.getMessage());
+        }
+        String newTemplateId = template.getTemplateId().getValue();
+        if (!templateId.equals(newTemplateId)) {
+            throw new ValidationException("Inconsistent template_id");
+        }
+        String updatedTemplate = this.templateService.adminUpdateTemplate(template);
 
         // Headers
         HttpHeaders headers = new HttpHeaders();

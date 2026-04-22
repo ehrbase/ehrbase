@@ -25,11 +25,11 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.aqlengine.TestAqlQueryContext;
 import org.ehrbase.openehr.aqlengine.aql.AqlConditionAsPredicatePostProcessor;
@@ -64,12 +64,16 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 class AqlSqlQueryBuilderTest {
 
-    private final KnowledgeCacheService mockKnowledgeCacheService = mock();
+    private final TemplateService mockTemplateService = mock();
 
     private AqlSqlQueryBuilder aqlSqlQueryBuilder() {
         TemplateService templateService = mock();
-        Mockito.when(templateService.findAllTemplateIds())
-                .thenReturn(Map.of(UUID.randomUUID(), "template1.v1", UUID.randomUUID(), "template2.v3"));
+        Mockito.when(templateService.findAllTemplates())
+                .thenReturn(List.of(
+                        new TemplateService.TemplateDetails(
+                                UUID.randomUUID(), "template1.v1", null, "template1.v1", null),
+                        new TemplateService.TemplateDetails(
+                                UUID.randomUUID(), "template2.v3", null, "template2.v3", null)));
 
         return new AqlSqlQueryBuilder(
                 TestConfig.aqlConfigurationProperties(),
@@ -80,9 +84,9 @@ class AqlSqlQueryBuilderTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(mockKnowledgeCacheService);
-        Mockito.when(mockKnowledgeCacheService.findUuidByTemplateId(ArgumentMatchers.anyString()))
-                .thenReturn(Optional.of(UUID.randomUUID()));
+        Mockito.reset(mockTemplateService);
+        Mockito.when(mockTemplateService.findUuidByTemplateId(ArgumentMatchers.anyString()))
+                .thenReturn(UUID.randomUUID());
     }
 
     @Disabled
@@ -117,7 +121,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
 
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         new AslCleanupPostProcessor().afterBuildAsl(aslQuery, aqlQuery, queryWrapper, null);
 
@@ -149,7 +153,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
 
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 
@@ -256,7 +260,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
     void aslGraphRegression(String name, String aql, String aslGraph) {
         AqlQuery aqlQuery = AqlQueryParser.parse(aql);
         AqlQueryWrapper queryWrapper = AqlQueryWrapper.create(aqlQuery, false);
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         assertThat(AslGraph.createAslGraph(aslQuery)).isEqualToIgnoringWhitespace(aslGraph);
     }
@@ -278,7 +282,7 @@ AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
     }
 
     private SelectQuery<Record> buildSqlQuery(AqlQueryWrapper queryWrapper) {
-        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockKnowledgeCacheService, () -> "node", new TestAqlQueryContext());
+        AqlSqlLayer aqlSqlLayer = new AqlSqlLayer(mockTemplateService, () -> "node", new TestAqlQueryContext());
         AslRootQuery aslQuery = aqlSqlLayer.buildAslRootQuery(queryWrapper);
         AqlSqlQueryBuilder sqlQueryBuilder = aqlSqlQueryBuilder();
 

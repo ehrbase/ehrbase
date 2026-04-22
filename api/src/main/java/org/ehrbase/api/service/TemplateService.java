@@ -18,20 +18,26 @@
 package org.ehrbase.api.service;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.util.List;
-import java.util.Map;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.UUID;
-import org.ehrbase.api.definitions.OperationalTemplateFormat;
-import org.ehrbase.openehr.sdk.response.dto.ehrscape.TemplateMetaDataDto;
+import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.jspecify.annotations.Nullable;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 public interface TemplateService {
-    List<TemplateMetaDataDto> getAllTemplates();
 
-    Map<UUID, String> findAllTemplateIds();
+    record TemplateDetails(
+            UUID id, String templateId, OffsetDateTime creationTime, String concept, String archetypeId) {}
 
-    Composition buildExample(String templateId);
+    Collection<TemplateDetails> findAllTemplates();
+
+    WebTemplate getInternalTemplate(String templateId);
 
     WebTemplate findWebTemplate(String templateId);
 
@@ -39,14 +45,18 @@ public interface TemplateService {
      * Finds and returns the given operational template as string represented in requested format.
      *
      * @param templateId - Unique name of operational template
-     * @param format - As enum value from {@link OperationalTemplateFormat}
      * @return
-     * @throws RuntimeException When the template couldn't be found, the format isn't support or in
-     *     case of another error.
+     * @throws ObjectNotFoundException When the template couldn't be found
      */
-    String findOperationalTemplate(String templateId, OperationalTemplateFormat format) throws RuntimeException;
+    String findOperationalTemplate(String templateId);
 
     String create(OPERATIONALTEMPLATE content);
+
+    @Nullable
+    String findTemplateIdByUuid(UUID uuid);
+
+    @Nullable
+    UUID findUuidByTemplateId(String templateId);
 
     /**
      * Deletes a given template from storage physically. The template is no longer available. If you
@@ -61,11 +71,10 @@ public interface TemplateService {
      * Replaces a given template in the storage and updates the cache with the new template content.
      * Will be rejected if the template has referencing Compositions.
      *
-     * @param templateId - Tempalte id to update, e.g. "IDCR Allergies List.v0"
-     * @param content - New content to overwrite the template with
+     * @param template - New content to overwrite the template with
      * @return - New template id
      */
-    String adminUpdateTemplate(String templateId, String content);
+    String adminUpdateTemplate(OPERATIONALTEMPLATE template);
 
     /**
      * Deletes all templates from target template storage and returns the number of deleted templates.
@@ -75,4 +84,20 @@ public interface TemplateService {
      * @return - Number of deleted templates
      */
     int adminDeleteAllTemplates();
+
+    Composition buildExample(String templateId);
+
+    static OPERATIONALTEMPLATE buildOperationalTemplate(String content) throws XmlException {
+        return org.openehr.schemas.v1.TemplateDocument.Factory.parse(content).getTemplate();
+    }
+
+    static OPERATIONALTEMPLATE buildOperationalTemplate(InputStream in) throws XmlException {
+        org.openehr.schemas.v1.TemplateDocument document;
+        try (in) {
+            document = org.openehr.schemas.v1.TemplateDocument.Factory.parse(in);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        return document.getTemplate();
+    }
 }

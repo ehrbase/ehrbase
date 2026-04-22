@@ -21,9 +21,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.ehrbase.test.fixtures.EhrStatusFixture.ehrStatus;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.archetyped.Archetyped;
@@ -63,6 +63,7 @@ import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.exception.ValidationException;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.api.util.ContributionUtils;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
@@ -85,18 +86,17 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mockito;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.openehr.schemas.v1.TemplateDocument;
 import org.springframework.beans.factory.ObjectProvider;
 
 class ValidationServiceTest {
 
-    private final KnowledgeCacheServiceImp knowledgeCacheService = mock();
+    private final TemplateService templateService = mock();
 
     private final ValidationProperties serverConfig = new ValidationProperties(true, true, true);
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 
-    private class NopTerminologyValidation implements ExternalTerminologyValidation {
+    private static class NopTerminologyValidation implements ExternalTerminologyValidation {
 
         private final ConstraintViolation err = new ConstraintViolation("Terminology validation is disabled");
 
@@ -114,12 +114,12 @@ class ValidationServiceTest {
     }
 
     private final ValidationService spyService = spy(new ValidationServiceImp(
-            knowledgeCacheService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
+            templateService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
 
     @BeforeEach
     void setUp() {
-        Mockito.reset(knowledgeCacheService, objectProvider, spyService);
-        doReturn(new NopTerminologyValidation()).when(objectProvider).getIfAvailable();
+        Mockito.reset(templateService, objectProvider, spyService);
+        when(objectProvider.getIfAvailable()).thenReturn(new NopTerminologyValidation());
     }
 
     private ValidationService service() {
@@ -258,7 +258,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getInternalTemplate(templateID);
+        when(templateService.getInternalTemplate(templateID)).thenReturn(webTemplate);
         service().check(composition);
     }
 
@@ -292,7 +292,7 @@ class ValidationServiceTest {
         OperationalTemplateTestData templateData = OperationalTemplateTestData.findByTemplateId(templateID);
         WebTemplate webTemplate = loadWebTemplate(templateData);
 
-        doReturn(webTemplate).when(knowledgeCacheService).getInternalTemplate(templateID);
+        when(templateService.getInternalTemplate(templateID)).thenReturn(webTemplate);
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(composition)).isInstanceOf(ConstraintViolationException.class);
@@ -610,13 +610,12 @@ class ValidationServiceTest {
 
     private static WebTemplate loadWebTemplate(OperationalTemplateTestData data) {
         return webTemplates.computeIfAbsent(data, d -> {
-            TemplateDocument document;
-            try (var in = d.getStream()) {
-                document = TemplateDocument.Factory.parse(in);
-            } catch (IOException | XmlException e) {
+            OPERATIONALTEMPLATE template;
+            try {
+                template = TemplateService.buildOperationalTemplate(d.getStream());
+            } catch (XmlException e) {
                 throw new RuntimeException(e);
             }
-            OPERATIONALTEMPLATE template = document.getTemplate();
             return new OPTParser(template).parse();
         });
     }

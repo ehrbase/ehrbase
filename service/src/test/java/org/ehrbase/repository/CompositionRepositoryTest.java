@@ -18,14 +18,11 @@
 package org.ehrbase.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import com.nedap.archie.rm.archetyped.Archetyped;
 import com.nedap.archie.rm.archetyped.Locatable;
-import com.nedap.archie.rm.archetyped.TemplateId;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.support.identification.ArchetypeID;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
@@ -35,13 +32,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Consumer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.jooq.pg.tables.records.CompVersionHistoryRecord;
 import org.ehrbase.openehr.sdk.serialisation.jsonencoding.CanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonicalJson;
@@ -106,31 +99,17 @@ class CompositionRepositoryTest {
         private static Composition Composition(ObjectVersionId versionId) {
             Composition composition = new Composition();
             composition.setUid(versionId);
-            composition.setArchetypeDetails(
-                    new Archetyped(new ArchetypeID(), mockTemplateId(), RmConstants.RM_VERSION_1_0_4));
+            composition.setArchetypeDetails(new Archetyped(new ArchetypeID(), null, RmConstants.RM_VERSION_1_0_4));
             return composition;
         }
 
-        private static TemplateId mockTemplateId() {
-            TemplateId templateId = new TemplateId();
-            templateId.setValue("dca5b9e5-610e-4af2-a823-e905b98a08bd");
-            doReturn(Optional.of(UUID.fromString("dca5b9e5-610e-4af2-a823-e905b98a08bd")))
-                    .when(mockKnowledgeCache)
-                    .findUuidByTemplateId("dca5b9e5-610e-4af2-a823-e905b98a08bd");
-            return templateId;
-        }
-
-        private static final KnowledgeCacheService mockKnowledgeCache = mock();
-
         public Update() {
-            super(spy(new CompositionRepository(
-                    mock(), mock(), () -> SYSTEM_ID, mockKnowledgeCache, OffsetDateTime::now)));
+            super(spy(new CompositionRepository(mock(), mock(), () -> SYSTEM_ID, OffsetDateTime::now)));
         }
 
         @Override
         void setUp() {
             super.setUp();
-            Mockito.reset(mockKnowledgeCache);
         }
 
         @Override
@@ -150,37 +129,7 @@ class CompositionRepositoryTest {
 
         @Override
         protected void callUpdate(CompositionRepository repository, UUID ehrId, Composition versionedObject) {
-            repository.update(ehrId, versionedObject, null, null);
-        }
-
-        @Test
-        void updateErrorArchetypeDetailsNotDefined() {
-
-            runUnknownOrMissingTemplateTest(comp -> comp.setArchetypeDetails(null));
-        }
-
-        @Test
-        void updateErrorTemplateIdNotDefined() {
-
-            runUnknownOrMissingTemplateTest(
-                    comp -> Objects.requireNonNull(comp.getArchetypeDetails()).setTemplateId(null));
-        }
-
-        @Test
-        void updateErrorTemplateIdValueNotDefined() {
-
-            runUnknownOrMissingTemplateTest(
-                    comp -> Objects.requireNonNull(comp.getArchetypeDetails().getTemplateId())
-                            .setValue(null));
-        }
-
-        private void runUnknownOrMissingTemplateTest(Consumer<Composition> block) {
-            Composition composition = versionedObject(objectVersionId(1));
-            block.accept(composition);
-
-            assertThatThrownBy(() -> repository.update(EHR_ID, composition, null, null))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage("Unknown or missing template in composition to be stored");
+            repository.update(ehrId, versionedObject, null, null, UUID.randomUUID());
         }
     }
 
@@ -190,7 +139,7 @@ class CompositionRepositoryTest {
         Mockito.when(timeProvider.getNow()).thenReturn(now);
 
         DefaultDSLContext context = new DefaultDSLContext(SQLDialect.POSTGRES);
-        CompositionRepository repo = new CompositionRepository(context, null, null, null, timeProvider);
+        CompositionRepository repo = new CompositionRepository(context, null, null, timeProvider);
 
         VersionDataDbRecord versionData = repo.toRecords(EHR_ID, versionDataObject, CONTRIBUTION_ID, AUDIT_ID);
 

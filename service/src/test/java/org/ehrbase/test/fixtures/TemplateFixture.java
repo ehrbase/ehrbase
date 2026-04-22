@@ -18,17 +18,22 @@
 package org.ehrbase.test.fixtures;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.apache.xmlbeans.XmlException;
-import org.ehrbase.api.knowledge.TemplateMetaData;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.service.TemplateServiceImp.TemplateWithDetails;
+import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.openehr.schemas.v1.TemplateDocument;
+import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 public class TemplateFixture {
 
-    public record TestTemplate(String templateId, OPERATIONALTEMPLATE operationaltemplate, TemplateMetaData metaData) {}
+    public record TestTemplate(
+            String templateId, OPERATIONALTEMPLATE operationaltemplate, TemplateWithDetails metaData) {}
 
     public static TestTemplate fixtureTemplate(OperationalTemplateTestData operationalTemplateTestData) {
         return fixtureTemplate(operationalTemplateTestData, UUID.fromString("b65165e8-b4a6-4c23-84a0-ec58cfb481c1"));
@@ -36,19 +41,29 @@ public class TemplateFixture {
 
     public static TestTemplate fixtureTemplate(
             OperationalTemplateTestData operationalTemplateTestData, UUID internalUUID) {
-        TemplateDocument templateDocument;
-        try (var in = operationalTemplateTestData.getStream()) {
-            templateDocument = TemplateDocument.Factory.parse(in);
-        } catch (XmlException | IOException e) {
+        String templateDocument;
+        try {
+            templateDocument = IOUtils.toString(operationalTemplateTestData.getStream(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        OPERATIONALTEMPLATE operationaltemplate;
+        try {
+            operationaltemplate = TemplateService.buildOperationalTemplate(templateDocument);
+        } catch (XmlException e) {
             throw new RuntimeException(e);
         }
 
-        OPERATIONALTEMPLATE template = templateDocument.getTemplate();
-        TemplateMetaData metaData = new TemplateMetaData();
-        metaData.setOperationalTemplate(template);
-        metaData.setInternalId(internalUUID);
-        metaData.setCreatedOn(OffsetDateTime.parse("2020-10-10T12:00:00Z"));
+        TemplateWithDetails metaData = new TemplateWithDetails(
+                templateDocument,
+                new TemplateService.TemplateDetails(
+                        internalUUID,
+                        TemplateUtils.getTemplateId(operationaltemplate),
+                        OffsetDateTime.parse("2020-10-10T12:00:00Z"),
+                        operationaltemplate.getConcept(),
+                        operationaltemplate.getDefinition().getArchetypeId().getValue()));
 
-        return new TestTemplate(operationalTemplateTestData.getTemplateId(), template, metaData);
+        return new TestTemplate(operationalTemplateTestData.getTemplateId(), operationaltemplate, metaData);
     }
 }

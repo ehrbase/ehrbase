@@ -69,8 +69,6 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<Object> upsertEhrStatusItemTags(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
@@ -83,8 +81,6 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     @GetMapping(value = "/{ehr_id}/ehr_status/{versioned_object_uid}/item_tag")
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<List<ItemTagDto>> getEhrStatusItemTags(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestParam(value = "ids", required = false) List<String> ids,
@@ -96,8 +92,6 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     @DeleteMapping(value = "/{ehr_id}/ehr_status/{versioned_object_uid}/item_tag")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteEhrStatusItemTags(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestBody List<Object> itemTagsOrUUIDs) {
@@ -112,8 +106,6 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
             consumes = {MediaType.APPLICATION_JSON_VALUE})
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<Object> upsertCompositionItemTags(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = PREFER, required = false) String prefer,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
@@ -126,8 +118,6 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     @GetMapping(value = "/{ehr_id}/composition/{versioned_object_uid}/item_tag")
     @ResponseStatus(value = HttpStatus.OK)
     public ResponseEntity<List<ItemTagDto>> getCompositionItemTags(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestParam(value = "ids", required = false) List<String> ids,
@@ -140,8 +130,6 @@ public class ItemTagController extends BaseController implements ItemTagApiSpeci
     @DeleteMapping(value = "/{ehr_id}/composition/{versioned_object_uid}/item_tag")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteCompositionItemTags(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "versioned_object_uid") String versionedObjectUid,
             @RequestBody List<Object> itemTagsOrUUIDs) {
