@@ -18,12 +18,10 @@
 package org.ehrbase.rest.openehr;
 
 import com.nedap.archie.rm.composition.Composition;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
-import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.definitions.OperationalTemplateFormat;
 import org.ehrbase.api.exception.InvalidApiParameterException;
@@ -37,7 +35,7 @@ import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
 import org.ehrbase.rest.openehr.specification.TemplateApiSpecification;
-import org.openehr.schemas.v1.TemplateDocument;
+import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
@@ -83,19 +81,16 @@ public class OpenehrTemplateController extends BaseController implements Templat
             produces = {MediaType.APPLICATION_XML_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<String> createTemplateClassic(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
-            @RequestHeader(value = PREFER, required = false) String prefer,
-            @RequestBody String template) {
+            @RequestHeader(value = PREFER, required = false) String prefer, @RequestBody String template) {
 
         // create template
-        String templateId;
-        try (var in = IOUtils.toInputStream(template, StandardCharsets.UTF_8)) {
-            TemplateDocument document = TemplateDocument.Factory.parse(in);
-            templateId = templateService.create(document.getTemplate());
-        } catch (XmlException | IOException e) {
+        OPERATIONALTEMPLATE tpl;
+        try {
+            tpl = TemplateService.buildOperationalTemplate(template);
+        } catch (XmlException e) {
             throw new InvalidApiParameterException(e.getMessage());
         }
+        String templateId = templateService.create(tpl);
 
         // initialize HTTP 201 Created body builder
         ResponseEntity.BodyBuilder bodyBuilder =
@@ -103,35 +98,39 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return either representation body or only the created response
         if (RETURN_REPRESENTATION.equals(prefer)) {
-            String responseTemplate =
-                    templateService.findOperationalTemplate(templateId, OperationalTemplateFormat.XML);
+            String responseTemplate = templateService.findOperationalTemplate(templateId);
             return bodyBuilder.body(responseTemplate);
         } else {
             return bodyBuilder.build();
         }
     }
 
-    // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
-    // significantly
+    private static TemplateMetaDataDto mapToDto(TemplateService.TemplateDetails data) {
+        TemplateMetaDataDto dto = new TemplateMetaDataDto();
+        dto.setCreatedOn(data.creationTime());
+        dto.setTemplateId(data.templateId());
+        dto.setArchetypeId(data.archetypeId());
+        dto.setConcept(data.concept());
+        return dto;
+    }
+
     @GetMapping(
             value = "/adl1.4",
             produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResponseEntity<List<TemplateMetaDataDto>> getTemplatesClassic(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = ACCEPT, required = false) String accept) {
 
         URI uri = createLocationUri(DEFINITION, TEMPLATE, ADL_1_4);
         MediaType mediaType = resolveContentType(accept, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML);
 
-        List<TemplateMetaDataDto> templates = templateService.getAllTemplates();
+        List<TemplateMetaDataDto> templates = templateService.findAllTemplates().stream()
+                .map(OpenehrTemplateController::mapToDto)
+                .toList();
 
         // returns 200 with all templates
         return ResponseEntity.ok().location(uri).contentType(mediaType).body(templates);
     }
 
-    // Note: based on latest-branch of 1.1.0 release of openEHR REST API, because this endpoint was changed
-    // significantly
     @GetMapping(
             value = "/adl1.4/{template_id}",
             // TODO ITS-REST/Release-1.0.3 produces also "text/plain" but what format should this be
@@ -141,8 +140,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
                 OpenEHRMediaType.APPLICATION_WT_JSON_VALUE
             })
     public ResponseEntity<Object> getTemplateClassic(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id") String templateId) {
 
@@ -157,8 +154,11 @@ public class OpenehrTemplateController extends BaseController implements Templat
 
         // return the original XML based OPT format (if called with the Accept: application/xml request header),
         if (mediaType.isCompatibleWith(MediaType.APPLICATION_XML)) {
-            String operationalTemplate = templateService.findOperationalTemplate(templateId, format);
-            return bodyBuilder.body(operationalTemplate);
+            if (format == OperationalTemplateFormat.XML) {
+                return bodyBuilder.body(templateService.findOperationalTemplate(templateId));
+            } else {
+                throw new NotAcceptableException("Requested operational template type not supported");
+            }
         }
         // return simplified JSON-based “web template” format (if called with the Accept: application/json or
         // application/openehr.wt+json request header)
@@ -230,8 +230,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
             produces = {MediaType.TEXT_PLAIN_VALUE})
     @ResponseStatus(value = HttpStatus.CREATED)
     public ResponseEntity<TemplateResponseData> createTemplateNew(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.CONTENT_TYPE, required = false) String contentType,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
@@ -245,8 +243,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
             value = "/adl2",
             produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<TemplateResponseData> getTemplatesNew(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept) {
 
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
@@ -260,8 +256,6 @@ public class OpenehrTemplateController extends BaseController implements Templat
             value = "/adl2/{template_id}/{version_pattern}",
             produces = {MediaType.TEXT_PLAIN_VALUE})
     public ResponseEntity<TemplateResponseData> getTemplateNew(
-            @RequestHeader(value = OPENEHR_VERSION, required = false) String openehrVersion,
-            @RequestHeader(value = OPENEHR_AUDIT_DETAILS, required = false) String openehrAuditDetails,
             @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
             @PathVariable(value = "template_id", required = false) String templateId,
             @PathVariable(value = "version_pattern", required = false) String versionPattern) {

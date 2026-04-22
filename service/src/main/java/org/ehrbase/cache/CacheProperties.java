@@ -32,15 +32,23 @@ public class CacheProperties {
     /**
      * Whether to initialize the caches during application startup.
      */
-    private boolean templateInitOnStartup = true;
+    private String templateInitOnStartup = Boolean.TRUE.toString();
 
     private boolean storedQueryInitOnStartup = true;
+    private CacheConfig internalTemplateCacheConfig = new CacheConfig();
+    private CacheConfig operationalTemplateCacheConfig = new CacheConfig();
+    private CacheConfig templateIdUuidCacheConfig = new CacheConfig();
+    private CacheConfig templateUuidIdCacheConfig = new CacheConfig();
+    private CacheConfig templateListCacheConfig = new CacheConfig();
+    private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
+    private CacheConfig userIdCacheConfig = new CacheConfig();
+    private CacheConfig storedQueryCacheConfig = new CacheConfig();
 
-    public boolean isTemplateInitOnStartup() {
+    public String getTemplateInitOnStartup() {
         return templateInitOnStartup;
     }
 
-    public void setTemplateInitOnStartup(boolean templateInitOnStartup) {
+    public void setTemplateInitOnStartup(String templateInitOnStartup) {
         this.templateInitOnStartup = templateInitOnStartup;
     }
 
@@ -52,8 +60,45 @@ public class CacheProperties {
         this.storedQueryInitOnStartup = storedQueryInitOnStartup;
     }
 
-    private CacheConfig externalFhirTerminologyCacheConfig = new CacheConfig();
-    private CacheConfig userIdCacheConfig = new CacheConfig();
+    public CacheConfig getInternalTemplateCacheConfig() {
+        return internalTemplateCacheConfig;
+    }
+
+    public void setInternalTemplateCacheConfig(CacheConfig internalTemplateCacheConfig) {
+        this.internalTemplateCacheConfig = internalTemplateCacheConfig;
+    }
+
+    public CacheConfig getOperationalTemplateCacheConfig() {
+        return operationalTemplateCacheConfig;
+    }
+
+    public void setOperationalTemplateCacheConfig(CacheConfig operationalTemplateCacheConfig) {
+        this.operationalTemplateCacheConfig = operationalTemplateCacheConfig;
+    }
+
+    public CacheConfig getTemplateUuidIdCacheConfig() {
+        return templateUuidIdCacheConfig;
+    }
+
+    public void setTemplateUuidIdCacheConfig(CacheConfig templateUuidIdCacheConfig) {
+        this.templateUuidIdCacheConfig = templateUuidIdCacheConfig;
+    }
+
+    public CacheConfig getTemplateIdUuidCacheConfig() {
+        return templateIdUuidCacheConfig;
+    }
+
+    public void setTemplateIdUuidCacheConfig(CacheConfig templateIdUuidCacheConfig) {
+        this.templateIdUuidCacheConfig = templateIdUuidCacheConfig;
+    }
+
+    public CacheConfig getTemplateListCacheConfig() {
+        return templateListCacheConfig;
+    }
+
+    public void setTemplateListCacheConfig(CacheConfig templateListCacheConfig) {
+        this.templateListCacheConfig = templateListCacheConfig;
+    }
 
     public CacheConfig getExternalFhirTerminologyCacheConfig() {
         return externalFhirTerminologyCacheConfig;
@@ -79,10 +124,37 @@ public class CacheProperties {
         this.txProxyExcludedBeanNames = txProxyExcludedBeanNames;
     }
 
+    public CacheConfig getStoredQueryCacheConfig() {
+        return storedQueryCacheConfig;
+    }
+
+    public void setStoredQueryCacheConfig(CacheConfig storedQueryCacheConfig) {
+        this.storedQueryCacheConfig = storedQueryCacheConfig;
+    }
+
     public static class CacheConfig {
+
+        private Integer initialCapacity;
+        private Integer maximumSize;
 
         private ExpireTime expireAfterAccess;
         private ExpireTime expireAfterWrite;
+
+        public Integer getInitialCapacity() {
+            return initialCapacity;
+        }
+
+        public void setInitialCapacity(Integer initialCapacity) {
+            this.initialCapacity = initialCapacity;
+        }
+
+        public Integer getMaximumSize() {
+            return maximumSize;
+        }
+
+        public void setMaximumSize(Integer maximumSize) {
+            this.maximumSize = maximumSize;
+        }
 
         public ExpireTime getExpireAfterAccess() {
             return expireAfterAccess;

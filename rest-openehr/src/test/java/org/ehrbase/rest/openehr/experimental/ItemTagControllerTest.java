@@ -101,8 +101,8 @@ class ItemTagControllerTest {
 
         // @format:off
         ItemTagController controller = controller();
-        controller.upsertCompositionItemTags(null, null, null, SAMPLE_EHR_ID, targetId, List.of(tag));
-        controller.upsertEhrStatusItemTags(null, null, null, SAMPLE_EHR_ID, targetId, List.of(tag));
+        controller.upsertCompositionItemTags(null, SAMPLE_EHR_ID, targetId, List.of(tag));
+        controller.upsertEhrStatusItemTags(null, SAMPLE_EHR_ID, targetId, List.of(tag));
 
         verify(controller, times(1)).upsertItemTags(null, SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.COMPOSITION, "composition", List.of(tag));
         verify(controller, times(1)).upsertItemTags(null, SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.EHR_STATUS, "ehr_status", List.of(tag));
@@ -199,8 +199,8 @@ class ItemTagControllerTest {
 
         // @format:off
         ItemTagController controller = controller();
-        controller.getCompositionItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(), List.of());
-        controller.getEhrStatusItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(), List.of());
+        controller.getCompositionItemTags(SAMPLE_EHR_ID, targetId, List.of(), List.of());
+        controller.getEhrStatusItemTags(SAMPLE_EHR_ID, targetId, List.of(), List.of());
 
         verify(controller, times(1)).getItemTag(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.COMPOSITION, "composition", List.of(), List.of());
         verify(controller, times(1)).getItemTag(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.EHR_STATUS, "ehr_status", List.of(), List.of());
@@ -281,8 +281,8 @@ class ItemTagControllerTest {
 
         // @format:off
         ItemTagController controller = controller();
-        controller.deleteCompositionItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(id));
-        controller.deleteEhrStatusItemTags(null, null, SAMPLE_EHR_ID, targetId, List.of(id));
+        controller.deleteCompositionItemTags(SAMPLE_EHR_ID, targetId, List.of(id));
+        controller.deleteEhrStatusItemTags(SAMPLE_EHR_ID, targetId, List.of(id));
 
         verify(controller, times(1)).deleteTags(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.COMPOSITION, List.of(id));
         verify(controller, times(1)).deleteTags(SAMPLE_EHR_ID, targetId, ItemTagDto.ItemTagRMType.EHR_STATUS, List.of(id));

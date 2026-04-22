@@ -46,8 +46,8 @@ import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.dto.AqlQueryContext;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
 import org.ehrbase.api.service.SystemService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.AslUtils.AliasProvider;
@@ -98,13 +98,13 @@ public class AqlSqlLayer {
             RmConstants.DV_COUNT,
             RmConstants.DV_QUANTITY);
 
-    private final KnowledgeCacheService knowledgeCache;
+    private final TemplateService templateService;
     private final SystemService systemService;
     private final AqlQueryContext aqlQueryContext;
 
     public AqlSqlLayer(
-            KnowledgeCacheService knowledgeCache, SystemService systemService, final AqlQueryContext aqlQueryContext) {
-        this.knowledgeCache = knowledgeCache;
+            TemplateService templateService, SystemService systemService, final AqlQueryContext aqlQueryContext) {
+        this.templateService = templateService;
         this.systemService = systemService;
         this.aqlQueryContext = aqlQueryContext;
     }
@@ -116,12 +116,12 @@ public class AqlSqlLayer {
 
         // FROM
         AslFromCreator.ContainsToOwnerProvider containsToStructureSubquery = new AslFromCreator(
-                        aliasProvider, knowledgeCache, aqlQueryContext.isArchetypeLocalNodePredicates())
+                        aliasProvider, templateService, aqlQueryContext.isArchetypeLocalNodePredicates())
                 .addFromClause(aslQuery, query);
 
         // Paths
         final AslPathCreator.PathToField pathToField = new AslPathCreator(
-                        aliasProvider, knowledgeCache, systemService.getSystemId())
+                        aliasProvider, templateService, systemService.getSystemId())
                 .addPathQueries(query, containsToStructureSubquery, aslQuery);
 
         // SELECT
@@ -319,7 +319,9 @@ public class AqlSqlLayer {
         return switch (aslField.getExtractedColumn()) {
             case TEMPLATE_ID ->
                 AslUtils.templateIdConditionValues(
-                        comparison.rightComparisonOperands(), operator, knowledgeCache::findUuidByTemplateId);
+                        comparison.rightComparisonOperands(),
+                        operator,
+                        templateId -> Optional.of(templateId).map(templateService::findUuidByTemplateId));
             case ARCHETYPE_NODE_ID ->
                 AslUtils.archetypeNodeIdConditionValues(comparison.rightComparisonOperands(), operator);
             case ROOT_CONCEPT ->

@@ -20,6 +20,7 @@ package org.ehrbase.openehr.aqlengine.sql.postprocessor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
@@ -29,9 +30,8 @@ import com.nedap.archie.rm.support.identification.HierObjectId;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.OffsetDateTime;
 import java.time.temporal.TemporalAccessor;
-import java.util.Optional;
 import java.util.UUID;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -45,17 +45,17 @@ import org.mockito.Mockito;
 
 class ExtractedColumnResultPostprocessorTest {
 
-    private final KnowledgeCacheService knowledgeCacheService = mock(KnowledgeCacheService.class);
+    private final TemplateService templateService = mock(TemplateService.class);
     private final Record dbRecord = mock(Record.class);
 
     private ExtractedColumnResultPostprocessor processor(AslExtractedColumn extractedColumn) {
-        return ExtractedColumnResultPostprocessor.get(extractedColumn, knowledgeCacheService, "test-node");
+        return ExtractedColumnResultPostprocessor.get(extractedColumn, templateService, "test-node");
     }
 
     @BeforeEach
     void setUp() {
 
-        Mockito.reset(knowledgeCacheService, dbRecord);
+        Mockito.reset(templateService, dbRecord);
     }
 
     @Test
@@ -68,7 +68,7 @@ class ExtractedColumnResultPostprocessorTest {
     void templateId() {
 
         var uuid = UUID.fromString("93e01a9a-041e-4bf6-89c2-e63f8a74a4d5");
-        doReturn(Optional.of("test-template")).when(knowledgeCacheService).findTemplateIdByUuid(uuid);
+        when(templateService.findTemplateIdByUuid(uuid)).thenReturn("test-template");
         assertThat(processor(AslExtractedColumn.TEMPLATE_ID).postProcessColumn(uuid))
                 .isEqualTo("test-template");
     }
