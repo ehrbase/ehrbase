@@ -113,8 +113,8 @@ class ValidationServiceTest {
         }
     }
 
-    private final ValidationService spyService = spy(new ValidationServiceImp(
-            templateService, new TerminologyServiceImp(), serverConfig, objectProvider, false));
+    private final ValidationService spyService =
+            spy(new ValidationServiceImp(templateService, serverConfig, objectProvider, false));
 
     @BeforeEach
     void setUp() {
