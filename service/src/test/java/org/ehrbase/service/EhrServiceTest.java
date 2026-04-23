@@ -214,7 +214,7 @@ class EhrServiceTest {
 
         assertThatThrownBy(() -> service.getEhrStatus(ehrId))
                 .isInstanceOf(ObjectNotFoundException.class)
-                .hasMessage("No EHR found with given ID: ce3a8b60-cfba-4081-8583-8113d12a6118");
+                .hasMessage("EHR with id ce3a8b60-cfba-4081-8583-8113d12a6118 not found");
     }
 
     @Test
@@ -228,7 +228,7 @@ class EhrServiceTest {
 
         assertThatThrownBy(() -> service.getEhrStatus(ehrId))
                 .isInstanceOf(ObjectNotFoundException.class)
-                .hasMessage("No EHR found with given ID: ce3a8b60-cfba-4081-8583-8113d12a6118");
+                .hasMessage("EHR with id ce3a8b60-cfba-4081-8583-8113d12a6118 not found");
     }
 
     @Test
@@ -256,7 +256,7 @@ class EhrServiceTest {
 
         assertThatThrownBy(() -> service.getEhrStatusAtVersion(ehrId, statusId, 2))
                 .isInstanceOf(ObjectNotFoundException.class)
-                .hasMessage("No EHR found with given ID: d783d2f0-0686-4dc0-a04e-0c7272687952");
+                .hasMessage("EHR with id d783d2f0-0686-4dc0-a04e-0c7272687952 not found");
     }
 
     @Test
