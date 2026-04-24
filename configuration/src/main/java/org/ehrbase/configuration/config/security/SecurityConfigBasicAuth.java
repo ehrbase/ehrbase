@@ -17,7 +17,7 @@
  */
 package org.ehrbase.configuration.config.security;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import jakarta.servlet.DispatcherType;
 import java.util.List;
@@ -71,7 +71,7 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
                     auth.requestMatchers("/", "/img/**").permitAll();
 
                     // secure /rest/admin/** so that only admins can access it
-                    auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(ADMIN);
+                    auth = auth.requestMatchers(pathPattern("/rest/admin/**")).hasRole(ADMIN);
 
                     // secure /management/**
                     auth = configureManagementEndpointAccess(auth, ADMIN, List.of(ADMIN, USER));

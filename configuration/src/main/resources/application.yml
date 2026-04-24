@@ -44,6 +44,11 @@ spring:
     host: localhost
     port: 6379
 
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+    codecs:
+      preferred-json-mapper: jackson2
   security:
     oauth2:
       resourceserver:

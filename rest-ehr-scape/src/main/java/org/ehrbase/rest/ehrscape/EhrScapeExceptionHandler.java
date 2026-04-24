@@ -131,7 +131,7 @@ public class EhrScapeExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Object> handleSpringResponseStatusException(ResponseStatusException ex) {
         // rethrow will not work properly, so we handle it
-        return handleExceptionInternal(ex, ex.getReason(), ex.getResponseHeaders(), ex.getStatusCode());
+        return handleExceptionInternal(ex, ex.getReason(), ex.getHeaders(), ex.getStatusCode());
     }
 
     // 500 - general

@@ -19,6 +19,11 @@ spring:
     active: test
   cache:
     type: CAFFEINE
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+    codecs:
+      preferred-json-mapper: jackson2
 
 terminology_server:
   tsUrl: 'https://r4.ontoserver.csiro.au/fhir/'

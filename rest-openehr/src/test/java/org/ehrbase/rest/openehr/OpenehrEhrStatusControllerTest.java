@@ -246,13 +246,14 @@ class OpenehrEhrStatusControllerTest {
             String lastModified) {
 
         assertThat(response.getStatusCode()).isEqualTo(status);
-        assertThat(response.getHeaders())
+        assertThat(response.getHeaders().asMultiValueMap())
                 .containsEntry(
                         HttpHeaders.LOCATION,
                         List.of(CONTEXT_PATH + "/ehr/" + ehrId + "/ehr_status/" + versionId.getValue()));
-        assertThat(response.getHeaders())
+        assertThat(response.getHeaders().asMultiValueMap())
                 .containsEntry(HttpHeaders.ETAG, List.of("\"%s\"".formatted(versionId.getValue())));
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.LAST_MODIFIED, List.of(lastModified));
+        assertThat(response.getHeaders().asMultiValueMap())
+                .containsEntry(HttpHeaders.LAST_MODIFIED, List.of(lastModified));
     }
 
     private static void assertEhrStatusResponseDataBody(

@@ -17,7 +17,7 @@
  */
 package org.ehrbase.configuration.config.security;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import jakarta.servlet.DispatcherType;
 import java.util.Arrays;
@@ -28,7 +28,7 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
+import org.springframework.boot.security.oauth2.server.resource.autoconfigure.OAuth2ResourceServerProperties;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -87,7 +87,7 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
                     auth.requestMatchers("/", "/img/**").permitAll();
 
                     // secure /rest/admin/** so that only admins can access it
-                    auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(adminRole);
+                    auth = auth.requestMatchers(pathPattern("/rest/admin/**")).hasRole(adminRole);
 
                     // secure /management/**
                     auth = configureManagementEndpointAccess(

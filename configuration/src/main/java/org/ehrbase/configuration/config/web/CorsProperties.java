@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.PropertyMapper;
 import org.springframework.boot.convert.DurationUnit;
@@ -117,8 +118,11 @@ public class CorsProperties {
         map.from(this::getAllowedHeaders).whenNot(CollectionUtils::isEmpty).to(configuration::setAllowedHeaders);
         map.from(this::getAllowedMethods).whenNot(CollectionUtils::isEmpty).to(configuration::setAllowedMethods);
         map.from(this::getExposedHeaders).whenNot(CollectionUtils::isEmpty).to(configuration::setExposedHeaders);
-        map.from(this::getMaxAge).whenNonNull().as(Duration::getSeconds).to(configuration::setMaxAge);
-        map.from(this::getAllowCredentials).whenNonNull().to(configuration::setAllowCredentials);
+        map.from(this::getMaxAge)
+                .whenNot(Objects::isNull)
+                .as(Duration::getSeconds)
+                .to(configuration::setMaxAge);
+        map.from(this::getAllowCredentials).whenNot(Objects::isNull).to(configuration::setAllowCredentials);
         return configuration;
     }
 }
