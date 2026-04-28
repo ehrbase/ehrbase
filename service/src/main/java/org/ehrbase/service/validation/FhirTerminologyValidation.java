@@ -17,8 +17,6 @@
  */
 package org.ehrbase.service.validation;
 
-import static java.lang.String.format;
-
 import com.google.common.net.HttpHeaders;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
@@ -27,15 +25,13 @@ import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.text.MessageFormat;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import net.minidev.json.JSONArray;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.openehr.sdk.util.functional.Try;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
@@ -62,6 +58,15 @@ import reactor.netty.http.client.HttpClient;
  * {@link ExternalTerminologyValidation} that supports FHIR terminology validation.
  */
 public class FhirTerminologyValidation implements ExternalTerminologyValidation {
+
+    static final String SUPPORTS_CODE_SYS_TEMPL = "%s/CodeSystem?url=%s";
+    static final String SUPPORTS_VALUE_SET_TEMPL = "%s/ValueSet?url=%s";
+    private static final String ERR_SUPPORTS =
+            "An error occurred while checking if FHIR terminology server supports the referenceSetUri: %s";
+    static final String CODE_PHRASE_TEMPL = "code=%s&system=%s";
+    private static final String ERR_EXPAND_VALUESET = "Error while expanding ValueSet[%s]";
+    static final String EXPAND_VALUE_SET_TEMPL = "%s/ValueSet/$expand?%s";
+
     private static final Logger LOG = LoggerFactory.getLogger(FhirTerminologyValidation.class);
     private final String baseUrl;
     private final boolean failOnError;
@@ -82,8 +87,8 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     }
 
     private String extractUrl(String referenceSetUri) {
-        UriComponents uriComponents =
-                UriComponentsBuilder.fromUriString("/fhir?" + referenceSetUri).build();
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString("/foo?%s".formatted(referenceSetUri))
+                .build();
         MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
         return queryParams.getFirst("url");
     }
@@ -120,59 +125,48 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         }
     }
 
-    static final String SUPPORTS_CODE_SYS_TEMPL = "%s/CodeSystem?url=%s";
-    static final String SUPPORTS_VALUE_SET_TEMPL = "%s/ValueSet?url=%s";
-    private static final String ERR_SUPPORTS =
-            "An error occurred while checking if FHIR terminology server supports the referenceSetUri: %s";
-    static final String CODE_PHRASE_TEMPL = "code=%s&system=%s";
-    private static final String ERR_EXPAND_VALUESET = "Error while expanding ValueSet[%s]";
-    static final String EXPAND_VALUE_SET_TEMPL = "%s/ValueSet/$expand?%s";
-
-    @SafeVarargs
     static String renderTempl(String templ, String... args) {
-        return format(templ, args);
+        return templ.formatted((Object[]) args);
     }
 
-    @SuppressWarnings({"serial"})
-    private final Set<String> acceptedFhirApis = new HashSet<>() {
-        {
-            add("//fhir.hl7.org");
-            add("terminology://fhir.hl7.org");
-            add("//hl7.org/fhir");
-        }
+    private final String[] acceptedFhirApis = {"//fhir.hl7.org/", "terminology://fhir.hl7.org/", "//hl7.org/fhir/"};
 
-        @Override
-        public String toString() {
-            return this.stream().collect(Collectors.joining(", "));
+    private boolean isValidTerminology(String url) {
+        boolean valid = url != null && Arrays.stream(acceptedFhirApis).anyMatch(url::startsWith);
+        if (!valid) {
+            LOG.warn("Unsupported service-api: {}", url);
         }
-    };
-
-    private boolean isValidTerminology(Optional<String> url) {
-        if (url.isEmpty()) return false;
-        return acceptedFhirApis.stream()
-                .filter(api -> url.get().startsWith(api))
-                .map(api -> Boolean.TRUE)
-                .findFirst()
-                .orElse(Boolean.FALSE);
+        return valid;
     }
 
     @Override
     public boolean supports(TerminologyParam param) {
-        String url = null;
-        Optional<String> urlParam = param.extractFromParameter(p -> Optional.ofNullable(extractUrl(p)));
-        if (urlParam.isEmpty() || !isValidTerminology(param.getServiceApi())) return false;
-
-        if (param.isUseValueSet()) url = renderTempl(SUPPORTS_VALUE_SET_TEMPL, baseUrl, urlParam.get());
-        else if (param.isUseCodeSystem()) url = renderTempl(SUPPORTS_CODE_SYS_TEMPL, baseUrl, urlParam.get());
-        else return false;
-
-        try {
-            return internalGet(url).read("$.total", int.class) > 0;
-        } catch (WebClientException e) {
-            if (failOnError) throw new ExternalTerminologyValidationException(format(ERR_SUPPORTS, url), e);
-            LOG.warn("The following error occurred: {}", e.getMessage());
-            return false;
-        }
+        return param.getServiceApi()
+                .filter(this::isValidTerminology)
+                .flatMap(_ -> param.extractFromParameter(p -> Optional.ofNullable(extractUrl(p))))
+                .map(urlParam -> {
+                    if (param.isUseValueSet()) {
+                        return renderTempl(SUPPORTS_VALUE_SET_TEMPL, baseUrl, urlParam);
+                    } else if (param.isUseCodeSystem()) {
+                        return renderTempl(SUPPORTS_CODE_SYS_TEMPL, baseUrl, urlParam);
+                    } else {
+                        return null;
+                    }
+                })
+                .map(url -> {
+                    try {
+                        return internalGet(url);
+                    } catch (WebClientException e) {
+                        if (failOnError) {
+                            throw new ExternalTerminologyValidationException(ERR_SUPPORTS.formatted(url), e);
+                        }
+                        LOG.warn("The following error occurred: {}", e.getMessage());
+                        return null;
+                    }
+                })
+                .map(doc -> doc.read("$.total", int.class))
+                .filter(t -> t > 0)
+                .isPresent();
     }
 
     @Override
@@ -206,26 +200,24 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
 
     @Override
     public List<DvCodedText> expand(TerminologyParam param) {
-        // sanity checks
-        if (param.getServiceApi().isEmpty() || !isValidTerminology(param.getServiceApi())) {
-            LOG.warn("Unsupported service-api: {}", param.getServiceApi());
-            return Collections.emptyList();
-        }
-
-        Optional<String> urlParam = param.extractFromParameter(p -> Optional.ofNullable(guaranteePrefix("url=", p)));
-
-        if (urlParam.isEmpty() || param.getServiceApi().isEmpty() || !isValidTerminology(param.getServiceApi())) {
-            return Collections.emptyList();
-        }
-
-        try {
-            DocumentContext jsonContext = internalGet(renderTempl(EXPAND_VALUE_SET_TEMPL, baseUrl, urlParam.get()));
-            return ValueSetConverter.convert(jsonContext);
-        } catch (WebClientException e) {
-            if (failOnError) throw new ExternalTerminologyValidationException(format(ERR_EXPAND_VALUESET, e));
-            LOG.warn(format(ERR_EXPAND_VALUESET, e.getMessage()));
-            return Collections.emptyList();
-        }
+        return param.getServiceApi()
+                .filter(this::isValidTerminology)
+                .flatMap(_ -> param.extractFromParameter(p -> Optional.ofNullable(guaranteePrefix("url=", p))))
+                .map(urlParam -> renderTempl(EXPAND_VALUE_SET_TEMPL, baseUrl, urlParam))
+                .map(url -> {
+                    try {
+                        return internalGet(url);
+                    } catch (WebClientException e) {
+                        String msg = ERR_EXPAND_VALUESET.formatted(e.getMessage());
+                        if (failOnError) {
+                            throw new ExternalTerminologyValidationException(msg, e);
+                        }
+                        LOG.warn(msg);
+                        return null;
+                    }
+                })
+                .map(ValueSetConverter::convert)
+                .orElseGet(List::of);
     }
 
     abstract static class ValueSetConverter {
@@ -249,7 +241,7 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     }
 
     private Try<Boolean, ConstraintViolationException> validateCode(String url, CodePhrase codePhrase) {
-        if (!StringUtils.equals(url, codePhrase.getTerminologyId().getValue())) {
+        if (!Strings.CS.equals(url, codePhrase.getTerminologyId().getValue())) {
             var constraintViolation = new ConstraintViolation(MessageFormat.format(
                     "The terminology {0} must be {1}",
                     codePhrase.getTerminologyId().getValue(), url));
@@ -259,11 +251,12 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         DocumentContext context;
         try {
             context = internalGet(
-                    baseUrl + "/CodeSystem/$validate-code?url=" + url + "&code=" + codePhrase.getCodeString());
+                    "%s/CodeSystem/$validate-code?url=%s&code=%s".formatted(baseUrl, url, codePhrase.getCodeString()));
         } catch (WebClientException e) {
-            if (failOnError)
+            if (failOnError) {
                 throw new ExternalTerminologyValidationException(
                         "An error occurred while validating the code in CodeSystem", e);
+            }
             LOG.warn("An error occurred while validating the code in CodeSystem: {}", e.getMessage());
             return Try.success(Boolean.FALSE);
         }
@@ -280,24 +273,25 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     private Try<Boolean, ConstraintViolationException> expandValueSet(String url, CodePhrase codePhrase) {
         DocumentContext context;
         try {
-            context = internalGet(baseUrl + "/ValueSet/$expand?url=" + url);
+            context = internalGet("%s/ValueSet/$expand?url=%s".formatted(baseUrl, url));
         } catch (WebClientException e) {
-            if (failOnError)
+            if (failOnError) {
                 throw new ExternalTerminologyValidationException("An error occurred while expanding the ValueSet", e);
+            }
             LOG.warn("An error occurred while expanding the ValueSet: {}", e.getMessage());
             return Try.success(Boolean.FALSE);
         }
         List<Map<String, String>> codings =
-                context.read("$.expansion.contains[?(@.code=='" + codePhrase.getCodeString() + "')]");
+                context.read("$.expansion.contains[?(@.code=='%s')]".formatted(codePhrase.getCodeString()));
 
         if (codings.isEmpty()) {
             var constraintViolation = new ConstraintViolation(MessageFormat.format(
                     "The value {0} does not match any option from value set {1}", codePhrase.getCodeString(), url));
             return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));
         } else if (codings.size() == 1) {
-            Map<String, String> coding = codings.get(0);
+            Map<String, String> coding = codings.getFirst();
             String system = coding.get(ValueSetConverter.SYS);
-            if (!StringUtils.equals(system, codePhrase.getTerminologyId().getValue())) {
+            if (!Strings.CS.equals(system, codePhrase.getTerminologyId().getValue())) {
                 var constraintViolation = new ConstraintViolation(
                         MessageFormat.format("The terminology {0} must be  {1}", codePhrase.getCodeString(), system));
                 return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));

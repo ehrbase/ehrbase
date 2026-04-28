@@ -31,10 +31,8 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.internal.JsonContext;
 import com.nedap.archie.rm.datavalues.DvCodedText;
-import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.java.quickcheck.generator.PrimitiveGenerators;
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
@@ -49,7 +47,7 @@ import org.mockito.Mockito;
 class FhirTerminologyValidationTest {
 
     @Test
-    public void guaranteePrefix() {
+    void guaranteePrefix() {
         Assertions.assertEquals("url=ABC", FhirTerminologyValidation.guaranteePrefix("url=", "url=ABC"));
         Assertions.assertEquals("url=ABC", FhirTerminologyValidation.guaranteePrefix("url=", "ABC"));
         Assertions.assertNull(FhirTerminologyValidation.guaranteePrefix("url=", ""));
@@ -58,7 +56,7 @@ class FhirTerminologyValidationTest {
     }
 
     @Test
-    public void renderTempl() {
+    void renderTempl() {
         String ref = String.format(FhirTerminologyValidation.SUPPORTS_CODE_SYS_TEMPL, "abc", "123");
         String render1 =
                 FhirTerminologyValidation.renderTempl(FhirTerminologyValidation.SUPPORTS_CODE_SYS_TEMPL, "abc", "123");
@@ -73,7 +71,7 @@ class FhirTerminologyValidationTest {
     }
 
     @Test
-    void valueSetConverter() throws Exception {
+    void valueSetConverter() {
         ValueSet values = anyValueSet();
 
         String json = FhirContext.forR4().newJsonParser().encodeResourceToString(values);
@@ -82,21 +80,6 @@ class FhirTerminologyValidationTest {
         List<DvCodedText> dv = ValueSetConverter.convert(ctx);
 
         Assertions.assertEquals(values.getExpansion().getContains().size(), dv.size());
-    }
-
-    @Test
-    void stringjoin() {
-        List<String> params = new ArrayList<>();
-        String reqParam = params.stream().collect(Collectors.joining("&"));
-        Assertions.assertEquals("", reqParam);
-
-        params = List.of("a");
-        reqParam = params.stream().collect(Collectors.joining("&"));
-        Assertions.assertEquals("a", reqParam);
-
-        params = List.of("a", "b");
-        reqParam = params.stream().collect(Collectors.joining("&"));
-        Assertions.assertEquals("a&b", reqParam);
     }
 
     @Test
@@ -134,7 +117,7 @@ class FhirTerminologyValidationTest {
     static ValueSet anyValueSet() {
         List<ValueSetExpansionContainsComponent> values = IntStream.range(0, 16)
                 .mapToObj(i -> anyValueSetExpansionContainsComponent())
-                .collect(Collectors.toList());
+                .toList();
 
         ValueSetExpansionComponent ext = new ValueSetExpansionComponent();
         ext.setId(anyString());
