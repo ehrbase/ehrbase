@@ -37,8 +37,7 @@ public interface TemplateApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_upload"))
-    ResponseEntity<String> createTemplateClassic(
-            String openehrVersion, String openehrAuditDetails, String prefer, String template);
+    ResponseEntity<String> createTemplateClassic(String prefer, String template);
 
     @Operation(
             tags = "ADL 1.4 TEMPLATE",
@@ -47,8 +46,7 @@ public interface TemplateApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_list"))
-    ResponseEntity<List<TemplateMetaDataDto>> getTemplatesClassic(
-            String openehrVersion, String openehrAuditDetails, String accept);
+    ResponseEntity<List<TemplateMetaDataDto>> getTemplatesClassic(String accept);
 
     @Operation(
             tags = "ADL 1.4 TEMPLATE",
@@ -57,8 +55,7 @@ public interface TemplateApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL1.4/operation/definition_template_adl1.4_get"))
-    ResponseEntity<Object> getTemplateClassic(
-            String openehrVersion, String openehrAuditDetails, String accept, String templateId);
+    ResponseEntity<Object> getTemplateClassic(String accept, String templateId);
 
     @Operation(tags = "ADL 1.4 TEMPLATE", summary = "Get an example composition for the specified template")
     ResponseEntity<String> getTemplateExample(
@@ -80,13 +77,7 @@ public interface TemplateApiSpecification {
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL2/operation/definition_template_adl2_upload"))
     ResponseEntity<TemplateResponseData> createTemplateNew(
-            String openehrVersion,
-            String openehrAuditDetails,
-            String contentType,
-            String accept,
-            String prefer,
-            String version,
-            String template);
+            String contentType, String accept, String prefer, String version, String template);
 
     @Operation(
             tags = "ADL 2 TEMPLATE",
@@ -95,8 +86,7 @@ public interface TemplateApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definition.html#tag/ADL2/operation/definition_template_adl2_get"))
-    ResponseEntity<TemplateResponseData> getTemplatesNew(
-            String openehrVersion, String openehrAuditDetails, String accept);
+    ResponseEntity<TemplateResponseData> getTemplatesNew(String accept);
 
     @Operation(
             tags = "ADL 2 TEMPLATE",
@@ -105,8 +95,7 @@ public interface TemplateApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/definitions.html#definitions-stored-query-get-1"))
-    ResponseEntity<TemplateResponseData> getTemplateNew(
-            String openehrVersion, String openehrAuditDetails, String accept, String templateId, String versionPattern);
+    ResponseEntity<TemplateResponseData> getTemplateNew(String accept, String templateId, String versionPattern);
 
     @Operation(
             tags = "TEMPLATE",

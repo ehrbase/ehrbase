@@ -18,6 +18,7 @@
 package org.ehrbase.service.experimental;
 
 import com.google.common.annotations.VisibleForTesting;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -75,9 +76,7 @@ public class ItemTagServiceImpl implements ItemTagService {
         // sanity check for existing EHR version
         ehrService.checkEhrExists(ownerId);
 
-        return itemTagRepository.findForOwnerAndTarget(ownerId, targetVoId, targetType, ids, keys).stream()
-                .map(itemTag -> itemTag)
-                .toList();
+        return new ArrayList<>(itemTagRepository.findForOwnerAndTarget(ownerId, targetVoId, targetType, ids, keys));
     }
 
     @Override

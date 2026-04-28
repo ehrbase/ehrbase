@@ -26,7 +26,7 @@ import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.time.temporal.TemporalAccessor;
 import java.util.UUID;
 import java.util.function.Function;
-import org.ehrbase.api.knowledge.KnowledgeCacheService;
+import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
 import org.ehrbase.openehr.aqlengine.ChangeTypeUtils;
 import org.ehrbase.openehr.aqlengine.asl.model.AslExtractedColumn;
@@ -72,7 +72,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
     }
 
     public static ExtractedColumnResultPostprocessor get(
-            AslExtractedColumn extractedColumn, KnowledgeCacheService knowledgeCache, String nodeName) {
+            AslExtractedColumn extractedColumn, TemplateService templateService, String nodeName) {
         return switch (extractedColumn) {
             case OV_TIME_COMMITTED_DV, EHR_TIME_CREATED_DV -> OV_DATETIME_DV_PP;
             case OV_TIME_COMMITTED, EHR_TIME_CREATED -> OV_DATETIME_VALUE_PP;
@@ -91,9 +91,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
                     AD_DESCRIPTION_VALUE,
                     AD_CHANGE_TYPE_TERMINOLOGY_ID_VALUE,
                     EHR_SYSTEM_ID -> NOOP_PP;
-            case TEMPLATE_ID ->
-                create(columnValue ->
-                        knowledgeCache.findTemplateIdByUuid((UUID) columnValue).orElse(null));
+            case TEMPLATE_ID -> create(columnValue -> templateService.findTemplateIdByUuid((UUID) columnValue));
             case VO_ID -> create(columnValue -> restoreVoId((Record) columnValue, nodeName));
         };
     }

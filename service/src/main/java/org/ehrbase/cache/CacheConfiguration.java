@@ -20,6 +20,7 @@ package org.ehrbase.cache;
 import com.ethlo.cache.spring.EnhancedTransactionAwareCacheDecorator;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Function;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.cache.CacheManagerCustomizer;
@@ -52,14 +53,25 @@ public class CacheConfiguration {
             CacheProperties cacheProperties,
             Function<CacheProvider.EhrBaseCache<?, ?>, String> createCacheName) {
         cacheManager.registerCustomCache(
-                createCacheName.apply(CacheProvider.INTROSPECT_CACHE),
-                Caffeine.newBuilder().build());
+                createCacheName.apply(CacheProvider.TEMPLATE_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getInternalTemplateCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.TEMPLATE_OPT_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getOperationalTemplateCacheConfig())
+                        .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.TEMPLATE_UUID_ID_CACHE),
-                Caffeine.newBuilder().build());
+                configureCache(Caffeine.newBuilder(), cacheProperties.getTemplateUuidIdCacheConfig())
+                        .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.TEMPLATE_ID_UUID_CACHE),
-                Caffeine.newBuilder().build());
+                configureCache(Caffeine.newBuilder(), cacheProperties.getTemplateIdUuidCacheConfig())
+                        .build());
+        cacheManager.registerCustomCache(
+                createCacheName.apply(CacheProvider.TEMPLATE_LIST_CACHE),
+                configureCache(Caffeine.newBuilder(), cacheProperties.getTemplateListCacheConfig())
+                        .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.USER_ID_CACHE),
                 configureCache(Caffeine.newBuilder(), cacheProperties.getUserIdCacheConfig())
@@ -70,23 +82,24 @@ public class CacheConfiguration {
                         .build());
         cacheManager.registerCustomCache(
                 createCacheName.apply(CacheProvider.STORED_QUERY_CACHE),
-                Caffeine.newBuilder().build());
+                configureCache(Caffeine.newBuilder(), cacheProperties.getStoredQueryCacheConfig())
+                        .build());
     }
 
     protected static Caffeine<Object, Object> configureCache(
             Caffeine<Object, Object> caffeine, CacheProperties.CacheConfig cacheConfig) {
 
-        if (cacheConfig.getExpireAfterWrite() != null) {
-            caffeine.expireAfterWrite(
-                    cacheConfig.getExpireAfterWrite().getDuration(),
-                    cacheConfig.getExpireAfterWrite().getUnit());
-        }
+        Optional<CacheProperties.CacheConfig> cc = Optional.of(cacheConfig);
 
-        if (cacheConfig.getExpireAfterAccess() != null) {
-            caffeine.expireAfterAccess(
-                    cacheConfig.getExpireAfterAccess().getDuration(),
-                    cacheConfig.getExpireAfterAccess().getUnit());
-        }
+        cc.map(CacheProperties.CacheConfig::getInitialCapacity).ifPresent(caffeine::initialCapacity);
+
+        cc.map(CacheProperties.CacheConfig::getMaximumSize).ifPresent(caffeine::maximumSize);
+
+        cc.map(CacheProperties.CacheConfig::getExpireAfterWrite)
+                .ifPresent(d -> caffeine.expireAfterWrite(d.getDuration(), d.getUnit()));
+
+        cc.map(CacheProperties.CacheConfig::getExpireAfterAccess)
+                .ifPresent(d -> caffeine.expireAfterAccess(d.getDuration(), d.getUnit()));
 
         return caffeine;
     }
