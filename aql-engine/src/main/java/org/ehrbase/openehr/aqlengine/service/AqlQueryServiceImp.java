@@ -46,7 +46,6 @@ import org.ehrbase.openehr.sdk.aql.dto.AqlQuery;
 import org.ehrbase.openehr.sdk.aql.render.AqlRenderer;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryResultDto;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.query.ResultHolder;
-import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.jooq.exception.DataAccessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +58,6 @@ public class AqlQueryServiceImp implements AqlQueryService {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     protected final AqlQueryRepository aqlQueryRepository;
-    protected final ExternalTerminologyValidation tsAdapter;
     protected final AqlSqlLayer aqlSqlLayer;
     protected final ObjectMapper objectMapper;
     protected final AqlQueryContext aqlQueryContext;
@@ -69,14 +67,12 @@ public class AqlQueryServiceImp implements AqlQueryService {
     @Autowired
     public AqlQueryServiceImp(
             AqlQueryRepository aqlQueryRepository,
-            ExternalTerminologyValidation tsAdapter,
             AqlSqlLayer aqlSqlLayer,
             ObjectMapper objectMapper,
             AqlQueryContext aqlQueryContext,
             List<AqlQueryParsingPostProcessor> aqlPostProcessors,
             List<AslPostProcessor> aslPostProcessors) {
         this.aqlQueryRepository = aqlQueryRepository;
-        this.tsAdapter = tsAdapter;
         this.aqlSqlLayer = aqlSqlLayer;
         this.objectMapper = objectMapper;
         this.aqlQueryContext = aqlQueryContext;
