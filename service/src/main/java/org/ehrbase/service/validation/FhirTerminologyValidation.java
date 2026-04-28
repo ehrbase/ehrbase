@@ -99,7 +99,8 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
                 .build();
     }
 
-    protected DocumentContext internalGet(String uri) throws WebClientException {
+    protected DocumentContext internalGet(String uri)
+            throws WebClientException, ExternalTerminologyValidationException {
 
         WebClient client = buildRestClientCall(uri);
         RequestBodyUriSpec method = client.method(HttpMethod.GET);
@@ -220,7 +221,7 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         try {
             DocumentContext jsonContext = internalGet(renderTempl(EXPAND_VALUE_SET_TEMPL, baseUrl, urlParam.get()));
             return ValueSetConverter.convert(jsonContext);
-        } catch (Exception e) {
+        } catch (WebClientException e) {
             if (failOnError) throw new ExternalTerminologyValidationException(format(ERR_EXPAND_VALUESET, e));
             LOG.warn(format(ERR_EXPAND_VALUESET, e.getMessage()));
             return Collections.emptyList();

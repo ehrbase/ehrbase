@@ -20,7 +20,6 @@ package org.ehrbase.configuration.config.validation;
 import com.jayway.jsonpath.DocumentContext;
 import java.util.Map;
 import java.util.Optional;
-import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
@@ -139,11 +138,8 @@ public class ValidationConfiguration {
                             cacheProvider, uri, () -> super.internalGet(uri));
                 } catch (Cache.ValueRetrievalException e) {
                     final Throwable cause = e.getCause();
-                    // Something went wrong during downstream request - Forward as bad Gateway. We could also catch
-                    // WebClientResponseException and add our own error message. The WebClientException happens also
-                    // in case the connection is refused or the DNS lookup fails.
-                    if (cause instanceof WebClientException) {
-                        throw new BadGatewayException(cause.getMessage(), cause);
+                    if (cause instanceof WebClientException wce) {
+                        throw wce;
                     } else {
                         throw new InternalServerException(
                                 "Failure during fhir terminology request: %s".formatted(cause.getMessage()), cause);
