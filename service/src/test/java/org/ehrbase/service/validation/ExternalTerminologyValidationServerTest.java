@@ -22,26 +22,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import java.util.List;
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-public class ExternalTerminologyValidationServerTest {
+class ExternalTerminologyValidationServerTest {
 
-    @Ignore(
+    @Disabled(
             "This test runs against ontoserver sample instance. It is deactivated until we have a test FHIR terminology server and the architecture allows to run Spring integration tests.")
     @Test
-    public void shouldRetrieveValueSet() {
-        FhirTerminologyValidation tsserver = null;
-        try {
-            tsserver = new FhirTerminologyValidation("https://r4.ontoserver.csiro.au/fhir/", true);
-        } catch (Exception e) {
-            Assert.fail();
-        }
+    void shouldRetrieveValueSet() {
+        FhirTerminologyValidation tsserver =
+                new FhirTerminologyValidation("https://r4.ontoserver.csiro.au/fhir/", true);
 
-        TerminologyParam tp = TerminologyParam.ofServiceApi("//hl7.org/fhir/R4");
-        tp.setOperation("expand");
-        tp.setParameter("http://hl7.org/fhir/ValueSet/surface");
+        TerminologyParam tp =
+                TerminologyParam.ofFhir("//hl7.org/fhir/R4/ValueSet/$expand?http://hl7.org/fhir/ValueSet/surface");
 
         List<DvCodedText> result = tsserver.expand(tp);
         // 1: Buccal
@@ -57,6 +51,6 @@ public class ExternalTerminologyValidationServerTest {
         assertThat(result.get(3).getDefiningCode().getCodeString()).isEqualTo("DI");
         assertThat(result.get(3).getValue()).isEqualTo("Distoincisal");
 
-        assertThat(result.size()).isEqualTo(11);
+        assertThat(result).hasSize(11);
     }
 }

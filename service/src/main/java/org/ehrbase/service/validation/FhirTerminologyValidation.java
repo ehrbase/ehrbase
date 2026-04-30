@@ -129,7 +129,7 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
         return templ.formatted((Object[]) args);
     }
 
-    private final String[] acceptedFhirApis = {"//fhir.hl7.org/", "terminology://fhir.hl7.org/", "//hl7.org/fhir/"};
+    private final String[] acceptedFhirApis = {"//fhir.hl7.org", "terminology://fhir.hl7.org", "//hl7.org/fhir"};
 
     private boolean isValidTerminology(String url) {
         boolean valid = url != null && Arrays.stream(acceptedFhirApis).anyMatch(url::startsWith);
@@ -241,13 +241,6 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     }
 
     private Try<Boolean, ConstraintViolationException> validateCode(String url, CodePhrase codePhrase) {
-        if (!Strings.CS.equals(url, codePhrase.getTerminologyId().getValue())) {
-            var constraintViolation = new ConstraintViolation(MessageFormat.format(
-                    "The terminology {0} must be {1}",
-                    codePhrase.getTerminologyId().getValue(), url));
-            return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));
-        }
-
         DocumentContext context;
         try {
             context = internalGet(
@@ -273,6 +266,7 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     private Try<Boolean, ConstraintViolationException> expandValueSet(String url, CodePhrase codePhrase) {
         DocumentContext context;
         try {
+            // TODO CDR-2273 validate instead of expand?
             context = internalGet("%s/ValueSet/$expand?url=%s".formatted(baseUrl, url));
         } catch (WebClientException e) {
             if (failOnError) {

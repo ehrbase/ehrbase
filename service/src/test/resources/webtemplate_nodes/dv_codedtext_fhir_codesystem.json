@@ -1,0 +1,16 @@
+{
+  "aqlPath": "/test/dv_coded_text_fhir_code_system",
+  "inputs": [
+    {
+      "suffix": "code",
+      "type": "TEXT",
+      "terminology": "//fhir.hl7.org/CodeSystem?url=http://hl7.org/fhir/observation-status",
+      "defaultValue": "E10.0"
+    },
+    {
+      "suffix": "value",
+      "type": "TEXT",
+      "terminology": "//fhir.hl7.org/CodeSystem?url=http://hl7.org/fhir/observation-status"
+    }
+  ]
+}
