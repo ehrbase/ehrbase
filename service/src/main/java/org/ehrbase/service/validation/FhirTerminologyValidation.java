@@ -89,9 +89,9 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     }
 
     private WebClient buildRestClientCall(String url) {
-        HttpClient client = HttpClient.create()
-                .metrics(true, FhirTerminologyValidation::uriTagValue)
-                .responseTimeout(Duration.ofSeconds(10));
+        String uriValue = uriTagValue(url);
+        // in the metrics call, uri in the uriTagValue function does not have the query parameters
+        HttpClient client = HttpClient.create().metrics(true, _ -> uriValue).responseTimeout(Duration.ofSeconds(10));
 
         return webClient
                 .mutate()
