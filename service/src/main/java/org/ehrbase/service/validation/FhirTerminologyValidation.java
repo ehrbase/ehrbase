@@ -89,7 +89,9 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
     }
 
     private WebClient buildRestClientCall(String url) {
-        HttpClient client = HttpClient.create().responseTimeout(Duration.ofSeconds(10));
+        String uriValue = uriTagValue(url);
+        // in the metrics call, uri in the uriTagValue function does not have the query parameters
+        HttpClient client = HttpClient.create().metrics(true, _ -> uriValue).responseTimeout(Duration.ofSeconds(10));
 
         return webClient
                 .mutate()
@@ -97,6 +99,13 @@ public class FhirTerminologyValidation implements ExternalTerminologyValidation 
                 .baseUrl(url)
                 .defaultHeader(HttpHeaders.ACCEPT, "application/fhir+json")
                 .build();
+    }
+
+    static String uriTagValue(String uri) {
+        UriComponents uc = UriComponentsBuilder.fromUriString(uri).build();
+        String path = uc.getPath();
+        String terminologyUrl = uc.getQueryParams().getFirst("url");
+        return terminologyUrl == null ? path : path + "?url=" + terminologyUrl;
     }
 
     protected DocumentContext internalGet(String uri) throws WebClientException {
