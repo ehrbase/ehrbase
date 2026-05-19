@@ -73,6 +73,6 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=ehrbase \
             -Dsonar.projectKey=ehrbase_ehrbase \
-            -Dsonar.exclusions=test/** \
-            -Dsonar.coverage.exclusions=test/** \
+            -Dsonar.exclusions=test/**,openEHR_SDK/** \
+            -Dsonar.coverage.exclusions=test/**,openEHR_SDK/** \
             -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/tests/coverage/jacoco-report-final/jacoco.xml
