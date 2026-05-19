@@ -31,6 +31,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
+
       - name: Setup - Java
         uses: actions/setup-java@v5
         with:
@@ -50,7 +54,7 @@ jobs:
             deps-
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode --update-snapshots --activate-profiles full verify
+        run: mvn --batch-mode --update-snapshots --activate-profiles full verify -DisEhrbaseBuild
 
       - name: Maven - Get Version
         id: "get_version"
@@ -104,6 +108,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          submodules: 'true'
 
       - name: Download - Jar
         uses: actions/download-artifact@v8
@@ -517,6 +523,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
 
       - name: Download - Class files
         uses: actions/download-artifact@v8

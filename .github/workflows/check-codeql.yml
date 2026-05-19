@@ -46,6 +46,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
+
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
