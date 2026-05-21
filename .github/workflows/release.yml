@@ -66,7 +66,7 @@ jobs:
           # create branch
           git checkout -b release/v${VERSION}
           # Update version
-          mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true -DisEhrbaseBuild
+          mvn versions:set -DnewVersion=${VERSION} -DgroupId='org.ehrbase.openehr' -DisEhrbaseBuild
           # Update Changelog
           sed -i "s/\[unreleased\]/\[${VERSION}\]/" CHANGELOG.md
           sed -i "s/...HEAD/\...v${VERSION}/" CHANGELOG.md
