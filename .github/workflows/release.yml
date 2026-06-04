@@ -136,7 +136,7 @@ jobs:
           NEXT_VERSION=${ARRAY_VERSION[0]}.$((ARRAY_VERSION[1]+1)).0-SNAPSHOT
           echo "next version: $NEXT_VERSION"
           # update version
-          mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true -DisEhrbaseBuild
+          mvn versions:set -DnewVersion=${NEXT_VERSION} -DgroupId='org.ehrbase.openehr' -DprocessAllModules=true -DisEhrbaseBuild
           #edit changelog
           sed -i '8i ## [unreleased]\n ### Added\n ### Changed \n ### Fixed \n' CHANGELOG.md
           replace="$ a \[unreleased\]: https:\/\/github.com\/ehrbase\/ehrbase\/compare\/v$VERSION...HEAD"
