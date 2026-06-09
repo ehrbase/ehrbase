@@ -631,7 +631,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Delete - Temp Artifacts
-        uses: geekyeggo/delete-artifact@v5
+        uses: geekyeggo/delete-artifact@v6
         with:
           name: |
             java-class-files

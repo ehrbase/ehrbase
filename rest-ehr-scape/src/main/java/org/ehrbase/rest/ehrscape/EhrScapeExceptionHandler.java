@@ -81,71 +81,76 @@ public class EhrScapeExceptionHandler {
         IllegalAqlException.class,
     })
     public ResponseEntity<Object> handleBadRequestExceptions(Exception ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.BAD_REQUEST);
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<Object> handleObjectNotFoundException(AccessDeniedException ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.FORBIDDEN);
+    public ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex) {
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.FORBIDDEN);
     }
 
     // 404
     @ExceptionHandler(ObjectNotFoundException.class)
     public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_FOUND);
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     // 406
     @ExceptionHandler({HttpMediaTypeNotAcceptableException.class, NotAcceptableException.class})
-    public ResponseEntity<Object> handleNotAcceptableException(NotAcceptableException ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.NOT_ACCEPTABLE);
+    public ResponseEntity<Object> handleNotAcceptableException(Exception ex) {
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.NOT_ACCEPTABLE);
     }
 
     // 409
     @ExceptionHandler(StateConflictException.class)
     public ResponseEntity<Object> handleStateConflictException(StateConflictException ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.CONFLICT);
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.CONFLICT);
     }
 
     // 412
     @ExceptionHandler(PreconditionFailedException.class)
     public ResponseEntity<Object> handlePreconditionFailedException(PreconditionFailedException ex) {
 
-        var headers = new HttpHeaders();
-
+        HttpHeaders headers;
         if (ex.getUrl() != null && ex.getCurrentVersionUid() != null) {
+            headers = new HttpHeaders();
             headers.setETag("\"" + ex.getCurrentVersionUid() + "\"");
             headers.setLocation(URI.create(ex.getUrl()));
+        } else {
+            headers = HttpHeaders.EMPTY;
         }
 
-        return handleExceptionInternal(ex, ex.getMessage(), headers, HttpStatus.PRECONDITION_FAILED);
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
     }
 
     // 415
     @ExceptionHandler({HttpMediaTypeNotSupportedException.class, UnsupportedMediaTypeException.class})
     public ResponseEntity<Object> handleUnsupportedMediaTypeException(UnsupportedMediaTypeException ex) {
-        return handleExceptionInternal(ex, ex.getMessage(), new HttpHeaders(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
 
     // custom status
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Object> handleSpringResponseStatusException(ResponseStatusException ex) {
         // rethrow will not work properly, so we handle it
-        return handleExceptionInternal(ex, ex.getReason(), ex.getResponseHeaders(), ex.getStatusCode());
+        return handleExceptionInternal(ex, ex.getReason(), ex.getStatusCode(), ex.getHeaders());
     }
 
     // 500 - general
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleUncaughtException(Exception ex) {
+    public ResponseEntity<Object> handleOtherException(Exception ex) {
         var message = "An internal error has occurred. Please contact your administrator.";
-        return handleExceptionInternal(ex, message, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return handleExceptionInternal(ex, message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private ResponseEntity<Object> handleExceptionInternal(Exception ex, String message, HttpStatusCode status) {
+        return handleExceptionInternal(ex, message, status, HttpHeaders.EMPTY);
     }
 
     private ResponseEntity<Object> handleExceptionInternal(
-            Exception ex, String message, HttpHeaders headers, HttpStatusCode status) {
-
+            Exception ex, String message, HttpStatusCode status, HttpHeaders headers) {
         if (status.is5xxServerError()) {
-            logger.error("", ex);
+            logger.error(ex.getMessage(), ex);
         } else {
             logger.warn(ex.getMessage());
             if (logger.isDebugEnabled()) {

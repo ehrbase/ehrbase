@@ -31,30 +31,37 @@ class CompositionServiceImpTest {
 
     @ParameterizedTest
     @CsvSource(textBlock = """
-            a,a,true
-            a,b,false
-            a.v1,b.v1,false
-            a.en,b.en,false
-            a.en.v1,b.en.v1,false
-            a.de,a.en,true
-            a.de-ch,a.en-gb,true
-            a.en,a,true
-            a.v1,a,true
-            a,a.v1,false
-            a.v1,a.v1,true
-            a.v1,a_v1,true
-            a.v1,a_V1,true
-            a v1,a V1,true
-            a.v1.0,a.v1,true
-            a.v0,a.v1,false
-            a.en.v1,a.de-ch,true
-            a.en,a.de-ch.v1,false
-            a.en.v1,a.de-ch.v1.0,false
-            a.en.v1.0,a.de-ch.v1,true
-            patient.vitals,patient.vitals.v2,false
-            patient.vitals.v2,patient.vitals,true
+        a,a,true
+        b,a,false
+        b.v1,a.v1,false
+        b.en,a.en,false
+        b.en.v1,a.en.v1,false
+        a.en,a.de,true
+        a.en-gb,a.de-ch,true
+        a,a.en,true
+        a,a.v1,true
+        a.v1,a,false
+        a.v1,a.v1,true
+        a_v1,a.v1,true
+        a_V1,a.v1,true
+        a V1,a v1,true
+        a.v1,a.v1.0,true
+        a.v1,a.v0,false
+        a.de-ch,a.en.v1,true
+        a.de-ch.v1,a.en,false
+        a.de-ch.v1.0,a.en.v1,false
+        a.de-ch.v1,a.en.v1.0,true
+        patient.vitals.v2,patient.vitals,false
+        patient.vitals,patient.vitals.v2,true
+        patient.vitals,patient.vitals.v1.1.0,true
+        patient.vitals.v1.1.0,patient.vitals.v1.1.1,true
+        patient.vitals.v1.1,patient.vitals.v1.1.1,true
+        patient.vitals.v1.1.1,patient.vitals.v1.1,false
+        patient.vitals.v1.1.1,patient.vitals.v1.1.0,false
+        patient.vitals v1.1.0,patient.vitals_v1.1.1,true
+        patient.vitals_v.1.1.0,patient.vitals.V_1.1.1,true
         """)
-    void ensureTemplateCompatible(String newTemplateId, String existingTemplateId, boolean compatible) {
+    void ensureTemplateCompatible(String existingTemplateId, String newTemplateId, boolean compatible) {
         if (compatible) {
             CompositionServiceImp.ensureTemplateCompatible(newTemplateId, existingTemplateId);
         } else {

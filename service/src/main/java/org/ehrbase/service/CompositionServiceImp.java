@@ -109,7 +109,7 @@ public class CompositionServiceImp implements CompositionService {
                                         dot + versionGroup));
 
         // several separators are recognized
-        String versionSeparator = "[._ ][vV]";
+        String versionSeparator = "[._ ][vV]" + optionalNonCapturing.apply("[._ ]");
 
         TEMPLATE_VERSION_PATTERN = Pattern.compile(
                 namePart + languagePart + optionalNonCapturing.apply(versionSeparator + fullVersionPart));

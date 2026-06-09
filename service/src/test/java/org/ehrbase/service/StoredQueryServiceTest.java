@@ -66,10 +66,10 @@ public class StoredQueryServiceTest {
 
     private StoredQueryService service(StoredQueryRecord... records) {
         // mock responses
-        for (StoredQueryRecord record : records) {
+        for (StoredQueryRecord rec : records) {
             StoredQueryQualifiedName storedQueryQualifiedName =
-                    StoredQueryQualifiedName.create(record.getReverseDomainName(), SemVer.parse(record.getSemver()));
-            doReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)))
+                    StoredQueryQualifiedName.create(rec.getReverseDomainName(), SemVer.parse(rec.getSemver()));
+            doReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec)))
                     .when(mockStoredQueryRepository)
                     .retrieveQualified(storedQueryQualifiedName);
         }
@@ -81,12 +81,12 @@ public class StoredQueryServiceTest {
     @Test
     void createStoredQueryNew() {
 
-        StoredQueryRecord record = new StoredQueryRecord(
+        StoredQueryRecord rec = new StoredQueryRecord(
                 "test::crate", "id", "0.5.0", "SELECT es FROM EHR_STATUS es", "test", OffsetDateTime.now());
 
         when(mockStoredQueryRepository.retrieveQualified(any()))
                 .thenReturn(Optional.empty()) // #1 call nothing stored
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record))); // #2 call final result
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec))); // #2 call final result
 
         QueryDefinitionResultDto result =
                 service().createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
@@ -95,18 +95,18 @@ public class StoredQueryServiceTest {
         assertEquals("test", result.getType());
         assertEquals("SELECT es FROM EHR_STATUS es", result.getQueryText());
         assertEquals(
-                record.getCreationDate().atZoneSameInstant(ZoneOffset.UTC),
+                rec.getCreationDate().atZoneSameInstant(ZoneOffset.UTC),
                 result.getSaved().toOffsetDateTime().atZoneSameInstant(ZoneOffset.UTC));
     }
 
     @Test
     void createStoredQueryFailVersionAlreadyExists() {
 
-        StoredQueryRecord record = new StoredQueryRecord(
+        StoredQueryRecord rec = new StoredQueryRecord(
                 "test::crate", "id", "0.5.0", "SELECT es FROM EHR_STATUS es", "test", OffsetDateTime.now());
 
         when(mockStoredQueryRepository.retrieveQualified(any()))
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec)));
 
         StateConflictException reason = assertThrows(
                 StateConflictException.class,
@@ -118,11 +118,11 @@ public class StoredQueryServiceTest {
     @Test
     void createStoredQueryFailPartialVersion() {
 
-        StoredQueryRecord record = new StoredQueryRecord(
+        StoredQueryRecord rec = new StoredQueryRecord(
                 "test::crate", "id", "0.5", "SELECT es FROM EHR_STATUS es", "test", OffsetDateTime.now());
 
         when(mockStoredQueryRepository.retrieveQualified(any()))
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec)));
 
         IllegalStateException reason = assertThrows(
                 IllegalStateException.class,
@@ -161,10 +161,10 @@ public class StoredQueryServiceTest {
     @Test
     void retrieveStoredQuery() {
 
-        StoredQueryRecord record = new StoredQueryRecord(
+        StoredQueryRecord rec = new StoredQueryRecord(
                 "test::name", "id", "1.0.0", "SELECT es FROM EHR_STATUS es", "test", OffsetDateTime.now());
 
-        StoredQueryService service = service(record);
+        StoredQueryService service = service(rec);
 
         QueryDefinitionResultDto result = service.retrieveStoredQuery("test::name", "1.0.0");
         assertEquals("test::name::id", result.getQualifiedName());
@@ -172,7 +172,7 @@ public class StoredQueryServiceTest {
         assertEquals("test", result.getType());
         assertEquals("SELECT es FROM EHR_STATUS es", result.getQueryText());
         assertEquals(
-                record.getCreationDate().atZoneSameInstant(ZoneOffset.UTC),
+                rec.getCreationDate().atZoneSameInstant(ZoneOffset.UTC),
                 result.getSaved().toOffsetDateTime().atZoneSameInstant(ZoneOffset.UTC));
     }
 
@@ -211,7 +211,7 @@ public class StoredQueryServiceTest {
         StoredQueryQualifiedName v050 = StoredQueryQualifiedName.create("test::name", SemVer.parse("0.5.0"));
         StoredQueryQualifiedName v051 = StoredQueryQualifiedName.create("test::name", SemVer.parse("0.5.1"));
 
-        StoredQueryRecord record = new StoredQueryRecord(
+        StoredQueryRecord rec = new StoredQueryRecord(
                 "test::crate",
                 "id",
                 v050.semVer().toVersionString(),
@@ -219,7 +219,7 @@ public class StoredQueryServiceTest {
                 "test",
                 OffsetDateTime.now());
 
-        StoredQueryRecord record2 = new StoredQueryRecord(
+        StoredQueryRecord rec2 = new StoredQueryRecord(
                 "test::crate",
                 "id",
                 v051.semVer().toVersionString(),
@@ -236,14 +236,14 @@ public class StoredQueryServiceTest {
         // create and access using full version
         when(mockStoredQueryRepository.retrieveQualified(v050))
                 .thenReturn(Optional.empty()) // #1 call nothing stored
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record))); // #2 call find
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec))); // #2 call find
 
         result = service.createStoredQuery("test::name", "0.5.0", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertThat(result.getVersion()).isEqualTo("0.5.0");
 
         // Access using partial version
         when(mockStoredQueryRepository.retrieveQualified(v05))
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record)));
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec)));
 
         result = service.retrieveStoredQuery("test::name", "0.5");
         assertThat(result.getVersion()).isEqualTo("0.5.0");
@@ -253,13 +253,13 @@ public class StoredQueryServiceTest {
         // create and access using full version
         when(mockStoredQueryRepository.retrieveQualified(v051))
                 .thenReturn(Optional.empty()) // #1 call nothing stored
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record2))); // #2 call find
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec2))); // #2 call find
 
         result = service.createStoredQuery("test::name", "0.5.1", "SELECT es FROM EHR_STATUS es", DEFAULT_QUERY_TYPE);
         assertThat(result.getVersion()).isEqualTo("0.5.1");
 
         when(mockStoredQueryRepository.retrieveQualified(any()))
-                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(record2)));
+                .thenReturn(Optional.of(StoredQueryRepository.mapToQueryDefinitionDto(rec2)));
 
         result = service.retrieveStoredQuery("test::name", "0.5");
         assertThat(result.getVersion()).isEqualTo("0.5.1");

@@ -231,11 +231,11 @@ public class EhrRepository
         return EhrStatus.class;
     }
 
-    private static VersionedEhrStatus recordToVersionedEhrStatus(UUID ehrId, EhrStatusVersionHistoryRecord record) {
+    private static VersionedEhrStatus recordToVersionedEhrStatus(UUID ehrId, EhrStatusVersionHistoryRecord rec) {
         VersionedEhrStatus versionedComposition = new VersionedEhrStatus();
-        versionedComposition.setUid(new HierObjectId(record.getVoId().toString()));
+        versionedComposition.setUid(new HierObjectId(rec.getVoId().toString()));
         versionedComposition.setOwnerId(new ObjectRef<>(new HierObjectId(ehrId.toString()), "local", "ehr"));
-        versionedComposition.setTimeCreated(new DvDateTime(record.getSysPeriodLower()));
+        versionedComposition.setTimeCreated(new DvDateTime(rec.getSysPeriodLower()));
         return versionedComposition;
     }
 

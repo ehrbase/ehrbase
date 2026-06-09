@@ -47,13 +47,12 @@ import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.api.service.ValidationService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
-import org.ehrbase.openehr.sdk.terminology.openehr.TerminologyService;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.LocatableValidator;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
-import org.ehrbase.openehr.sdk.validation.terminology.ItemStructureVisitor;
+import org.ehrbase.openehr.sdk.validation.terminology.TerminologyValidationVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.service.validation.ValidationProperties;
@@ -76,7 +75,6 @@ public class ValidationServiceImp implements ValidationService {
 
     private final TemplateService templateService;
 
-    private final TerminologyService terminologyService;
     private final boolean folderValidationEnabled;
 
     private final ThreadLocal<LocatableValidator> locatableValidator;
@@ -85,12 +83,10 @@ public class ValidationServiceImp implements ValidationService {
 
     public ValidationServiceImp(
             TemplateService templateService,
-            TerminologyService terminologyService,
             ValidationProperties validationProperties,
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             @Value("${cache.validation.useSharedRMPathQueryCache:true}") boolean sharedAqlQueryCache) {
         this.templateService = templateService;
-        this.terminologyService = terminologyService;
         this.folderValidationEnabled = validationProperties.validateFolders();
 
         boolean disableStrictValidation = !validationProperties.validateRmConstraints();
@@ -181,12 +177,7 @@ public class ValidationServiceImp implements ValidationService {
         }
 
         // check code phrases against terminologies
-        try {
-            ItemStructureVisitor itemStructureVisitor = new ItemStructureVisitor(terminologyService);
-            itemStructureVisitor.validate(composition);
-        } catch (ReflectiveOperationException e) {
-            throw new InternalServerException(e);
-        }
+        new TerminologyValidationVisitor().validate(composition);
     }
 
     private static void compositionMandatoryProperty(Object value, String attribute) {

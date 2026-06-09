@@ -25,10 +25,16 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.ehrbase.jooq.pg.tables.records.EhrFolderVersionHistoryRecord;
+import org.ehrbase.repository.versioning.DataRetention;
+import org.ehrbase.service.VersioningProperties;
+import org.ehrbase.service.VersioningProperties.EntityVersioning;
 
 class EhrFolderRepositoryTest
         extends AbstractVersionedObjectRepositoryUpdateTest<
                 EhrFolderRepository, Folder, EhrFolderVersionHistoryRecord> {
+
+    private static final VersioningProperties VERSIONING_PROPERTIES =
+            new VersioningProperties(new EntityVersioning(DataRetention.KEEP_ALL));
 
     private static Folder folder(ObjectVersionId versionId) {
         Folder folder = new Folder();
@@ -37,7 +43,8 @@ class EhrFolderRepositoryTest
     }
 
     public EhrFolderRepositoryTest() {
-        super(spy(new EhrFolderRepository(mock(), mock(), () -> SYSTEM_ID, OffsetDateTime::now)));
+        super(spy(
+                new EhrFolderRepository(mock(), mock(), () -> SYSTEM_ID, OffsetDateTime::now, VERSIONING_PROPERTIES)));
     }
 
     @Override

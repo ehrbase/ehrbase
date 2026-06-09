@@ -1,0 +1,16 @@
+{
+  "aqlPath": "/test/dv_coded_text_unsupported",
+  "inputs": [
+    {
+      "suffix": "code",
+      "type": "TEXT",
+      "terminology": "ICD10",
+      "defaultValue": "E10.0"
+    },
+    {
+      "suffix": "value",
+      "type": "TEXT",
+      "terminology": "ICD10"
+    }
+  ]
+}

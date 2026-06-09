@@ -87,7 +87,7 @@ public class DefaultExceptionHandler {
     }
 
     // 404
-    @ExceptionHandler({ObjectNotFoundException.class})
+    @ExceptionHandler(ObjectNotFoundException.class)
     public ResponseEntity<Object> handleObjectNotFoundException(ObjectNotFoundException ex) {
         return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.NOT_FOUND);
     }
@@ -128,11 +128,13 @@ public class DefaultExceptionHandler {
     @ExceptionHandler(PreconditionFailedException.class)
     public ResponseEntity<Object> handlePreconditionFailedException(PreconditionFailedException ex) {
 
-        var headers = new HttpHeaders();
-
+        HttpHeaders headers;
         if (ex.getUrl() != null && ex.getCurrentVersionUid() != null) {
+            headers = new HttpHeaders();
             headers.setETag("\"" + ex.getCurrentVersionUid() + "\"");
             headers.setLocation(URI.create(ex.getUrl()));
+        } else {
+            headers = HttpHeaders.EMPTY;
         }
 
         return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.PRECONDITION_FAILED, headers);
@@ -160,21 +162,20 @@ public class DefaultExceptionHandler {
 
     // 502 - bad gateway
     @ExceptionHandler(BadGatewayException.class)
-    public ResponseEntity<Object> handleFooBadGatewayException(BadGatewayException ex) {
-        // var message = "An internal error has occurred. Please contact your administrator.";
+    public ResponseEntity<Object> handleBadGatewayException(BadGatewayException ex) {
         return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.BAD_GATEWAY);
     }
 
     // 500 - general
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleUncaughtException(Exception ex) {
+    public ResponseEntity<Object> handleOtherException(Exception ex) {
         var message = "An internal error has occurred. Please contact your administrator.";
         return handleExceptionInternal(ex, message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     // 501 - not implemented
     @ExceptionHandler(UnsupportedOperationException.class)
-    public ResponseEntity<Object> handleUncaughtException(UnsupportedOperationException ex) {
+    public ResponseEntity<Object> handleUnsupportedOperationException(UnsupportedOperationException ex) {
         var message = "The current operation is not supported by this server. Please contact your administrator.";
         return handleExceptionInternal(ex, message, HttpStatus.NOT_IMPLEMENTED);
     }
@@ -185,9 +186,8 @@ public class DefaultExceptionHandler {
 
     private ResponseEntity<Object> handleExceptionInternal(
             Exception ex, String message, HttpStatusCode status, HttpHeaders headers) {
-
         if (status.is5xxServerError()) {
-            logger.error("", ex);
+            logger.error(ex.getMessage(), ex);
         } else {
             logger.warn(ex.getMessage());
             if (logger.isDebugEnabled()) {

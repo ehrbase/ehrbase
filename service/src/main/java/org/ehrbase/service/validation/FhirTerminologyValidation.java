@@ -17,291 +17,249 @@
  */
 package org.ehrbase.service.validation;
 
-import static java.lang.String.format;
-
 import com.google.common.net.HttpHeaders;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.nedap.archie.rm.datatypes.CodePhrase;
-import com.nedap.archie.rm.datavalues.DvCodedText;
-import com.nedap.archie.rm.support.identification.TerminologyId;
-import java.text.MessageFormat;
+import io.netty.handler.timeout.TimeoutException;
+import java.net.ConnectException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import net.minidev.json.JSONArray;
+import java.util.function.Function;
+import javax.net.ssl.SSLException;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InternalServerException;
-import org.ehrbase.openehr.sdk.util.functional.Try;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
-import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationException;
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.RequestBodyUriSpec;
 import org.springframework.web.reactive.function.client.WebClientException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import reactor.core.Exceptions;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import reactor.netty.resources.ConnectionProvider;
+import reactor.util.retry.Retry;
 
 /**
  * {@link ExternalTerminologyValidation} that supports FHIR terminology validation.
  */
 public class FhirTerminologyValidation implements ExternalTerminologyValidation {
+
+    static final String SUPPORTS_CODE_SYS_TEMPL = "/CodeSystem?_summary=true&url=%s";
+    static final String SUPPORTS_VALUE_SET_TEMPL = "/ValueSet?_summary=true&url=%s";
+    private static final String VALUESET_VALIDATE_URL_TPL = "/ValueSet/$validate-code?url=%s&code=%s&system=%s";
+    private static final String CODESYSTEM_VALIDATE_URL_TPL = "/CodeSystem/$validate-code?url=%s&code=%s";
+
+    public static final JsonPath VALIDATE_CODE_RESULT_JSON_PATH =
+            JsonPath.compile("$.parameter[?(@.name==\"result\" && @.valueBoolean == true)].valueBoolean");
+    public static final JsonPath VALIDATE_CODE_MESSAGE_JSON_PATH =
+            JsonPath.compile("$.parameter[?(@.name==\"message\")].valueString");
+    public static final JsonPath SUPPORTS_TOTAL_JSON_PATH = JsonPath.compile("$.total");
+
+    private static final String ERR_SUPPORTS =
+            "An error occurred while checking if FHIR terminology server supports the referenceSetUri: %s";
+
+    public static final String FHIR_ACCEPT_HEADER = "application/fhir+json";
+
+    private static final String[] ACCEPTED_FHIR_APIS = {"//fhir.hl7.org", "terminology://fhir.hl7.org", "//hl7.org/fhir"
+    };
+
     private static final Logger LOG = LoggerFactory.getLogger(FhirTerminologyValidation.class);
-    private final String baseUrl;
+
     private final boolean failOnError;
     private final WebClient webClient;
+    private final Retry retry;
 
-    public FhirTerminologyValidation(String baseUrl) {
-        this(baseUrl, true);
-    }
-
-    public FhirTerminologyValidation(String baseUrl, boolean failOnError) {
-        this(baseUrl, failOnError, WebClient.create());
-    }
-
-    public FhirTerminologyValidation(String baseUrl, boolean failOnError, WebClient webClient) {
-        this.baseUrl = baseUrl;
+    public FhirTerminologyValidation(
+            ExternalTerminologyProviderProperties provider, boolean failOnError, WebClient webClient) {
         this.failOnError = failOnError;
-        this.webClient = webClient;
+        this.retry = Retry.backoff(
+                        provider.getRetry().getAttempts(),
+                        Duration.ofMillis(provider.getRetry().getInitialBackoffMillis()))
+                .filter(FhirTerminologyValidation::mustRetry);
+        ConnectionProvider httpConnectionProvider = ConnectionProvider.builder(provider.getUrl())
+                .maxConnections(provider.getMaxConnections())
+                .pendingAcquireMaxCount(provider.getMaxPendingConnections())
+                .maxIdleTime(Duration.ofSeconds(provider.getMaxConnectionIdleTimeSeconds()))
+                .maxLifeTime(Duration.ofMinutes(provider.getMaxConnectionLifeTimeSeconds()))
+                .build();
+        HttpClient httpClient = HttpClient.create(httpConnectionProvider)
+                .metrics(provider.isEnableMetrics(), Function.identity())
+                .responseTimeout(Duration.ofSeconds(provider.getResponseTimeoutSeconds()));
+        this.webClient = webClient
+                .mutate()
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .defaultHeader(HttpHeaders.ACCEPT, FHIR_ACCEPT_HEADER)
+                .baseUrl(normalizeBaseUrl(provider.getUrl()))
+                .build();
     }
 
-    private String extractUrl(String referenceSetUri) {
-        UriComponents uriComponents =
-                UriComponentsBuilder.fromUriString("/fhir?" + referenceSetUri).build();
+    static String normalizeBaseUrl(String url) {
+        if (StringUtils.isEmpty(url) || url.charAt(url.length() - 1) != '/') {
+            return url;
+        }
+        return url.substring(0, url.length() - 1);
+    }
+
+    private static boolean mustRetry(Throwable throwable) {
+        return switch (throwable) {
+            case WebClientResponseException wcre -> mustRetry(wcre.getStatusCode());
+            case WebClientException _, TimeoutException _, ConnectException _, SSLException _ -> true;
+            case null, default -> false;
+        };
+    }
+
+    private static boolean mustRetry(HttpStatusCode statusCode) {
+        return switch (statusCode) {
+            case HttpStatus.BAD_GATEWAY,
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    HttpStatus.GATEWAY_TIMEOUT,
+                    HttpStatus.REQUEST_TIMEOUT,
+                    HttpStatus.TOO_MANY_REQUESTS,
+                    HttpStatus.NOT_FOUND -> true;
+            default -> false;
+        };
+    }
+
+    static String extractUrl(String queryParamsString) {
+        if (queryParamsString == null) {
+            return null;
+        }
+
+        UriComponents uriComponents = UriComponentsBuilder.fromUriString("/?%s".formatted(queryParamsString))
+                .build();
         MultiValueMap<String, String> queryParams = uriComponents.getQueryParams();
         return queryParams.getFirst("url");
     }
 
-    private WebClient buildRestClientCall(String url) {
-        HttpClient client = HttpClient.create().responseTimeout(Duration.ofSeconds(10));
-
-        return webClient
-                .mutate()
-                .clientConnector(new ReactorClientHttpConnector(client))
-                .baseUrl(url)
-                .defaultHeader(HttpHeaders.ACCEPT, "application/fhir+json")
-                .build();
+    protected DocumentContext internalGet(String uri)
+            throws WebClientException, ExternalTerminologyValidationException {
+        // timeout is managed by web client
+        try {
+            return getAsMono(uri)
+                    .map(FhirTerminologyValidation::toJsonDocument)
+                    .blockOptional()
+                    .orElseThrow(() -> new InternalServerException("could not connect to external Terminology Server"));
+        } catch (RuntimeException e) {
+            // unwrap WebClientException
+            if (Exceptions.isRetryExhausted(e) && e.getCause() instanceof WebClientException wce) {
+                throw wce;
+            } else {
+                throw e;
+            }
+        }
     }
 
-    protected DocumentContext internalGet(String uri) throws WebClientException {
-
-        WebClient client = buildRestClientCall(uri);
-        RequestBodyUriSpec method = client.method(HttpMethod.GET);
-        Mono<ResponseEntity<String>> mono = method.retrieve().toEntity(String.class);
-        ResponseEntity<String> respEntity = Optional.ofNullable(mono.block())
-                .orElseThrow(() -> new InternalServerException("could not connect to external Terminology Server"));
-
-        String responseBody = respEntity.getBody();
+    private static DocumentContext toJsonDocument(ResponseEntity<String> respEntity) {
+        if (respEntity == null) {
+            return null;
+        }
 
         HttpStatusCode statusCode = respEntity.getStatusCode();
         if (statusCode.is2xxSuccessful()) {
-            return JsonPath.parse(responseBody);
+            return JsonPath.parse(respEntity.getBody());
         } else {
             throw new ExternalTerminologyValidationException(
                     "Error response received from the terminology server. HTTP status: %s. Body: %s"
-                            .formatted(statusCode, responseBody));
+                            .formatted(statusCode, respEntity.getBody()));
         }
     }
 
-    static final String SUPPORTS_CODE_SYS_TEMPL = "%s/CodeSystem?url=%s";
-    static final String SUPPORTS_VALUE_SET_TEMPL = "%s/ValueSet?url=%s";
-    private static final String ERR_SUPPORTS =
-            "An error occurred while checking if FHIR terminology server supports the referenceSetUri: %s";
-    static final String CODE_PHRASE_TEMPL = "code=%s&system=%s";
-    private static final String ERR_EXPAND_VALUESET = "Error while expanding ValueSet[%s]";
-    static final String EXPAND_VALUE_SET_TEMPL = "%s/ValueSet/$expand?%s";
-
-    @SafeVarargs
-    static String renderTempl(String templ, String... args) {
-        return format(templ, args);
+    private Mono<ResponseEntity<String>> getAsMono(String uri) {
+        return webClient.get().uri(uri).retrieve().toEntity(String.class).retryWhen(retry);
     }
 
-    @SuppressWarnings({"serial"})
-    private final Set<String> acceptedFhirApis = new HashSet<>() {
-        {
-            add("//fhir.hl7.org");
-            add("terminology://fhir.hl7.org");
-            add("//hl7.org/fhir");
+    private boolean isValidTerminology(String url) {
+        boolean valid = url != null && Arrays.stream(ACCEPTED_FHIR_APIS).anyMatch(url::startsWith);
+        if (!valid) {
+            LOG.warn("Unsupported service-api: {}", url);
         }
-
-        @Override
-        public String toString() {
-            return this.stream().collect(Collectors.joining(", "));
-        }
-    };
-
-    private boolean isValidTerminology(Optional<String> url) {
-        if (url.isEmpty()) return false;
-        return acceptedFhirApis.stream()
-                .filter(api -> url.get().startsWith(api))
-                .map(api -> Boolean.TRUE)
-                .findFirst()
-                .orElse(Boolean.FALSE);
+        return valid;
     }
 
     @Override
     public boolean supports(TerminologyParam param) {
-        String url = null;
-        Optional<String> urlParam = param.extractFromParameter(p -> Optional.ofNullable(extractUrl(p)));
-        if (urlParam.isEmpty() || !isValidTerminology(param.getServiceApi())) return false;
-
-        if (param.isUseValueSet()) url = renderTempl(SUPPORTS_VALUE_SET_TEMPL, baseUrl, urlParam.get());
-        else if (param.isUseCodeSystem()) url = renderTempl(SUPPORTS_CODE_SYS_TEMPL, baseUrl, urlParam.get());
-        else return false;
-
-        try {
-            return internalGet(url).read("$.total", int.class) > 0;
-        } catch (WebClientException e) {
-            if (failOnError) throw new ExternalTerminologyValidationException(format(ERR_SUPPORTS, url), e);
-            LOG.warn("The following error occurred: {}", e.getMessage());
-            return false;
-        }
+        Optional<TerminologyParam> paramOptional = Optional.ofNullable(param);
+        return paramOptional
+                        .map(TerminologyParam::serviceApi)
+                        .filter(this::isValidTerminology)
+                        .isPresent()
+                && paramOptional
+                        .map(TerminologyParam::parameter)
+                        .map(FhirTerminologyValidation::extractUrl)
+                        .map(urlParam -> switch (param.resouceType()) {
+                            case VALUE_SET -> SUPPORTS_VALUE_SET_TEMPL.formatted(urlParam);
+                            case CODE_SYSTEM -> SUPPORTS_CODE_SYS_TEMPL.formatted(urlParam);
+                        })
+                        .map(url -> {
+                            try {
+                                return internalGet(url);
+                            } catch (WebClientException e) {
+                                if (failOnError) {
+                                    throw new ExternalTerminologyValidationException(ERR_SUPPORTS.formatted(url), e);
+                                }
+                                LOG.warn("The following error occurred: {}", e.getMessage());
+                                return null;
+                            }
+                        })
+                        .map(doc -> doc.read(SUPPORTS_TOTAL_JSON_PATH, int.class))
+                        .filter(t -> t > 0)
+                        .isPresent();
     }
 
     @Override
-    public Try<Boolean, ConstraintViolationException> validate(TerminologyParam param) {
-        String url = param.extractFromParameter(p -> Optional.ofNullable(extractUrl(p)))
-                .orElse(null);
-
+    public ConstraintViolation validate(TerminologyParam param) {
+        String url = extractUrl(param.parameter());
         if (url == null) {
-            return Try.failure(
-                    new ConstraintViolationException(List.of(new ConstraintViolation("Missing value-set url"))));
+            return new ConstraintViolation("Missing value-set url");
         }
 
-        if (param.isUseCodeSystem()) {
-            return validateCode(url, param.getCodePhrase().orElseThrow());
-        } else if (param.isUseValueSet()) {
-            return expandValueSet(url, param.getCodePhrase().orElseThrow());
-        } else {
-            throw new IllegalStateException();
-        }
+        return validateCode(url, param.codePhrase(), param.resouceType());
     }
 
-    static String guaranteePrefix(String prefix, String str) {
-        if (StringUtils.isEmpty(str)) {
-            return null;
-        } else if (str.contains(prefix)) {
-            return str;
-        } else {
-            return prefix + str;
-        }
-    }
+    private ConstraintViolation validateCode(
+            String fhirTerminologyUri, CodePhrase codePhrase, TerminologyParam.ResouceType resouceType) {
+        String code = codePhrase.getCodeString();
 
-    @Override
-    public List<DvCodedText> expand(TerminologyParam param) {
-        // sanity checks
-        if (param.getServiceApi().isEmpty() || !isValidTerminology(param.getServiceApi())) {
-            LOG.warn("Unsupported service-api: {}", param.getServiceApi());
-            return Collections.emptyList();
-        }
-
-        Optional<String> urlParam = param.extractFromParameter(p -> Optional.ofNullable(guaranteePrefix("url=", p)));
-
-        if (urlParam.isEmpty() || param.getServiceApi().isEmpty() || !isValidTerminology(param.getServiceApi())) {
-            return Collections.emptyList();
-        }
-
-        try {
-            DocumentContext jsonContext = internalGet(renderTempl(EXPAND_VALUE_SET_TEMPL, baseUrl, urlParam.get()));
-            return ValueSetConverter.convert(jsonContext);
-        } catch (Exception e) {
-            if (failOnError) throw new ExternalTerminologyValidationException(format(ERR_EXPAND_VALUESET, e));
-            LOG.warn(format(ERR_EXPAND_VALUESET, e.getMessage()));
-            return Collections.emptyList();
-        }
-    }
-
-    abstract static class ValueSetConverter {
-        private static final String CONTAINS = "$['expansion']['contains'][*]";
-        private static final String SYS = "system";
-        private static final String CODE = "code";
-        private static final String DISP = "display";
-
-        private ValueSetConverter() {
-            // NOP
-        }
-
-        @SuppressWarnings("unchecked")
-        static List<DvCodedText> convert(DocumentContext ctx) {
-            JSONArray read = ctx.read(CONTAINS);
-            return read.stream()
-                    .map(e -> (Map<String, String>) e)
-                    .map(m -> new DvCodedText(m.get(DISP), new CodePhrase(new TerminologyId(m.get(SYS)), m.get(CODE))))
-                    .toList();
-        }
-    }
-
-    private Try<Boolean, ConstraintViolationException> validateCode(String url, CodePhrase codePhrase) {
-        if (!StringUtils.equals(url, codePhrase.getTerminologyId().getValue())) {
-            var constraintViolation = new ConstraintViolation(MessageFormat.format(
-                    "The terminology {0} must be {1}",
-                    codePhrase.getTerminologyId().getValue(), url));
-            return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));
-        }
+        String url =
+                switch (resouceType) {
+                    case VALUE_SET -> {
+                        String system = codePhrase.getTerminologyId().getValue();
+                        yield VALUESET_VALIDATE_URL_TPL.formatted(fhirTerminologyUri, code, system);
+                    }
+                    case CODE_SYSTEM -> CODESYSTEM_VALIDATE_URL_TPL.formatted(fhirTerminologyUri, code);
+                };
 
         DocumentContext context;
         try {
-            context = internalGet(
-                    baseUrl + "/CodeSystem/$validate-code?url=" + url + "&code=" + codePhrase.getCodeString());
+            context = internalGet(url);
         } catch (WebClientException e) {
-            if (failOnError)
-                throw new ExternalTerminologyValidationException(
-                        "An error occurred while validating the code in CodeSystem", e);
-            LOG.warn("An error occurred while validating the code in CodeSystem: {}", e.getMessage());
-            return Try.success(Boolean.FALSE);
-        }
-        boolean result = context.read("$.parameter[0].valueBoolean", boolean.class);
-        if (!result) {
-            var message = context.read("$.parameter[1].valueString", String.class);
-            var constraintViolation = new ConstraintViolation(message);
-            return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));
-        }
-
-        return Try.success(Boolean.TRUE);
-    }
-
-    private Try<Boolean, ConstraintViolationException> expandValueSet(String url, CodePhrase codePhrase) {
-        DocumentContext context;
-        try {
-            context = internalGet(baseUrl + "/ValueSet/$expand?url=" + url);
-        } catch (WebClientException e) {
-            if (failOnError)
-                throw new ExternalTerminologyValidationException("An error occurred while expanding the ValueSet", e);
-            LOG.warn("An error occurred while expanding the ValueSet: {}", e.getMessage());
-            return Try.success(Boolean.FALSE);
-        }
-        List<Map<String, String>> codings =
-                context.read("$.expansion.contains[?(@.code=='" + codePhrase.getCodeString() + "')]");
-
-        if (codings.isEmpty()) {
-            var constraintViolation = new ConstraintViolation(MessageFormat.format(
-                    "The value {0} does not match any option from value set {1}", codePhrase.getCodeString(), url));
-            return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));
-        } else if (codings.size() == 1) {
-            Map<String, String> coding = codings.get(0);
-            String system = coding.get(ValueSetConverter.SYS);
-            if (!StringUtils.equals(system, codePhrase.getTerminologyId().getValue())) {
-                var constraintViolation = new ConstraintViolation(
-                        MessageFormat.format("The terminology {0} must be  {1}", codePhrase.getCodeString(), system));
-                return Try.failure(new ConstraintViolationException(List.of(constraintViolation)));
+            if (failOnError) {
+                throw new ExternalTerminologyValidationException("An error occurred during $validate-code request", e);
             }
+            LOG.warn("An error occurred while validating the code in CodeSystem: {}", e.getMessage());
+            return null;
         }
-        return Try.success(Boolean.TRUE);
+
+        boolean noResult = context.<List<?>>read(VALIDATE_CODE_RESULT_JSON_PATH).isEmpty();
+        if (noResult) {
+            List<String> message = context.read(VALIDATE_CODE_MESSAGE_JSON_PATH);
+            return new ConstraintViolation(String.join("; ", message));
+        }
+
+        return null;
     }
 }

@@ -17,8 +17,9 @@
  */
 package org.ehrbase.configuration.config.validation;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
+import org.ehrbase.service.validation.ExternalTerminologyProviderProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -28,12 +29,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class ExternalValidationProperties {
 
     private boolean enabled = false;
-
     private boolean authenticate = false;
-
     private boolean failOnError = false;
-
-    private final Map<String, Provider> provider = new HashMap<>();
+    private final Map<String, ExternalTerminologyProviderProperties> provider = new TreeMap<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -59,44 +57,7 @@ public class ExternalValidationProperties {
         this.failOnError = failOnError;
     }
 
-    public Map<String, Provider> getProvider() {
+    public Map<String, ExternalTerminologyProviderProperties> getProvider() {
         return provider;
-    }
-
-    public enum ProviderType {
-        FHIR
-    }
-
-    public static class Provider {
-
-        private String oauth2Client;
-
-        private ProviderType type;
-
-        private String url;
-
-        public String getOauth2Client() {
-            return oauth2Client;
-        }
-
-        public void setOauth2Client(String oauth2Client) {
-            this.oauth2Client = oauth2Client;
-        }
-
-        public ProviderType getType() {
-            return type;
-        }
-
-        public void setType(ProviderType type) {
-            this.type = type;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        public void setUrl(String url) {
-            this.url = url;
-        }
     }
 }

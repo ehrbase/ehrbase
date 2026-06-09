@@ -1,0 +1,16 @@
+{
+  "aqlPath": "/test/dv_coded_text_fhir_value_set",
+  "inputs": [
+    {
+      "suffix": "code",
+      "type": "TEXT",
+      "terminology": "//fhir.hl7.org/ValueSet/$expand?url=http://terminology.hl7.org/ValueSet/v3-EntityNameUseR2",
+      "defaultValue": "E10.0"
+    },
+    {
+      "suffix": "value",
+      "type": "TEXT",
+      "terminology": "//fhir.hl7.org/ValueSet/$expand?url=http://terminology.hl7.org/ValueSet/v3-EntityNameUseR2"
+    }
+  ]
+}

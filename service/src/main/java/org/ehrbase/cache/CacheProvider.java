@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.QueryDefinitionResultDto;
@@ -38,7 +39,7 @@ public interface CacheProvider {
             new EhrBaseCache<>("templateListCache");
 
     EhrBaseCache<String, UUID> USER_ID_CACHE = new EhrBaseCache<>("userIdCache");
-    EhrBaseCache<String, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
+    EhrBaseCache<Pair<String, String>, DocumentContext> EXTERNAL_FHIR_TERMINOLOGY_CACHE =
             new EhrBaseCache<>("externalFhirTerminologyCache");
     EhrBaseCache<String, QueryDefinitionResultDto> STORED_QUERY_CACHE = new EhrBaseCache<>("StoredQueryCache");
 
