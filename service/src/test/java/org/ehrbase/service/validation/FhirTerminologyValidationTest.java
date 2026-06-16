@@ -29,11 +29,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.internal.JsonContext;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.net.URI;
-import java.util.stream.Stream;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidationException;
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.service.validation.ExternalTerminologyProviderProperties.ProviderType;
@@ -60,15 +60,15 @@ class FhirTerminologyValidationTest {
         TerminologyParam param = TerminologyParam.ofFhir(
                 "//fhir.hl7.org/ValueSet/$expand?url=" + valueSetUrl + "&activeOnly=true", null);
 
-        JsonContext jsonContext = mock(JsonContext.class);
-        when(jsonContext.read(FhirTerminologyValidation.SUPPORTS_TOTAL_JSON_PATH, int.class))
+        DocumentContext documentContext = mock(DocumentContext.class);
+        when(documentContext.read(FhirTerminologyValidation.SUPPORTS_TOTAL_JSON_PATH, int.class))
                 .thenReturn(1);
 
-        doReturn(jsonContext).when(validation).internalGet(Mockito.anyString());
+        doReturn(documentContext).when(validation).internalGet(Mockito.anyString());
 
         assertTrue(validation.supports(param));
-
-        verify(validation).internalGet(FhirTerminologyValidation.SUPPORTS_VALUE_SET_TEMPL.formatted(valueSetUrl));
+        verify(validation)
+                .internalGet(FhirTerminologyValidation.SUPPORTS_VALUE_SET_TEMPL.formatted(param.getParam("url")));
     }
 
     @Test
@@ -85,17 +85,6 @@ class FhirTerminologyValidationTest {
                 null)));
 
         verify(validation, never()).internalGet(Mockito.anyString());
-    }
-
-    @Test
-    void extractUrl() {
-        assertThat(FhirTerminologyValidation.extractUrl("code=12345")).isNull();
-        Stream.of(
-                        "url=http://snomed.info/sct",
-                        "url=http://snomed.info/sct&code=12345",
-                        "code=12345&url=http://snomed.info/sct")
-                .forEach(
-                        p -> assertThat(FhirTerminologyValidation.extractUrl(p)).isEqualTo("http://snomed.info/sct"));
     }
 
     @Test

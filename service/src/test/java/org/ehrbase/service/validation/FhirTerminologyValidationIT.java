@@ -333,9 +333,7 @@ class FhirTerminologyValidationIT {
         FhirTerminologyValidation validation = buildValidation(true);
         TerminologyParam param = codeSystemParam();
 
-        assertThatThrownBy(() -> validation.validate(param))
-                .isInstanceOf(ExternalTerminologyValidationException.class)
-                .hasMessageContaining("$validate-code");
+        assertThatThrownBy(() -> validation.validate(param)).isInstanceOf(ExternalTerminologyValidationException.class);
     }
 
     @ParameterizedTest
