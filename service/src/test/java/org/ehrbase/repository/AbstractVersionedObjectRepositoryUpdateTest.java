@@ -190,7 +190,7 @@ public abstract class AbstractVersionedObjectRepositoryUpdateTest<
         doReturn(true).when(repository).hasEhr(EHR_ID);
         doReturn(mockResult(versionRecord)).when(repository).findVersionHeadRecords(any());
 
-        doNothing().when(repository).copyHeadToHistory(eq(versionRecord), any());
+        doNothing().when(repository).copyHeadToHistory(eq(versionRecord), any(), any());
         doNothing().when(repository).deleteHead(any(), eq(1), any());
         doNothing().when(repository).commitHead(eq(EHR_ID), eq(versionedObject), any(), any(), any(), any(), any());
 

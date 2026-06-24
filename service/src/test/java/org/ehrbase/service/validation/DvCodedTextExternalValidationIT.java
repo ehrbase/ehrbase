@@ -30,9 +30,10 @@ import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplateNode;
 import org.ehrbase.service.validation.ExternalTerminologyProviderProperties.ProviderType;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Disabled("This test runs against ontoserver sample instance. For manual testing.")
-class DvCodedTextIT {
+class DvCodedTextExternalValidationIT {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -42,7 +43,9 @@ class DvCodedTextIT {
     }
 
     private final FhirTerminologyValidation fhirTerminologyValidator = new FhirTerminologyValidation(
-            new ExternalTerminologyProviderProperties(ProviderType.FHIR, "https://r4.ontoserver.csiro.au/fhir", false));
+            new ExternalTerminologyProviderProperties(ProviderType.FHIR, "https://r4.ontoserver.csiro.au/fhir", false),
+            true,
+            WebClient.create());
 
     private final DvCodedTextValidator validator = new DvCodedTextValidator(fhirTerminologyValidator);
 

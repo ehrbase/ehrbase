@@ -458,15 +458,18 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
             String TIME_LONG = HOUR + ':' + MINUTE + ':' + SECOND;
             String FRACTIONAL_SECONDS = "\\." + nonCapturing(DIGIT) + "{1,9}";
             // hour offset, e.g. `+09:30`, or else literal `Z` indicating +0000.
-            String TIMEZONE = or("Z", nonCapturing("[-+]", HOUR, optional("[:]?" + MINUTE)));
+            String TIMEZONE_SHORT = or("Z", nonCapturing("[-+]", HOUR, optional(MINUTE)));
+            String TIMEZONE_LONG = or("Z", nonCapturing("[-+]", HOUR, optional(":" + MINUTE)));
 
             TEMPORAL_PATTERN = Pattern.compile(or(
                     // extended datetime
-                    DATE_LONG + optional("T", TIME_LONG, optional(FRACTIONAL_SECONDS), optional(TIMEZONE)),
+                    DATE_LONG + optional("T", TIME_LONG, optional(FRACTIONAL_SECONDS), optional(TIMEZONE_LONG)),
                     // compact datetime
-                    DATE_SHORT + optional("T", TIME_SHORT, optional(FRACTIONAL_SECONDS), optional(TIMEZONE)),
-                    // compact & extended time
-                    nonCapturing(or(TIME_SHORT, TIME_LONG)) + optional(FRACTIONAL_SECONDS) + optional(TIMEZONE)));
+                    DATE_SHORT + optional("T", TIME_SHORT, optional(FRACTIONAL_SECONDS), optional(TIMEZONE_SHORT)),
+                    // compact
+                    TIME_SHORT + optional(FRACTIONAL_SECONDS) + optional(TIMEZONE_SHORT),
+                    // extended time
+                    TIME_LONG + optional(FRACTIONAL_SECONDS) + optional(TIMEZONE_LONG)));
         }
 
         private TemporalPrimitivePattern() {}
@@ -484,7 +487,12 @@ public class AqlParameterPostProcessor implements AqlQueryParsingPostProcessor {
         }
 
         public static boolean matches(String input) {
-            return TEMPORAL_PATTERN.matcher(input).matches();
+            return
+            // length is at least (time short)
+            input.length() >= 6
+                    // first character must be digit
+                    && Character.isDigit(input.charAt(0))
+                    && TEMPORAL_PATTERN.matcher(input).matches();
         }
     }
 

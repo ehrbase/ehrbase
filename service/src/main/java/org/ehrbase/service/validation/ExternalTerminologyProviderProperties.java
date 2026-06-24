@@ -19,6 +19,12 @@ package org.ehrbase.service.validation;
 
 public class ExternalTerminologyProviderProperties {
 
+    public enum ValuesetValidationMode {
+        CODE_SYSTEM,
+        CODING,
+        EXPAND
+    }
+
     public static class Retry {
         private int attempts = 3;
         private int initialBackoffMillis = 100;
@@ -40,6 +46,7 @@ public class ExternalTerminologyProviderProperties {
         }
     }
 
+    private ValuesetValidationMode valuesetValidationMode = ValuesetValidationMode.CODE_SYSTEM;
     private String oauth2Client;
     private ProviderType type;
     private String url;
@@ -57,6 +64,14 @@ public class ExternalTerminologyProviderProperties {
         this.type = type;
         this.url = url;
         this.enableMetrics = enableMetrics;
+    }
+
+    public ValuesetValidationMode getValuesetValidationMode() {
+        return valuesetValidationMode;
+    }
+
+    public void setValuesetValidationMode(ValuesetValidationMode valuesetValidationMode) {
+        this.valuesetValidationMode = valuesetValidationMode;
     }
 
     public String getOauth2Client() {

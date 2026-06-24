@@ -9,14 +9,34 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+
+## [2.33.0]
+ ### Added
+- Option to rely on ValueSets expansion for fhir terminology validation [1636](https://github.dev/ehrbase/ehrbase/pull/1636)
+ ### Changed 
+ ### Fixed 
+- (openEHR_SDK 2.33.1) string primitives that could represent compact temporals are no longer transformed to extended format when executing AQL [#752](https://github.com/ehrbase/openEHR_SDK/pull/752)
+- Validation of DV_CODED_TEXT.value for template-defined terminologies [1636](https://github.dev/ehrbase/ehrbase/pull/1636)
+
+## [2.32.0]
+ ### Added
+- Support for partial time, see SDK changelog [#1633](https://github.com/ehrbase/ehrbase/pull/1633) [SDK#747](https://github.dev/ehrbase/openEHR_SDK/pull/747)
+ ### Changed 
+ ### Fixed 
  - Terminology fixes, for details see SDK changelog [#1616](https://github.com/ehrbase/ehrbase/pull/1616)
  - Improved external terminology validation performance and stability [#1623](https://github.com/ehrbase/ehrbase/pull/1623)
  - Added metrics for external FHIR terminology server HTTP calls [#1623](https://github.com/ehrbase/ehrbase/pull/1623)
+- Validation of limits of intervals with partial dates, see SDK changelog [#1633](https://github.com/ehrbase/ehrbase/pull/1633) [SDK#747](https://github.dev/ehrbase/openEHR_SDK/pull/747)
+- Prevent mixing of long and short time format,see SDK changelog [#1633](https://github.com/ehrbase/ehrbase/pull/1633) [SDK#747](https://github.dev/ehrbase/openEHR_SDK/pull/747)
+
+## [2.30.2]
+### Fixed
+- (openEHR_SDK 2.31.1) string primitives that could represent compact temporals are no longer transformed to extended format when executing AQL
 
 ## [2.31.0]
  ### Added
  ### Changed
-- Improved template cache configuration [#1618](https://github.com/ehrbase/ehrbase/pull/1618)
+- Improved template cache configuration,  [#1618](https://github.com/ehrbase/ehrbase/pull/1618)
 - Improved performance of template service [#1618](https://github.com/ehrbase/ehrbase/pull/1618)
  ### Fixed 
 
@@ -303,4 +323,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.30.0]: https://github.com/ehrbase/ehrbase/compare/v2.29.0...v2.30.0
 [2.30.1]: https://github.com/ehrbase/ehrbase/compare/v2.30.0...v2.30.1
 [2.31.0]: https://github.com/ehrbase/ehrbase/compare/v2.30.1...v2.31.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.31.0...HEAD
+[2.32.0]: https://github.com/ehrbase/ehrbase/compare/v2.31.0...v2.32.0
+[2.33.0]: https://github.com/ehrbase/ehrbase/compare/v2.32.0...v2.33.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.33.0...HEAD
