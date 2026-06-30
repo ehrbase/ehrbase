@@ -17,6 +17,8 @@
  */
 package org.ehrbase.configuration.config.security;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "security")
@@ -56,6 +58,8 @@ public class SecurityProperties {
      * Admin role name used with OAuth2 authentication type.
      */
     private String oauth2AdminRole;
+
+    private List<EndpointAuthorization> additionalAuthorizations = new ArrayList<>();
 
     public AuthTypes getAuthType() {
         return authType;
@@ -111,6 +115,14 @@ public class SecurityProperties {
 
     public void setOauth2AdminRole(String oauth2AdminRole) {
         this.oauth2AdminRole = oauth2AdminRole.toUpperCase();
+    }
+
+    public List<EndpointAuthorization> getAdditionalAuthorizations() {
+        return additionalAuthorizations;
+    }
+
+    public void setAdditionalAuthorizations(List<EndpointAuthorization> additionalAuthorizations) {
+        this.additionalAuthorizations = additionalAuthorizations;
     }
 
     public enum AuthTypes {

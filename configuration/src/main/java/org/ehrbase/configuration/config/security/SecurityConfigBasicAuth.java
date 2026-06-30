@@ -48,8 +48,11 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
 
     public static final String USER = "USER";
 
-    public SecurityConfigBasicAuth(WebEndpointProperties webEndpointProperties) {
+    private final SecurityProperties securityProperties;
+
+    public SecurityConfigBasicAuth(WebEndpointProperties webEndpointProperties, SecurityProperties securityProperties) {
         super(webEndpointProperties);
+        this.securityProperties = securityProperties;
     }
 
     @PostConstruct
@@ -72,6 +75,9 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
 
                     // secure /rest/admin/** so that only admins can access it
                     auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(ADMIN);
+
+                    auth = applyAdditionalAuthorizations(
+                            auth, securityProperties.getAdditionalAuthorizations(), SecurityProperties.AuthTypes.BASIC);
 
                     // secure /management/**
                     auth = configureManagementEndpointAccess(auth, ADMIN, List.of(ADMIN, USER));

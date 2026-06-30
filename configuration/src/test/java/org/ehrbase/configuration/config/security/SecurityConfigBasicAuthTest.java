@@ -31,7 +31,8 @@ class SecurityConfigBasicAuthTest {
     @Test
     void ensureNopPasswordEncoderIsUsed() throws NoSuchMethodException {
 
-        SecurityConfigBasicAuth config = new SecurityConfigBasicAuth(new WebEndpointProperties());
+        SecurityConfigBasicAuth config =
+                new SecurityConfigBasicAuth(new WebEndpointProperties(), new SecurityProperties());
 
         Bean bean = config.getClass().getMethod("passwordEncoder").getAnnotation(Bean.class);
         assertNotNull(bean, "Expected PasswordEncoder bean to be defined");

@@ -89,6 +89,9 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
                     // secure /rest/admin/** so that only admins can access it
                     auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(adminRole);
 
+                    auth = applyAdditionalAuthorizations(
+                            auth, securityProperties.getAdditionalAuthorizations(), SecurityProperties.AuthTypes.OAUTH);
+
                     // secure /management/**
                     auth = configureManagementEndpointAccess(
                             auth, adminRole, List.of(adminRole, userRole, PROFILE_SCOPE));

@@ -18,6 +18,7 @@
 package org.ehrbase.configuration.config.security;
 
 import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 import java.util.List;
 import org.slf4j.Logger;
@@ -79,5 +80,24 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                 auth.requestMatchers(endpointRequestMatcher.excluding(ShutdownEndpoint.class))
                         .permitAll();
         };
+    }
+
+    /**
+     * Applies the rules for the given authentication type. Each matching rule secures its path pattern behind the
+     * configured roles. The list can be shared across auth chains, rules for other auth types are ignored.
+     */
+    protected AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+            applyAdditionalAuthorizations(
+                    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
+                    List<EndpointAuthorization> rules,
+                    SecurityProperties.AuthTypes authType) {
+
+        for (EndpointAuthorization rule : rules) {
+            if (rule.authType() == authType) {
+                auth = auth.requestMatchers(antMatcher(rule.pathPattern()))
+                        .hasAnyRole(rule.roles().toArray(new String[0]));
+            }
+        }
+        return auth;
     }
 }
