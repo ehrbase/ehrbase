@@ -108,8 +108,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        with:
-          submodules: 'true'
+
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
 
       - name: Download - Jar
         uses: actions/download-artifact@v8
@@ -523,7 +525,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-        
+
       #The submodules option of "actions/checkout" does not use the --remote flag
       - name: Checkout submodule
         run: git submodule update --init --recursive --remote
