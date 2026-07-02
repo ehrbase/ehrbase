@@ -26,6 +26,10 @@ jobs:
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
 
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
+
       - name: Setup - Java
         uses: actions/setup-java@v5
         with:
@@ -65,7 +69,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn --batch-mode -DskipTests compile sonar:sonar \
+          mvn --batch-mode -DskipTests -DisEhrbaseBuild compile sonar:sonar \
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }} \
             -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }} \
             -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }} \
