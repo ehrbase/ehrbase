@@ -49,7 +49,7 @@ jobs:
           fail-on-cache-miss: true # we run only with cached dependencies
 
       - name: Publish - Maven Central
-        run: mvn -B deploy -P release -DskipTests -DisEhrbaseBuild
+        run: mvn -B deploy -P release -DskipTests -DsdkSubmoduleBuild
         env:
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}

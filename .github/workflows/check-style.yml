@@ -34,4 +34,4 @@ jobs:
           cache: 'maven'
 
       - name: Spotless
-        run: mvn spotless:check -DisEhrbaseBuild
+        run: mvn spotless:check -DsdkSubmoduleBuild

@@ -38,21 +38,6 @@
   <name>EHRbase server</name>
   <description>EHRbase openEHR server</description>
 
-  <!-- TODO CDR-2406 replaces by git-module
-  <repositories>
-    <repository>
-      <id>central-snapshots</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
--->
-
   <modules>
     <module>openEHR_SDK</module>
     <module>bom</module>

@@ -54,7 +54,7 @@ jobs:
             deps-
 
       - name: Maven - Verify and Package
-        run: mvn --batch-mode --update-snapshots --activate-profiles full verify -DisEhrbaseBuild
+        run: mvn --batch-mode --update-snapshots --activate-profiles full verify -DsdkSubmoduleBuild
 
       - name: Maven - Get Version
         id: "get_version"
