@@ -26,6 +26,10 @@ jobs:
           # We need a PERSONAL ACCESS TOKEN so pushes trigger other github actions
           token: ${{ secrets.BOT_ACCESS_TOKEN }}
 
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
+
       - name: Configure Git user
         run: |
           # Config git robot user
@@ -52,7 +56,7 @@ jobs:
       #
       - name: Enforce no SNAPSHOT used
         run: |
-          mvn -P no-snapshots enforcer:enforce
+          mvn -P no-snapshots enforcer:enforce -DsdkSubmoduleBuild
 
       #
       # Create a new release branch and adjust the release version and changelog.
@@ -62,7 +66,7 @@ jobs:
           # create branch
           git checkout -b release/v${VERSION}
           # Update version
-          mvn versions:set -DnewVersion=${VERSION} -DprocessAllModules=true
+          mvn versions:set -DnewVersion=${VERSION} -DgroupId='org.ehrbase.openehr' -DsdkSubmoduleBuild
           # Update Changelog
           sed -i "s/\[unreleased\]/\[${VERSION}\]/" CHANGELOG.md
           sed -i "s/...HEAD/\...v${VERSION}/" CHANGELOG.md
@@ -132,7 +136,7 @@ jobs:
           NEXT_VERSION=${ARRAY_VERSION[0]}.$((ARRAY_VERSION[1]+1)).0-SNAPSHOT
           echo "next version: $NEXT_VERSION"
           # update version
-          mvn versions:set -DnewVersion=${NEXT_VERSION} -DprocessAllModules=true
+          mvn versions:set -DnewVersion=${NEXT_VERSION} -DgroupId='org.ehrbase.openehr' -DprocessAllModules=true -DsdkSubmoduleBuild
           #edit changelog
           sed -i '8i ## [unreleased]\n ### Added\n ### Changed \n ### Fixed \n' CHANGELOG.md
           replace="$ a \[unreleased\]: https:\/\/github.com\/ehrbase\/ehrbase\/compare\/v$VERSION...HEAD"

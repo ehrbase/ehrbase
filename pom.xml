@@ -38,21 +38,8 @@
   <name>EHRbase server</name>
   <description>EHRbase openEHR server</description>
 
-  <repositories>
-    <!-- Repository for openEHR-SDK snapshots -->
-    <repository>
-      <id>central-snapshots</id>
-      <url>https://central.sonatype.com/repository/maven-snapshots</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
   <modules>
+    <module>openEHR_SDK</module>
     <module>bom</module>
     <module>application</module>
     <module>api</module>

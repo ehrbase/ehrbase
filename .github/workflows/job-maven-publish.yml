@@ -20,6 +20,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
+
       - name: Setup - Maven Central
         uses: actions/setup-java@v5
         with:
@@ -45,7 +49,7 @@ jobs:
           fail-on-cache-miss: true # we run only with cached dependencies
 
       - name: Publish - Maven Central
-        run: mvn -B deploy -P release -DskipTests
+        run: mvn -B deploy -P release -DskipTests -DsdkSubmoduleBuild
         env:
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
