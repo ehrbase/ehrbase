@@ -1,4 +1,4 @@
 [submodule "openEHR_SDK"]
 	path = openEHR_SDK
 	url = https://github.com/ehrbase/openEHR_SDK.git
-	branch = feature/CDR-2406-ehrbase-sdk-submodule
+	branch = develop
