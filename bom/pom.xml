@@ -27,7 +27,7 @@
     <version>2.34.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>EHRbase</name>
+    <name>EHRbase ${project.artifactId}</name>
     <description>EHRbase is a Free, Libre, Open Source openEHR Clinical Data Repository</description>
     <url>https://ehrbase.org</url>
 
