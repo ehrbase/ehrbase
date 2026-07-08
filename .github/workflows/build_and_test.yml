@@ -29,7 +29,7 @@ jobs:
       ehrbase-version: ${{ steps.get_version.outputs.ehrbase-version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       #The submodules option of "actions/checkout" does not use the --remote flag
       - name: Checkout submodule
@@ -107,7 +107,7 @@ jobs:
     ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       #The submodules option of "actions/checkout" does not use the --remote flag
       - name: Checkout submodule
@@ -211,7 +211,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           sparse-checkout: |
             tests
@@ -316,7 +316,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           sparse-checkout: |
             tests
@@ -524,7 +524,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       #The submodules option of "actions/checkout" does not use the --remote flag
       - name: Checkout submodule

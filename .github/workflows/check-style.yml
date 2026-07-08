@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       #The submodules option of "actions/checkout" does not use the --remote flag
       - name: Checkout submodule
