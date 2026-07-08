@@ -20,11 +20,15 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ${{ github.event.workflow_run.head_repository.full_name }}
           ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
+
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
 
       - name: Setup - Java
         uses: actions/setup-java@v5
@@ -34,7 +38,7 @@ jobs:
           cache: 'maven'
 
       - name: Restore - Dependency Cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.event.workflow_run.pull_requests[0].head.ref }}-${{ hashFiles('**/pom.xml') }}
@@ -45,7 +49,7 @@ jobs:
             deps-
 
       - name: Setup - SonarCloud Cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.sonar/cache
           key: sonar-${{ runner.os }}
@@ -65,7 +69,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
-          mvn --batch-mode -DskipTests compile sonar:sonar \
+          mvn --batch-mode -DskipTests -DsdkSubmoduleBuild compile sonar:sonar \
             -Dsonar.scm.revision=${{ github.event.workflow_run.head_sha }} \
             -Dsonar.pullrequest.key=${{ github.event.workflow_run.pull_requests[0].number }} \
             -Dsonar.pullrequest.branch=${{ github.event.workflow_run.pull_requests[0].head.ref }} \

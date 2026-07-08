@@ -16,9 +16,13 @@ jobs:
     if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop' }} # || startsWith(github.ref, 'refs/heads/release/') }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      #The submodules option of "actions/checkout" does not use the --remote flag
+      - name: Checkout submodule
+        run: git submodule update --init --recursive --remote
 
       - name: Setup - Maven Central
         uses: actions/setup-java@v5
@@ -33,7 +37,7 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE
 
       - name: Restore - Dependency Cache
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: ~/.m2/repository
           key: deps-${{ runner.os }}-m2-${{ github.head_ref }}-${{ hashFiles('**/pom.xml') }}
@@ -45,7 +49,7 @@ jobs:
           fail-on-cache-miss: true # we run only with cached dependencies
 
       - name: Publish - Maven Central
-        run: mvn -B deploy -P release -DskipTests
+        run: mvn -B deploy -P release -DskipTests -DsdkSubmoduleBuild
         env:
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
