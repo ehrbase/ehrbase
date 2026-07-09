@@ -139,4 +139,13 @@ public class SecurityProperties {
         PRIVATE,
         PUBLIC
     }
+
+    /**
+     * <p>Rules are bound from configuration (see {@link SecurityProperties#getAdditionalAuthorizations()}) and applied by
+     * the matching {@code SecurityConfig} implementation.
+     *
+     * @param authType the authentication type this rule applies to; a rule is only applied on the matching auth chain
+     * @param pathPattern the ant-style request path to secure
+     */
+    public record EndpointAuthorization(AuthTypes authType, String pathPattern, List<String> roles) {}
 }

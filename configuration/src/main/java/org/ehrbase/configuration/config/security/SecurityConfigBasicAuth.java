@@ -17,17 +17,14 @@
  */
 package org.ehrbase.configuration.config.security;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
-import jakarta.servlet.DispatcherType;
 import java.util.List;
 import javax.annotation.PostConstruct;
+import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -61,32 +58,19 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
     }
 
     @Override
+    protected SecurityConfigParams securityConfigParams() {
+        return new SecurityConfigParams(
+                BasicAuthenticationFilter.class,
+                AuthTypes.BASIC,
+                ADMIN,
+                List.of(ADMIN, USER),
+                List.of(ADMIN, USER),
+                securityProperties.getAdditionalAuthorizations());
+    }
+
+    @Override
     public HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception {
-
-        return http.addFilterBefore(new SecurityFilter(), BasicAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> {
-
-                    // Permit dispatcher types forward and error
-                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
-                            .permitAll();
-
-                    // Permit welcome page and img
-                    auth.requestMatchers("/", "/img/**").permitAll();
-
-                    // secure /rest/admin/** so that only admins can access it
-                    auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(ADMIN);
-
-                    auth = applyAdditionalAuthorizations(
-                            auth, securityProperties.getAdditionalAuthorizations(), SecurityProperties.AuthTypes.BASIC);
-
-                    // secure /management/**
-                    auth = configureManagementEndpointAccess(auth, ADMIN, List.of(ADMIN, USER));
-
-                    // secure all other requests using either user and/or admin roles
-                    auth.anyRequest().hasAnyRole(ADMIN, USER);
-                })
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .httpBasic(Customizer.withDefaults());
+        return super.configureHttpSecurity(http).httpBasic(Customizer.withDefaults());
     }
 
     @SuppressWarnings("deprecation")

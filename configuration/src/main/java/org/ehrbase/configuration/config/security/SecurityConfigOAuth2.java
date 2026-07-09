@@ -17,22 +17,19 @@
  */
 package org.ehrbase.configuration.config.security;
 
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
-
-import jakarta.servlet.DispatcherType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
+import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -71,35 +68,23 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
     }
 
     @Override
-    public HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception {
-
+    protected SecurityConfigParams securityConfigParams() {
         final String userRole = securityProperties.getOauth2UserRole();
         final String adminRole = securityProperties.getOauth2AdminRole();
+        List<String> mgmtRoles = List.of(adminRole, userRole, PROFILE_SCOPE);
+        List<String> otherRequestsRoles = List.of(adminRole, userRole, PROFILE_SCOPE);
+        return new SecurityConfigParams(
+                BearerTokenAuthenticationFilter.class,
+                AuthTypes.OAUTH,
+                adminRole,
+                mgmtRoles,
+                otherRequestsRoles,
+                securityProperties.getAdditionalAuthorizations());
+    }
 
-        return http.addFilterBefore(new SecurityFilter(), BearerTokenAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> {
-
-                    // Permit dispatcher types forward and error
-                    auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
-                            .permitAll();
-
-                    // Permit welcome page and img
-                    auth.requestMatchers("/", "/img/**").permitAll();
-
-                    // secure /rest/admin/** so that only admins can access it
-                    auth = auth.requestMatchers(antMatcher("/rest/admin/**")).hasRole(adminRole);
-
-                    auth = applyAdditionalAuthorizations(
-                            auth, securityProperties.getAdditionalAuthorizations(), SecurityProperties.AuthTypes.OAUTH);
-
-                    // secure /management/**
-                    auth = configureManagementEndpointAccess(
-                            auth, adminRole, List.of(adminRole, userRole, PROFILE_SCOPE));
-
-                    // secure all other requests using either user and/or admin roles
-                    auth.anyRequest().hasAnyRole(adminRole, userRole, PROFILE_SCOPE);
-                })
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    @Override
+    public HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception {
+        return super.configureHttpSecurity(http)
                 .oauth2ResourceServer(
                         server -> server.jwt(jwt -> jwt.jwtAuthenticationConverter(getJwtAuthenticationConverter())));
     }
