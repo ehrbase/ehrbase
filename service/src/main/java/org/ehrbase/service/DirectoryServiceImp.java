@@ -76,7 +76,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
             }
             int version;
             try {
-                version = LocatableUtils.getUidVersion(folderId);
+                version = LocatableUtils.uidVersion(folderId).orElseThrow();
             } catch (NumberFormatException e) {
                 VersionTreeId versionTreeId = folderId.getVersionTreeId();
                 if (versionTreeId.isBranch()) {
@@ -109,7 +109,8 @@ public class DirectoryServiceImp implements InternalDirectoryService {
         Optional<ObjectVersionId> versionByTime = ehrFolderRepository.findVersionByTime(ehrId, 1, time);
 
         return versionByTime
-                .flatMap(v -> ehrFolderRepository.findByVersion(ehrId, 1, LocatableUtils.getUidVersion(v)))
+                .flatMap(v -> ehrFolderRepository.findByVersion(
+                        ehrId, 1, LocatableUtils.uidVersion(v).orElseThrow()))
                 .flatMap(f -> findByPath(f, StringUtils.split(path, '/')));
     }
 
@@ -188,7 +189,7 @@ public class DirectoryServiceImp implements InternalDirectoryService {
                     String.format("EHR with id %s does not contain a directory with id %s", ehrId, uuid));
         }
 
-        int version = LocatableUtils.getUidVersion(ifMatches);
+        int version = LocatableUtils.uidVersion(ifMatches).orElseThrow();
 
         updateUuid(folder, true, uuid, version + 1);
         validationService.check(folder);
@@ -214,8 +215,8 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
         ehrFolderRepository.delete(
                 ehrId,
-                UUID.fromString(ifMatches.getObjectId().getValue()),
-                LocatableUtils.getUidVersion(ifMatches),
+                LocatableUtils.getUuid(ifMatches),
+                LocatableUtils.uidVersion(ifMatches).orElseThrow(),
                 1,
                 contributionId,
                 auditId);

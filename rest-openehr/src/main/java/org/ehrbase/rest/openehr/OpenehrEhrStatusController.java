@@ -125,7 +125,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         UIDBasedId statusUid = ehrResult.getUid();
 
         // update and prepare current version number
-        int version = LocatableUtils.getUidVersion(statusUid);
+        int version = LocatableUtils.uidVersion(statusUid).orElseThrow();
         UUID ehrStatusId = LocatableUtils.getUuid(statusUid);
 
         // load status

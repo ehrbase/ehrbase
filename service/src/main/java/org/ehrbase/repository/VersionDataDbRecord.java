@@ -63,7 +63,7 @@ public record VersionDataDbRecord(
                 context,
                 ehrId,
                 voId,
-                LocatableUtils.getUidVersion(versionDataObject.getUid()),
+                LocatableUtils.uidVersion(versionDataObject).orElseThrow(),
                 contributionId,
                 auditId,
                 now);

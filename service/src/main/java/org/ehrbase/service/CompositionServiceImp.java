@@ -257,7 +257,7 @@ public class CompositionServiceImp implements CompositionService {
         validate(composition);
 
         UUID compId = LocatableUtils.getUuid(compositionId);
-        int version = LocatableUtils.getUidVersion(compositionId);
+        int version = LocatableUtils.uidVersion(compositionId).orElseThrow();
 
         String existingTemplateId = compositionRepository
                 .findTemplateId(compId)
@@ -373,7 +373,7 @@ public class CompositionServiceImp implements CompositionService {
         compositionRepository.delete(
                 ehrId,
                 LocatableUtils.getUuid(compositionId),
-                LocatableUtils.getUidVersion(compositionId),
+                LocatableUtils.uidVersion(compositionId).orElseThrow(),
                 contributionId,
                 audit);
     }
