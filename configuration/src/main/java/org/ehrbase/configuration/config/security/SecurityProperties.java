@@ -146,6 +146,20 @@ public class SecurityProperties {
      *
      * @param authType the authentication type this rule applies to; a rule is only applied on the matching auth chain
      * @param pathPattern the ant-style request path to secure
+     * @param roles the roles allowed to access the path. The keywords {@link #ADMIN} and {@link #USER} are replaced
+     *              with the admin/user role names configured for the authentication type; any other value is used
+     *              as a literal role name
      */
-    public record EndpointAuthorization(AuthTypes authType, String pathPattern, List<String> roles) {}
+    public record EndpointAuthorization(AuthTypes authType, String pathPattern, List<String> roles) {
+
+        /**
+         * Keyword replaced with the admin role name configured for the authentication type.
+         */
+        public static final String ADMIN = "ADMIN";
+
+        /**
+         * Keyword replaced with the user role name configured for the authentication type.
+         */
+        public static final String USER = "USER";
+    }
 }

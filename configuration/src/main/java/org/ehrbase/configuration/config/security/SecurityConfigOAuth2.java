@@ -77,6 +77,7 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
                 BearerTokenAuthenticationFilter.class,
                 AuthTypes.OAUTH,
                 adminRole,
+                userRole,
                 mgmtRoles,
                 otherRequestsRoles,
                 securityProperties.getAdditionalAuthorizations());

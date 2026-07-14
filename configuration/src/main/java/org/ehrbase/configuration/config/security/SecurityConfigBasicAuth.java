@@ -63,6 +63,7 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
                 BasicAuthenticationFilter.class,
                 AuthTypes.BASIC,
                 ADMIN,
+                USER,
                 List.of(ADMIN, USER),
                 List.of(ADMIN, USER),
                 securityProperties.getAdditionalAuthorizations());

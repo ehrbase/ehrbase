@@ -60,6 +60,7 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
             Class<? extends Filter> authFilterClass,
             AuthTypes authType,
             String adminRole,
+            String userRole,
             List<String> mgmtRoles,
             List<String> otherRequestsRoles,
             List<SecurityProperties.EndpointAuthorization> additionalAuthorizations) {}
@@ -79,7 +80,7 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     // secure /rest/admin/** so that only admins can access it
                     auth = antRequestMatcherWithRoles(auth, "/rest/admin/**", params.adminRole());
 
-                    auth = applyAdditionalAuthorizations(auth, params.additionalAuthorizations(), params.authType());
+                    auth = applyAdditionalAuthorizations(auth, params);
 
                     // secure /management/**
                     auth = configureManagementEndpointAccess(auth, params.adminRole(), params.mgmtRoles());
@@ -128,19 +129,30 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     /**
      * Applies the rules for the given authentication type. Each matching rule secures its path pattern behind the
      * configured roles. The list can be shared across auth chains, rules for other auth types are ignored.
+     * The {@link SecurityProperties.EndpointAuthorization#ADMIN} and
+     * {@link SecurityProperties.EndpointAuthorization#USER} keywords are replaced with the admin/user role names
+     * of the authentication type.
      */
     protected AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
             applyAdditionalAuthorizations(
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
-                    List<SecurityProperties.EndpointAuthorization> rules,
-                    SecurityProperties.AuthTypes authType) {
+                    SecurityConfigParams params) {
 
-        for (SecurityProperties.EndpointAuthorization rule : rules) {
-            if (rule.authType() == authType) {
-                auth = antRequestMatcherWithRoles(
-                        auth, rule.pathPattern(), rule.roles().toArray(String[]::new));
+        for (SecurityProperties.EndpointAuthorization rule : params.additionalAuthorizations()) {
+            if (rule.authType() == params.authType()) {
+                auth = antRequestMatcherWithRoles(auth, rule.pathPattern(), resolveRoles(rule.roles(), params));
             }
         }
         return auth;
+    }
+
+    private static String[] resolveRoles(List<String> roles, SecurityConfigParams params) {
+        return roles.stream()
+                .map(role -> switch (role) {
+                    case SecurityProperties.EndpointAuthorization.ADMIN -> params.adminRole();
+                    case SecurityProperties.EndpointAuthorization.USER -> params.userRole();
+                    default -> role;
+                })
+                .toArray(String[]::new);
     }
 }
