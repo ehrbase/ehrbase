@@ -41,7 +41,7 @@ import org.ehrbase.api.exception.BadGatewayException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.exception.UnprocessableEntityException;
 import org.ehrbase.api.exception.ValidationException;
@@ -204,24 +204,24 @@ public class CompositionServiceImp implements CompositionService {
         } else if (uid instanceof ObjectVersionId objectVersionId) {
 
             if (!"1".equals(objectVersionId.getVersionTreeId().getValue())) {
-                throw new PreconditionFailedException(
+                throw new UnprocessableEntityException(
                         "Provided Id %s has a invalid Version. Expect Version 1".formatted(uid));
             }
 
             if (!Objects.equals(
                     systemService.getSystemId(),
                     objectVersionId.getCreatingSystemId().getValue())) {
-                throw new PreconditionFailedException("Mismatch of creating_system_id: %s !=: %s"
+                throw new UnprocessableEntityException("Mismatch of creating_system_id: %s !=: %s"
                         .formatted(objectVersionId.getCreatingSystemId().getValue(), systemService.getSystemId()));
             }
 
             if (compositionRepository.exists(
                     UUID.fromString(objectVersionId.getObjectId().getValue()))) {
-                throw new PreconditionFailedException("Provided Id %s already exists".formatted(uid));
+                throw new StateConflictException("Provided Id %s already exists".formatted(uid));
             }
-            return (ObjectVersionId) uid;
+            return objectVersionId;
         } else {
-            throw new PreconditionFailedException("Provided Id %s is not a ObjectVersionId".formatted(uid));
+            throw new UnprocessableEntityException("Provided Id %s is not a ObjectVersionId".formatted(uid));
         }
     }
 

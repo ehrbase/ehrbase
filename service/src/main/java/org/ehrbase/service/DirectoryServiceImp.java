@@ -224,13 +224,11 @@ public class DirectoryServiceImp implements InternalDirectoryService {
 
     private void updateUuid(Folder folder, boolean root, UUID rootUuid, int version) {
 
-        if (folder.getUid() == null || root) {
-
-            if (root) {
-                folder.setUid(new ObjectVersionId(rootUuid + "::" + systemService.getSystemId() + "::" + version));
-            } else {
-                folder.setUid(new HierObjectId(UuidGenerator.randomUUID().toString()));
-            }
+        if (root) {
+            folder.setUid(
+                    new ObjectVersionId(rootUuid.toString(), systemService.getSystemId(), Integer.toString(version)));
+        } else if (folder.getUid() == null) {
+            folder.setUid(new HierObjectId(UuidGenerator.randomUUID().toString()));
         }
 
         if (folder.getFolders() != null) {
