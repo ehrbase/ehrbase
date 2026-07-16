@@ -17,6 +17,8 @@
  */
 package org.ehrbase.configuration.config.security;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "security")
@@ -56,6 +58,8 @@ public class SecurityProperties {
      * Admin role name used with OAuth2 authentication type.
      */
     private String oauth2AdminRole;
+
+    private List<EndpointAuthorization> additionalAuthorizations = new ArrayList<>();
 
     public AuthTypes getAuthType() {
         return authType;
@@ -113,6 +117,14 @@ public class SecurityProperties {
         this.oauth2AdminRole = oauth2AdminRole.toUpperCase();
     }
 
+    public List<EndpointAuthorization> getAdditionalAuthorizations() {
+        return additionalAuthorizations;
+    }
+
+    public void setAdditionalAuthorizations(List<EndpointAuthorization> additionalAuthorizations) {
+        this.additionalAuthorizations = additionalAuthorizations;
+    }
+
     public enum AuthTypes {
         NONE,
         BASIC,
@@ -126,5 +138,28 @@ public class SecurityProperties {
         ADMIN_ONLY,
         PRIVATE,
         PUBLIC
+    }
+
+    /**
+     * <p>Rules are bound from configuration (see {@link SecurityProperties#getAdditionalAuthorizations()}) and applied by
+     * the matching {@code SecurityConfig} implementation.
+     *
+     * @param authType the authentication type this rule applies to; a rule is only applied on the matching auth chain
+     * @param pathPattern the ant-style request path to secure
+     * @param roles the roles allowed to access the path. The keywords {@link #ADMIN} and {@link #USER} are replaced
+     *              with the admin/user role names configured for the authentication type; any other value is used
+     *              as a literal role name
+     */
+    public record EndpointAuthorization(AuthTypes authType, String pathPattern, List<String> roles) {
+
+        /**
+         * Keyword replaced with the admin role name configured for the authentication type.
+         */
+        public static final String ADMIN = "ADMIN";
+
+        /**
+         * Keyword replaced with the user role name configured for the authentication type.
+         */
+        public static final String USER = "USER";
     }
 }
