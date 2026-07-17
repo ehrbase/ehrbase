@@ -164,7 +164,7 @@ public class OpenehrVersionedCompositionController extends BaseController
         int version;
         try {
             versionedObjectId = LocatableUtils.getUuid(compositionVersionId);
-            version = LocatableUtils.getUidVersion(compositionVersionId);
+            version = LocatableUtils.uidVersion(compositionVersionId).orElseThrow();
             if (version <= 0) {
                 throw new InvalidApiParameterException(
                         "VERSION UID parameter has wrong format: Version needs to be greater 0");

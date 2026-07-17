@@ -25,6 +25,7 @@ import com.nedap.archie.rm.support.identification.UID;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import com.nedap.archie.rm.support.identification.VersionTreeId;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
 
@@ -58,16 +59,28 @@ public final class LocatableUtils {
         return getUidRootString(archetyped).map(UUID::fromString).orElse(null);
     }
 
-    public static int getUidVersion(Locatable root) {
-        return getUidVersion(root.getUid());
+    public static OptionalInt uidVersion(Locatable root) throws NumberFormatException {
+        return root == null ? OptionalInt.empty() : uidVersion(root.getUid());
     }
 
-    public static int getUidVersion(UIDBasedId uid) {
-        return Integer.parseInt(Optional.of(uid)
+    public static OptionalInt uidVersion(UIDBasedId uid) throws NumberFormatException {
+        return Optional.ofNullable(uid)
                 .filter(ObjectVersionId.class::isInstance)
                 .map(ObjectVersionId.class::cast)
                 .map(ObjectVersionId::getVersionTreeId)
                 .map(VersionTreeId::getValue)
-                .orElseThrow());
+                .map(Integer::parseInt)
+                .map(OptionalInt::of)
+                .orElse(OptionalInt.empty());
+    }
+
+    public static Integer getUidVersion(Locatable root) throws NumberFormatException {
+        OptionalInt value = uidVersion(root);
+        return value.isPresent() ? value.getAsInt() : null;
+    }
+
+    public static Integer getUidVersion(UIDBasedId uid) throws NumberFormatException {
+        OptionalInt value = uidVersion(uid);
+        return value.isPresent() ? value.getAsInt() : null;
     }
 }
