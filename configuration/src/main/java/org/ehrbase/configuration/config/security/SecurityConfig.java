@@ -139,7 +139,7 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     SecurityConfigParams params) {
 
         for (SecurityProperties.EndpointAuthorization rule : params.additionalAuthorizations()) {
-            if (rule.authType() == params.authType()) {
+            if (rule.authType() == null || rule.authType() == params.authType()) {
                 auth = antRequestMatcherWithRoles(auth, rule.pathPattern(), resolveRoles(rule.roles(), params));
             }
         }
