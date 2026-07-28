@@ -97,8 +97,8 @@
         <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>3.5.6</maven-failsafe-plugin.version>
         <maven-jacoco-plugin.version>0.8.14</maven-jacoco-plugin.version>
-        <maven-spotless-maven-plugin.version>3.6.0</maven-spotless-maven-plugin.version>
-        <palantir-format.version>2.89.0</palantir-format.version>
+        <maven-spotless-maven-plugin.version>3.9.0</maven-spotless-maven-plugin.version>
+        <palantir-format.version>2.96.0</palantir-format.version>
         <maven-central-publishing-plugin.version>0.10.0</maven-central-publishing-plugin.version>
         <maven-versions-maven-plugin.version>2.21.0</maven-versions-maven-plugin.version>
         <maven-dockerfile-maven-plugin.version>1.4.13</maven-dockerfile-maven-plugin.version>
