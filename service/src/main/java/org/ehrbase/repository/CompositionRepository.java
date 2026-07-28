@@ -21,6 +21,7 @@ import static org.ehrbase.jooq.pg.Tables.COMP_DATA;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION;
 import static org.ehrbase.jooq.pg.Tables.COMP_VERSION_HISTORY;
 
+import com.nedap.archie.rm.archetyped.Locatable;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
@@ -97,7 +98,18 @@ public class CompositionRepository
                     r.setTemplateId(templateId);
                     r.setRootConcept(rootConcept);
                 },
-                (n, r) -> {});
+                (n, r) -> {
+                    if (n.getNum() == 0) {
+                        r.setUidRoot(r.getVoId().toString());
+                    } else if (Locatable.class.isAssignableFrom(n.getStructureRmType().type)) {
+                        String uidValue =
+                                n.getJsonNode().findPath("U").findPath("V").asText();
+                        if (uidValue != null) {
+                            int i = uidValue.indexOf("::");
+                            r.setUidRoot(i < 0 ? uidValue : uidValue.substring(0, i));
+                        }
+                    }
+                });
     }
 
     @Transactional
