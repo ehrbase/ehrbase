@@ -26,7 +26,7 @@ WHERE
     uid_root IS NULL
     AND
     (num = 0 OR
-      (rm_entity NOT IN ('EC', 'FA', 'FD', 'ID') AND data ? 'U'));
+      (entity_concept IS NULL AND data ? 'U'));
 
 --TODO index definition
 CREATE INDEX IF NOT EXISTS comp_data_uid_root_idx ON comp_data USING btree (uid_root);
