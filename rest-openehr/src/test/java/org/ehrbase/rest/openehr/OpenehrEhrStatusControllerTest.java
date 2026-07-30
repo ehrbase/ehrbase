@@ -210,6 +210,31 @@ class OpenehrEhrStatusControllerTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"%s", "\"%s\""})
+    void updateEhrStatusAcceptsQuotedAndUnquotedIfMatch(String ifMatchTemplate) {
+
+        UUID ehrId = UUID.fromString("d83a16ae-2644-4706-8911-282772c10137");
+        UUID ehrStatusId = UUID.fromString("305eb2fd-c228-445c-ada7-5429d852fbb2");
+        ObjectVersionId currentVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "2");
+        ObjectVersionId nextVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "3");
+        OffsetDateTime lastModified = OffsetDateTime.parse("2024-07-16T12:00:00Z");
+
+        EhrStatus ehrStatus = ehrStatus(nextVersionId, true, false);
+
+        doReturn(ehrStatus).when(mockEhrService).updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
+        doReturn(Optional.of(originalVersion(nextVersionId, currentVersionId, lastModified, ehrStatus)))
+                .when(mockEhrService)
+                .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
+
+        String ifMatch = ifMatchTemplate.formatted(currentVersionId.getValue());
+        ResponseEntity<EhrStatus> response =
+                controller().updateEhrStatus(ehrId, ifMatch, BaseController.RETURN_MINIMAL, ehrStatus);
+
+        assertResponse(HttpStatus.NO_CONTENT, response, ehrId, nextVersionId, "Tue, 16 Jul 2024 12:00:00 GMT");
+        assertThat(response.getBody()).isNull();
+    }
+
     private void runTestWithMockResult(BiFunction<UUID, EhrStatus, ResponseEntity<EhrStatus>> consumer) {
 
         UUID ehrId = UUID.fromString("7c927831-726e-4ad7-8b62-b078d80eb59a");

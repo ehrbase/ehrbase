@@ -17,7 +17,6 @@
  */
 package org.ehrbase.rest.openehr;
 
-import static org.apache.commons.lang3.StringUtils.unwrap;
 import static org.ehrbase.api.rest.HttpRestContext.EHR_ID;
 import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.web.util.UriComponentsBuilder.fromPath;
@@ -101,7 +100,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestBody Folder folder) {
 
-        folderId.setValue(unwrap(folderId.getValue(), '"'));
+        folderId.setValue(unwrapIfMatchValue(folderId.getValue()));
 
         // Update folder and get new version
         Folder updatedFolder = directoryService.update(ehrId, folder, folderId);
@@ -121,7 +120,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 
-        folderId.setValue(unwrap(folderId.getValue(), '"'));
+        folderId.setValue(unwrapIfMatchValue(folderId.getValue()));
 
         directoryService.delete(ehrId, folderId);
 

@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- Accept double-quoted (RFC 7232 ETag-style) `If-Match` header values on composition and EHR_STATUS update, fixes [#1639](https://github.com/ehrbase/ehrbase/issues/1639)
 
 ## [2.34.0]
  ### Added

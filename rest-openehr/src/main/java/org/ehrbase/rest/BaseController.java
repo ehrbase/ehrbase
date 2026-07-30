@@ -245,6 +245,17 @@ public abstract class BaseController {
     }
 
     /**
+     * Strips the optional ETag-style double quotes (RFC 7232) from an <code>If-Match</code> header value,
+     * so that both <code>"value"</code> and <code>value</code> are accepted.
+     *
+     * @param ifMatch raw <code>If-Match</code> header value
+     * @return the value without surrounding double quotes
+     */
+    protected static String unwrapIfMatchValue(String ifMatch) {
+        return StringUtils.unwrap(ifMatch, '"');
+    }
+
+    /**
      * Resolves the Content-Type based on Accept header. Validates if the given <code>acceptHeader</code> in
      * either <code>application/json</code> or <code>application/xml</code>.
      * In case <code>acceptHeader</code> is given <code>application/json</code> will be selected as a default.
