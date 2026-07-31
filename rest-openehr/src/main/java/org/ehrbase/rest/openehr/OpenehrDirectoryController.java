@@ -100,7 +100,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
             @RequestBody Folder folder) {
 
-        folderId.setValue(unwrapIfMatchValue(folderId.getValue()));
+        folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
 
         // Update folder and get new version
         Folder updatedFolder = directoryService.update(ehrId, folder, folderId);
@@ -120,7 +120,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 
-        folderId.setValue(unwrapIfMatchValue(folderId.getValue()));
+        folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
 
         directoryService.delete(ehrId, folderId);
 
