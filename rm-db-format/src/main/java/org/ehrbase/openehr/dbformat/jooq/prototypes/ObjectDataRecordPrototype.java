@@ -123,6 +123,14 @@ public class ObjectDataRecordPrototype extends AbstractRecordPrototype<ObjectDat
         return (JSONB) get(FieldPrototype.DATA);
     }
 
+    public void setUidRoot(String value) {
+        set(FieldPrototype.UID_ROOT, value);
+    }
+
+    public String getUidRoot() {
+        return (String) get(FieldPrototype.UID_ROOT);
+    }
+
     // -------------------------------------------------------------------------
     // Primary key information
     // -------------------------------------------------------------------------
@@ -150,7 +158,8 @@ public class ObjectDataRecordPrototype extends AbstractRecordPrototype<ObjectDat
             String entityAttribute,
             String entityIdx,
             Integer entityIdxLen,
-            JSONB data) {
+            JSONB data,
+            String uidRoot) {
         super(
                 ObjectDataTablePrototype.INSTANCE,
                 voId,
@@ -162,7 +171,8 @@ public class ObjectDataRecordPrototype extends AbstractRecordPrototype<ObjectDat
                 entityAttribute,
                 entityIdx,
                 entityIdxLen,
-                data);
+                data,
+                uidRoot);
     }
 
     @Override

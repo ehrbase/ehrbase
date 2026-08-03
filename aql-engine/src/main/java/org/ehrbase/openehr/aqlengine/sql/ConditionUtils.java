@@ -72,6 +72,7 @@ import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.Table;
 import org.jooq.impl.DSL;
+import org.jspecify.annotations.NonNull;
 
 final class ConditionUtils {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -240,8 +241,8 @@ final class ConditionUtils {
             Table<?> dataTable,
             Table<?> versionTable) {
         return switch (ecf.getExtractedColumn()) {
-            case VO_ID -> {
-                yield switch (fv.getOperator()) {
+            case VO_ID ->
+                switch (fv.getOperator()) {
                     case IS_NULL, IS_NOT_NULL -> voIdCondition(versionTable, useAliases, null, fv.getOperator(), ecf);
                     case IN, EQ -> voIdInCondition(versionTable, useAliases, (List<String>) fv.getValues(), true, ecf);
                     case NEQ -> voIdInCondition(versionTable, useAliases, (List<String>) fv.getValues(), false, ecf);
@@ -253,7 +254,7 @@ final class ConditionUtils {
                                 fv.getOperator(),
                                 ecf);
                 };
-            }
+            case LOCATABLE_UID -> uidCondition(useAliases, fv, ecf, dataTable);
             case ARCHETYPE_NODE_ID -> {
                 AslConditionOperator op =
                         fv.getOperator() == AslConditionOperator.IN ? AslConditionOperator.EQ : fv.getOperator();
@@ -283,6 +284,61 @@ final class ConditionUtils {
                     EHR_SYSTEM_ID_DV ->
                 throw new IllegalArgumentException(
                         "Extracted column %s is not complex".formatted(ecf.getExtractedColumn()));
+        };
+    }
+
+    private static @NonNull Condition uidCondition(
+            final boolean useAliases,
+            final AslFieldValueQueryCondition<?> fv,
+            final AslComplexExtractedColumnField ecf,
+            final Table<?> dataTable) {
+        AslConditionOperator op = fv.getOperator();
+        Field<String> uidRoot =
+                FieldUtils.field(dataTable, ecf, COMP_DATA.UID_ROOT.getName(), String.class, useAliases);
+        if (op == AslConditionOperator.IS_NULL) {
+            return uidRoot.isNull();
+        } else if (op == AslConditionOperator.IS_NOT_NULL) {
+            return uidRoot.isNotNull();
+        }
+
+        List<String> values = (List<String>) fv.getValues();
+        if (values.isEmpty()) {
+            return op == AslConditionOperator.NEQ ? DSL.trueCondition() : DSL.falseCondition();
+        }
+
+        Field<String> fullUid = AdditionalSQLFunctions.jsonbAttributePathText(
+                FieldUtils.field(dataTable, ecf, COMP_DATA.DATA.getName(), JSONB.class, useAliases), "U", "V");
+        return values.stream()
+                .map(v -> {
+                    int separator = v.indexOf(':');
+                    Condition uidRootCond;
+                    Condition fullUidCond;
+                    if (separator == -1) {
+                        uidRootCond = applyOperatorSimpleString(uidRoot, op, v);
+                        fullUidCond =
+                                op == AslConditionOperator.LIKE ? applyOperatorSimpleString(fullUid, op, v) : null;
+                    } else {
+                        uidRootCond = applyOperatorSimpleString(uidRoot, op, v.substring(0, separator));
+                        fullUidCond = applyOperatorSimpleString(fullUid, op, v);
+                    }
+
+                    return fullUidCond == null ? uidRootCond : uidRootCond.and(fullUidCond);
+                })
+                .reduce(Condition::or)
+                .orElseThrow();
+    }
+
+    private static Condition applyOperatorSimpleString(Field<String> field, AslConditionOperator operator, String val) {
+        return switch (operator) {
+            case LIKE -> field.like(translateAqlLikePatternToSql(val));
+            case IN, EQ -> field.eq(val);
+            case NEQ -> field.ne(val);
+            case GT_EQ -> field.ge(val);
+            case GT -> field.gt(val);
+            case LT_EQ -> field.le(val);
+            case LT -> field.lt(val);
+            case IS_NULL -> field.isNull();
+            case IS_NOT_NULL -> field.isNotNull();
         };
     }
 

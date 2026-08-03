@@ -189,6 +189,9 @@ class AqlQueryFeatureCheckTest {
                 "SELECT 1 FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS ((CLUSTER [at0002] CONTAINS ELEMENT e [at0004]) OR (CLUSTER[at0005] AND CLUSTER[at0006]))",
                 "SELECT 1 FROM OBSERVATION o CONTAINS CLUSTER [openEHR-EHR-CLUSTER.cl.v0] CONTAINS ELEMENT e [at0004]",
                 "SELECT 1 FROM OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1] CONTAINS EVENT e [at0002]",
+                "SELECT 1 FROM OBSERVATION o WHERE o/uid/value like 'abc::*'",
+                "SELECT 1 FROM OBSERVATION o WHERE o/uid/value = 'abc'",
+                "SELECT 1 FROM EHR_STATUS o WHERE o/uid/value = 'abc'"
             })
     void ensureQuerySupported(String aql) {
 
@@ -196,7 +199,8 @@ class AqlQueryFeatureCheckTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"SELECT f FROM FOLDER f", """
+    @ValueSource(
+            strings = {"SELECT f FROM FOLDER f", """
                       SELECT f/uid/value, f/name/value, f/archetype_node_id
                       FROM FOLDER f[openEHR-EHR-FOLDER.generic.v1]
                     """, """
@@ -211,7 +215,8 @@ class AqlQueryFeatureCheckTest {
                       SELECT c/uid/value, f/name/value
                       FROM FOLDER f
                       CONTAINS COMPOSITION c
-                    """})
+                    """, "SELECT 1 FROM FOLDER o WHERE o/uid/value = 'abc'"
+            })
     void ensureQuerySupportedAqlOnFolderEnabled(String aql) {
         assertDoesNotThrow(() -> runEnsureQuerySupportedAqlOnFolderEnabled(aql));
     }

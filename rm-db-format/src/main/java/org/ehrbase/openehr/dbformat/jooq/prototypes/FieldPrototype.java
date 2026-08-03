@@ -52,7 +52,8 @@ public enum FieldPrototype {
     ENTITY_ATTRIBUTE(SQLDataType.CLOB, false, false, true),
     ENTITY_IDX(SQLDataType.CLOB.nullable(false), false, false, true),
     ENTITY_IDX_LEN(SQLDataType.INTEGER.nullable(false), false, false, true),
-    DATA(SQLDataType.JSONB.nullable(false), false, false, true);
+    DATA(SQLDataType.JSONB.nullable(false), false, false, true),
+    UID_ROOT(SQLDataType.CLOB, false, false, true);
 
     private final DataType<?> type;
     private final Name fieldName;

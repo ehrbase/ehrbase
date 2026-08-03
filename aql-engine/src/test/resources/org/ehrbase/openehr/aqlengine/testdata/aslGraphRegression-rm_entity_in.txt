@@ -31,6 +31,7 @@ AslRootQuery
         sCO_c_0.sCO_c_0_data
         sCO_c_0.sCO_c_0_template_id /* archetype_details/template_id/value */
         sCO_c_0.sCO_c_0_sys_version
+        sCO_c_0.sCO_c_0_uid_root
         sCO_c_0.sCO_c_0_audit_id
         sCO_c_0.sCO_c_0_contribution_id
         sCO_c_0.sCO_c_0_sys_period_lower
@@ -49,6 +50,7 @@ AslRootQuery
         sENTRY_en_0.sENTRY_en_0_entity_name /* name/value */
         sENTRY_en_0.sENTRY_en_0_rm_entity
         sENTRY_en_0.sENTRY_en_0_data
+        sENTRY_en_0.sENTRY_en_0_uid_root
       FROM COMPOSITION
       STRUCTURE CONDITIONS
         sENTRY_en_0.sENTRY_en_0_rm_entity IN [AN, AE, EV, IN, OB]

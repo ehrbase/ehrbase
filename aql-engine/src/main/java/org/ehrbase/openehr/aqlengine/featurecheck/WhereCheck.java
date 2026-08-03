@@ -30,11 +30,13 @@ import org.ehrbase.openehr.sdk.aql.dto.condition.ExistsCondition;
 import org.ehrbase.openehr.sdk.aql.dto.condition.LikeCondition;
 import org.ehrbase.openehr.sdk.aql.dto.condition.MatchesCondition;
 import org.ehrbase.openehr.sdk.aql.dto.condition.WhereCondition;
+import org.ehrbase.openehr.sdk.aql.dto.containment.ContainmentClassExpression;
 import org.ehrbase.openehr.sdk.aql.dto.operand.ComparisonLeftOperand;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.operand.LikeOperand;
 import org.ehrbase.openehr.sdk.aql.dto.operand.Primitive;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 
 final class WhereCheck implements FeatureCheck {
     private final SystemService systemService;
@@ -114,8 +116,11 @@ final class WhereCheck implements FeatureCheck {
         FeatureCheckUtils.findSupportedIdentifiedPath(
                 like.getStatement(), false, ClauseType.WHERE, systemService.getSystemId());
         LikeOperand operand = like.getValue();
-        if (AslExtractedColumn.VO_ID.getPath().equals(path)) {
-            throw new AqlFeatureNotImplementedException("LIKE on /uid/value is not supported");
+        // /uid/value is supported via LOCATABLE_UID for all non COMPOSITION LOCATABLEs
+        if (AslExtractedColumn.VO_ID.getPath().equals(path)
+                && like.getStatement().getRoot() instanceof ContainmentClassExpression cce
+                && RmConstants.COMPOSITION.equals(cce.getType())) {
+            throw new AqlFeatureNotImplementedException("LIKE on /uid/value is not supported for COMPOSITION");
         }
         if (!(operand instanceof Primitive primitive)) {
             throw new AqlFeatureNotImplementedException("Only primitive operands are supported");

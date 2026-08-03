@@ -44,4 +44,8 @@ public final class AslComplexExtractedColumnField extends AslVirtualField {
     public static AslComplexExtractedColumnField voIdField(FieldSource fieldSource) {
         return new AslComplexExtractedColumnField(AslExtractedColumn.VO_ID, fieldSource);
     }
+
+    public static AslField uidField(final FieldSource fieldSource) {
+        return new AslComplexExtractedColumnField(AslExtractedColumn.LOCATABLE_UID, fieldSource);
+    }
 }
