@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- `If-Match` header values that do not identify a single version are now rejected with `412 Precondition Failed` before the update is applied, instead of failing later with a misleading error. This covers weak validators (`W/"..."`), the `*` wildcard, improperly quoted values, and values not shaped like `object_id::creating_system_id::version_tree_id`, on composition update, EHR_STATUS update and directory update/delete [#1644](https://github.com/ehrbase/ehrbase/pull/1644)
  ### Fixed 
 - Accept double-quoted (RFC 7232 ETag-style) `If-Match` header values on composition and EHR_STATUS update, fixes [#1639](https://github.com/ehrbase/ehrbase/issues/1639)
 
