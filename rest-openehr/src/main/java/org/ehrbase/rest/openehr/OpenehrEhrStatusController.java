@@ -120,7 +120,7 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
         HttpRestContext.register(EHR_ID, ehrId);
 
         // update EHR_STATUS and check for success
-        ObjectVersionId targetObjId = new ObjectVersionId(unwrapIfMatchValue(versionUid));
+        ObjectVersionId targetObjId = new ObjectVersionId(parseIfMatchHeaderValue(versionUid));
         EhrStatus ehrResult = ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null);
         UIDBasedId statusUid = ehrResult.getUid();
 

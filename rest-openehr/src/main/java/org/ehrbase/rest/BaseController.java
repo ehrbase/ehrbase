@@ -29,6 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
@@ -244,15 +245,66 @@ public abstract class BaseController {
         return OptionalInt.empty();
     }
 
-    /**
-     * Strips the optional ETag-style double quotes (RFC 7232) from an <code>If-Match</code> header value,
-     * so that both <code>"value"</code> and <code>value</code> are accepted.
-     *
-     * @param ifMatch raw <code>If-Match</code> header value
-     * @return the value without surrounding double quotes
-     */
-    protected static String unwrapIfMatchValue(String ifMatch) {
-        return StringUtils.unwrap(ifMatch, '"');
+    /// Strips the optional ETag-style double quotes (RFC 7232) from an `If-Match` header value,
+    /// so that both `"value"` and `value` are accepted, and checks that the value has the general
+    /// shape of an OBJECT_VERSION_ID: `object_id::creating_system_id::version_tree_id`.
+    ///
+    /// @param ifMatch raw `If-Match` header value
+    /// @return the value without surrounding double quotes
+    /// @throws PreconditionFailedException if the value is missing, a weak validator (`W/`), the `*` wildcard,
+    ///         improperly quoted, or not shaped like an OBJECT_VERSION_ID
+    protected static String parseIfMatchHeaderValue(String ifMatch) {
+        int length = ifMatch == null ? 0 : ifMatch.length();
+
+        // precondition failed on no content in the header
+        if (length == 0) {
+            throw new PreconditionFailedException("If-Match header is missing or empty");
+        }
+
+        // precondition failed if header uses a weak validator
+        if (length >= 2 && ifMatch.charAt(0) == 'W' && ifMatch.charAt(1) == '/') {
+            throw new PreconditionFailedException(
+                    "If-Match header [%s] must not be a weak validator".formatted(ifMatch));
+        }
+
+        int start = 0;
+        int end = length;
+        // check if the header value is quoted
+        if (ifMatch.charAt(0) == '"') {
+            // quoted: precondition failed if the end quote is missing
+            if (ifMatch.indexOf('"', 1) != length - 1) {
+                throw new PreconditionFailedException(
+                        "If-Match header [%s] is not a valid version uid".formatted(ifMatch));
+            }
+            start = 1;
+            end = length - 1;
+            // unquoted - precondition failed if there are other quotes in the header value
+        } else if (ifMatch.indexOf('"') >= 0) {
+            throw new PreconditionFailedException("If-Match header [%s] is not a valid version uid".formatted(ifMatch));
+        }
+
+        // precondition failed if the header is using a wildcard
+        if (end - start == 1 && ifMatch.charAt(start) == '*') {
+            throw new PreconditionFailedException(
+                    "If-Match header must reference a specific version, '*' is not supported");
+        }
+
+        int sep1 = ifMatch.indexOf("::", start);
+        int sep2 = ifMatch.indexOf("::", sep1 + 2);
+        int sep3 = ifMatch.indexOf("::", sep2 + 2);
+
+        // given the shape: s1::s2::s3
+        // for a valid shape the first and second separators are positive and third separator is negative
+        // thus we reject cases when:
+        // sep1 <= start => no separator or empty s1
+        // sep2 <= sep1 + 2 => no second separator, or empty s2
+        // sep2 + 2 >= end => no s3
+        // sep3 >= 0 => multiple separators
+        if (sep1 <= start || sep2 <= sep1 + 2 || sep2 + 2 >= end || sep3 >= 0) {
+            throw new PreconditionFailedException("If-Match header [%s] is not a valid version uid".formatted(ifMatch));
+        }
+
+        return start == 0 ? ifMatch : ifMatch.substring(start, end);
     }
 
     /**

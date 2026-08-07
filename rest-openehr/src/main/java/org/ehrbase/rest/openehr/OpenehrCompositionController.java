@@ -192,7 +192,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         final Optional<InternalResponse<CompositionResponseData>> respData;
         try {
             // If-Match may be sent with or without surrounding double quotes (RFC 7232 ETag form)
-            ObjectVersionId ifMatchId = new ObjectVersionId(unwrapIfMatchValue(ifMatch));
+            ObjectVersionId ifMatchId = new ObjectVersionId(parseIfMatchHeaderValue(ifMatch));
             String compositionVersionUid = compositionService
                     .update(ehrId, ifMatchId, compoObj)
                     .orElseThrow(() -> new InternalServerException("Failed to create composition"))
