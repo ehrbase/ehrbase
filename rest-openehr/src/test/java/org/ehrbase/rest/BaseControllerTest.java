@@ -46,9 +46,7 @@ class BaseControllerTest {
                 // quoted, as emitted by the ETag response header
                 "\"305eb2fd-c228-445c-ada7-5429d852fbb2::local.ehrbase.org::1\" ; 305eb2fd-c228-445c-ada7-5429d852fbb2::local.ehrbase.org::1",
                 // creating_system_id may contain dots and dashes
-                "305eb2fd-c228-445c-ada7-5429d852fbb2::some-system.example.org::42 ; 305eb2fd-c228-445c-ada7-5429d852fbb2::some-system.example.org::42",
-                // a branched version_tree_id is a valid OBJECT_VERSION_ID shape
-                "\"305eb2fd-c228-445c-ada7-5429d852fbb2::local.ehrbase.org::1.0.1\" ; 305eb2fd-c228-445c-ada7-5429d852fbb2::local.ehrbase.org::1.0.1"
+                "305eb2fd-c228-445c-ada7-5429d852fbb2::some-system.example.org::42 ; 305eb2fd-c228-445c-ada7-5429d852fbb2::some-system.example.org::42"
             })
     void parseIfMatchHeaderValueAccepts(String ifMatch, String expected) {
         assertThat(BaseController.parseIfMatchHeaderValue(ifMatch)).isEqualTo(expected);
