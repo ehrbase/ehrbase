@@ -18,8 +18,12 @@
 package org.ehrbase.configuration.config.security;
 
 import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
 import java.util.List;
+import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +32,7 @@ import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointR
 import org.springframework.boot.actuate.context.ShutdownEndpoint;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
  * Common Security config interface that allows to secure the spring actuator endpoints in common way between basic-auth
@@ -51,7 +56,47 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
         this.webEndpointProperties = webEndpointProperties;
     }
 
-    protected abstract HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception;
+    protected record SecurityConfigParams(
+            Class<? extends Filter> authFilterClass,
+            AuthTypes authType,
+            String adminRole,
+            String userRole,
+            List<String> mgmtRoles,
+            List<String> otherRequestsRoles,
+            List<SecurityProperties.EndpointAuthorization> additionalAuthorizations) {}
+
+    protected abstract SecurityConfigParams securityConfigParams();
+
+    protected HttpSecurity configureHttpSecurity(HttpSecurity http) throws Exception {
+        SecurityConfigParams params = securityConfigParams();
+        return http.addFilterBefore(new SecurityFilter(), params.authFilterClass())
+                .authorizeHttpRequests(auth -> {
+
+                    // Permit dispatcher types forward and error
+                    auth = auth.dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR)
+                            .permitAll();
+                    // Permit welcome page and img
+                    auth = auth.requestMatchers("/", "/img/**").permitAll();
+                    // secure /rest/admin/** so that only admins can access it
+                    auth = antRequestMatcherWithRoles(auth, "/rest/admin/**", params.adminRole());
+
+                    auth = applyAdditionalAuthorizations(auth, params);
+
+                    // secure /management/**
+                    auth = configureManagementEndpointAccess(auth, params.adminRole(), params.mgmtRoles());
+                    // secure all other requests using either user and/or admin roles
+                    auth.anyRequest().hasAnyRole(params.otherRequestsRoles().toArray(String[]::new));
+                })
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    }
+
+    private static AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+            antRequestMatcherWithRoles(
+                    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
+                    String pattern,
+                    String... roles) {
+        return auth.requestMatchers(antMatcher(pattern)).hasAnyRole(roles);
+    }
 
     /**
      * Configures management endpoints access
@@ -79,5 +124,35 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                 auth.requestMatchers(endpointRequestMatcher.excluding(ShutdownEndpoint.class))
                         .permitAll();
         };
+    }
+
+    /**
+     * Applies the rules for the given authentication type. Each matching rule secures its path pattern behind the
+     * configured roles. The list can be shared across auth chains, rules for other auth types are ignored.
+     * The {@link SecurityProperties.EndpointAuthorization#ADMIN} and
+     * {@link SecurityProperties.EndpointAuthorization#USER} keywords are replaced with the admin/user role names
+     * of the authentication type.
+     */
+    protected AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
+            applyAdditionalAuthorizations(
+                    AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
+                    SecurityConfigParams params) {
+
+        for (SecurityProperties.EndpointAuthorization rule : params.additionalAuthorizations()) {
+            if (rule.authType() == null || rule.authType() == params.authType()) {
+                auth = antRequestMatcherWithRoles(auth, rule.pathPattern(), resolveRoles(rule.roles(), params));
+            }
+        }
+        return auth;
+    }
+
+    private static String[] resolveRoles(List<String> roles, SecurityConfigParams params) {
+        return roles.stream()
+                .map(role -> switch (role) {
+                    case SecurityProperties.EndpointAuthorization.ADMIN -> params.adminRole();
+                    case SecurityProperties.EndpointAuthorization.USER -> params.userRole();
+                    default -> role;
+                })
+                .toArray(String[]::new);
     }
 }

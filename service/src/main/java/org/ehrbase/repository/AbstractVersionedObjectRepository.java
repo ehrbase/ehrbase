@@ -874,7 +874,7 @@ public abstract class AbstractVersionedObjectRepository<
             throw new PreconditionFailedException(NOT_MATCH_SYSTEM_ID);
         }
         // versions not consecutive
-        if ((headVersion + 1) != LocatableUtils.getUidVersion(uid)) {
+        if ((headVersion + 1) != LocatableUtils.uidVersion(uid).orElseThrow()) {
             throw new PreconditionFailedException(NOT_MATCH_LATEST_VERSION);
         }
     }

@@ -84,6 +84,11 @@ public final class SecurityConfigNoOp extends SecurityConfig {
                 .build());
     }
 
+    @Override
+    protected SecurityConfigParams securityConfigParams() {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Configure our used security chain by removing the  default <code>httpBasic</cpde> config as well as
      * <code>logout</code> config.

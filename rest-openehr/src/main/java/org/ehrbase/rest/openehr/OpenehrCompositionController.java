@@ -201,7 +201,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionVersionUid);
 
             UUID compositionId = extractVersionedObjectUidFromVersionUid(compositionVersionUid);
-            int nextVersion = LocatableUtils.getUidVersion(ifMatchId) + 1;
+            int nextVersion = LocatableUtils.uidVersion(ifMatchId).orElseThrow() + 1;
             respData = buildCompositionResponseData(
                     ehrId,
                     compositionId,
@@ -243,7 +243,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
             compositionService.delete(ehrId, targetObjId);
 
             // set next deleted version
-            int nextVersion = LocatableUtils.getUidVersion(targetObjId) + 1;
+            int version = LocatableUtils.uidVersion(targetObjId).orElseThrow();
+            int nextVersion = version + 1;
             targetObjId.getVersionTreeId().setValue(String.valueOf(nextVersion));
             URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, targetObjId.getValue());
 
@@ -254,7 +255,6 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     .toEpochMilli());
 
             UUID compositionUid = UUID.fromString(targetObjId.getObjectId().getValue());
-            int version = LocatableUtils.getUidVersion(targetObjId);
 
             HttpRestContext.register(
                     EHR_ID,

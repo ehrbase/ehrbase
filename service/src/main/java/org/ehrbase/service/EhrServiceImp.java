@@ -136,7 +136,7 @@ public class EhrServiceImp implements EhrService {
             UUID ehrId, EhrStatus ehrStatus, ObjectVersionId ifMatch, UUID contributionId, UUID audit) {
 
         UUID ehrStatusId = UUID.fromString(ifMatch.getObjectId().getValue());
-        int version = LocatableUtils.getUidVersion(ifMatch);
+        int version = LocatableUtils.uidVersion(ifMatch).orElseThrow();
 
         // set correct next id with incremented version
         ObjectVersionId statusVersionId = buildObjectVersionId(ehrStatusId, version + 1, systemService);
