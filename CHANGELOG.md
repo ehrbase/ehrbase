@@ -10,6 +10,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Changed 
  ### Fixed 
 
+## [2.35.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.34.0]
  ### Added
  ### Changed 
@@ -331,4 +336,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.32.0]: https://github.com/ehrbase/ehrbase/compare/v2.31.0...v2.32.0
 [2.33.0]: https://github.com/ehrbase/ehrbase/compare/v2.32.0...v2.33.0
 [2.34.0]: https://github.com/ehrbase/ehrbase/compare/v2.33.0...v2.34.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...HEAD
+[2.35.0]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...v2.35.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...HEAD
