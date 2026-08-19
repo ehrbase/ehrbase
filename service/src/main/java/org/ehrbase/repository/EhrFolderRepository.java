@@ -61,16 +61,13 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Record1;
 import org.jooq.SelectConditionStep;
-import org.jooq.SelectSelectStep;
 import org.jooq.Table;
 import org.jooq.TableField;
 import org.jooq.impl.DSL;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Handles DB-Access to {@link org.ehrbase.jooq.pg.tables.EhrFolderVersion} etc.
- */
+/// Handles DB-Access to [org.ehrbase.jooq.pg.tables.EhrFolderVersion] etc.
 @Repository
 public class EhrFolderRepository
         extends AbstractVersionedObjectRepository<
@@ -80,9 +77,8 @@ public class EhrFolderRepository
                 Folder,
                 FolderParseContext> {
 
-    /**
-     * Prepares ArrayNodes containing the UUIDs for Folder.items to avoid O(n²) runtime for this part of the reconstruction.
-     */
+    /// Prepares ArrayNodes containing the UUIDs for Folder.items to avoid O(n²) runtime for this part of the
+    /// reconstruction.
     public static class FolderParseContext {
         private final List<ArrayNode> itemUuidRows = new ArrayList<>();
 
@@ -179,37 +175,51 @@ public class EhrFolderRepository
                 Stream.concat(base.historyFields(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
     }
 
-    /**
-     * trim_array(
-     * (SELECT array_agg(uid.v ORDER BY num ASC)
-     * 				FROM
-     * 				ehr_folder_data h2
-     * 				join lateral (
-     * 				select * from
-     * 				unnest(h2.item_uuids)
-     * 				UNION ALL
-     * 				SELECT NULL) as uid(v) on true
-     * 				where (h.ehr_id, h.ehr_folders_idx)=(h2.ehr_id, h2.ehr_folders_idx)
-     * 				)
-     * 	, 1)
-     *
-     * @param versionHead
-     * @param ctx
-     * @return
-     */
+    /// ``` sql
+    /// select trim_array((
+    /// SELECT array_agg(uid.v ORDER BY num ASC, uid.idx ASC)
+    /// FROM ehr_folder_data h2
+    /// join lateral (
+    /// select u.v, u.idx
+    /// from unnest(
+    /// array_append(h2.item_uuids, null),
+    /// ARRAY(SELECT generate_series(0, cardinality(h2.item_uuids)))
+    /// ) as u(v, idx)
+    /// ) as uid(v, idx) on true
+    /// where (h.ehr_id, h.ehr_folders_idx) = (h2.ehr_id, h2.ehr_folders_idx)
+    /// ) , 1)
+    /// ```
+    ///
+    /// @param versionHead
+    /// @param ctx
+    /// @return
     public static Field<?> itemUuidFieldAggregation(final Table<?> versionHead, final DSLContext ctx) {
         EhrFolderData sqTable = EHR_FOLDER_DATA.as("h2");
-        SelectSelectStep<Record1<UUID>> separator = DSL.select(DSL.castNull(UUID.class));
-        Table<?> itemUuids = DSL.unnest(sqTable.ITEM_UUIDS);
-        Field<UUID> unnestedUuid = itemUuids.field(0, UUID.class).as("v");
-        Table<Record1<UUID>> unnestedWithSeparator = DSL.lateral(
-                        ctx.select(unnestedUuid).from(itemUuids).unionAll(separator))
+
+        // array_append(h2.item_uuids, null) - appends the row separator
+        Field<UUID[]> itemUuidsWithSeparator = DSL.arrayAppend(sqTable.ITEM_UUIDS, DSL.castNull(UUID.class));
+        // ARRAY(SELECT generate_series(0, cardinality(h2.item_uuids))) - positions incl. the separator
+        Field<Integer[]> itemUuidPositions =
+                DSL.array(ctx.selectFrom(DSL.generateSeries(DSL.inline(0), DSL.cardinality(sqTable.ITEM_UUIDS))
+                        .as("pos", "p")));
+
+        // unnest(<uuids>, <positions>) as u(v, idx)
+        Table<?> unnestedWithSeparator = AdditionalSQLFunctions.unnest(itemUuidsWithSeparator, itemUuidPositions)
+                .as("u", "v", "idx");
+        Field<UUID> unnestedUuid = DSL.field(DSL.name("u", "v"), UUID.class);
+        Field<Integer> unnestedIdx = DSL.field(DSL.name("u", "idx"), Integer.class);
+
+        // lateral (select u.v, u.idx from unnest(…) as u(v, idx)) as uid(v, idx)
+        Table<?> lateralItemUuids = DSL.lateral(
+                        ctx.select(unnestedUuid, unnestedIdx).from(unnestedWithSeparator))
                 .as("uid");
+        Field<UUID> itemUuid = lateralItemUuids.field(0, UUID.class);
+        Field<Integer> itemUuidIdx = lateralItemUuids.field(1, Integer.class);
 
         SelectConditionStep<Record1<UUID[]>> aggregated = ctx.select(
-                        DSL.arrayAgg(unnestedUuid).orderBy(sqTable.NUM.asc()))
+                        DSL.arrayAgg(itemUuid).orderBy(sqTable.NUM.asc(), itemUuidIdx.asc()))
                 .from(sqTable)
-                .join(unnestedWithSeparator)
+                .join(lateralItemUuids)
                 .on(DSL.trueCondition())
                 .where(sqTable.EHR_ID
                         .eq(versionHead.field(VERSION_PROTOTYPE.EHR_ID))
@@ -234,14 +244,14 @@ public class EhrFolderRepository
         return parsed;
     }
 
-    /**
-     * Create a new Folder in the DB
-     *
-     * @param ehrId            Affected <code>EHR</code>
-     * @param folder           The {@link Folder} to commit
-     * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
-     */
+    /// Create a new Folder in the DB
+    ///
+    /// @param ehrId            Affected `EHR`
+    /// @param folder           The [Folder] to commit
+    /// @param contributionId   If `null` default contribution will be created
+    ///[ContributionRepository#createDefault(UUID, ContributionDataType , ContributionChangeType)]
+    /// @param auditId          If `null` default audit will be created
+    ///[ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)]
     @Transactional
     public void commit(UUID ehrId, Folder folder, UUID contributionId, UUID auditId, int ehrFoldersIdx) {
         commitHead(
@@ -290,14 +300,14 @@ public class EhrFolderRepository
         return result;
     }
 
-    /**
-     * Update a Folder in the DB
-     *
-     * @param ehrId            Affected <code>EHR</code>
-     * @param folder           Affected <code>Folder</code> with new head system version
-     * @param contributionId   If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId          If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
-     */
+    /// Update a Folder in the DB
+    ///
+    /// @param ehrId            Affected `EHR`
+    /// @param folder           Affected `Folder` with new head system version
+    /// @param contributionId   If `null` default contribution will be created
+    ///[ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)]
+    /// @param auditId          If `null` default audit will be created
+    ///[ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)]
     @Transactional
     public void update(UUID ehrId, Folder folder, UUID contributionId, UUID auditId, int ehrFoldersIdx) {
 
@@ -317,16 +327,16 @@ public class EhrFolderRepository
         return findHead(singleFolderInEhrCondition(ehrId, ehrFoldersIdx));
     }
 
-    /**
-     * Delete a  Folder in the DB
-     *
-     * @param ehrId          Affected <code>EHR</code>
-     * @param rootFolderId   <code>EHR</code> root {@link Folder}
-     * @param version        Version to be deleted. Must match latest
-     * @param ehrFoldersIdx  <code>EHR</code> folder index to delete
-     * @param contributionId If <code>null</code> default contribution will be created {@link ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)}
-     * @param auditId        If <code>null</code> default audit will be created {@link ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)}
-     */
+    /// Delete a  Folder in the DB
+    ///
+    /// @param ehrId          Affected `EHR`
+    /// @param rootFolderId`EHR` root [Folder]
+    /// @param version        Version to be deleted. Must match latest
+    /// @param ehrFoldersIdx`EHR` folder index to delete
+    /// @param contributionId If `null` default contribution will be created
+    ///[ContributionRepository#createDefault(UUID, ContributionDataType, ContributionChangeType)]
+    /// @param auditId        If `null` default audit will be created
+    ///[ContributionRepository#createDefaultAudit(ContributionChangeType, AuditDetailsTargetType)]
     @Transactional
     public void delete(
             UUID ehrId, UUID rootFolderId, int version, int ehrFoldersIdx, UUID contributionId, UUID auditId) {
