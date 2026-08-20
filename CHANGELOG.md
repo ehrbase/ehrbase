@@ -9,6 +9,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+
+## [2.35.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
  - [#1648](https://github.com/ehrbase/ehrbase/pull/1648) Fixes possibly misplaced or removed folder items when retrieving a directory, as well as corruption of the folder history.
    Since EHRbase version 2.30.0, the order of references to compositions may have changed, references may have disappeared, or appeared in a different subfolder.
 
@@ -339,4 +344,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.33.0]: https://github.com/ehrbase/ehrbase/compare/v2.32.0...v2.33.0
 [2.34.0]: https://github.com/ehrbase/ehrbase/compare/v2.33.0...v2.34.0
 [2.35.0]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...v2.35.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...HEAD
+[2.35.1]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...v2.35.1
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...HEAD
