@@ -25,6 +25,8 @@ import org.jooq.AggregateFunction;
 import org.jooq.Field;
 import org.jooq.JSONB;
 import org.jooq.OrderField;
+import org.jooq.Record;
+import org.jooq.Table;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 
@@ -111,34 +113,34 @@ public final class AdditionalSQLFunctions {
         return DSL.aggregate("min_dv_ordered", SQLDataType.JSONB, f);
     }
 
-    /**
-     * DSL::count returns an integer.
-     * Since row counts may require a long we have to use this workaround.
-     *
-     * @param distinct
-     * @param f
-     * @return
-     */
+    /// DSL::count returns an integer.
+    /// Since row counts may require a long we have to use this workaround.
+    ///
+    /// @param distinct
+    /// @param f
+    /// @return
     public static AggregateFunction<Long> count(boolean distinct, Field<?> f) {
         return distinct
                 ? DSL.aggregateDistinct("count", SQLDataType.BIGINT, f)
                 : DSL.aggregate("count", SQLDataType.BIGINT, f == null ? DSL.field(DSL.raw("*")) : f);
     }
 
-    /**
-     * DSL.stringAgg / DSL.listAgg is not supported in all postgres derivates
-     *
-     * @param toAggregate
-     * @param separator
-     * @param orderBy
-     * @return
-     */
+    /// DSL.stringAgg / DSL.listAgg is not supported in all postgres derivates
+    ///
+    /// @param toAggregate
+    /// @param separator
+    /// @param orderBy
+    /// @return
     public static Field<String> string_agg(Field<String> toAggregate, Field<String> separator, OrderField<?> orderBy) {
         if (orderBy == null) {
             return DSL.aggregate("string_agg", SQLDataType.CLOB, toAggregate, separator);
         } else {
             return DSL.field("string_agg({0},{1} ORDER BY {2})", SQLDataType.CLOB, toAggregate, separator, orderBy);
         }
+    }
+
+    public static <T1, T2> Table<Record> unnest(Field<T1[]> array1, Field<T2[]> array2) {
+        return DSL.table("{0}", DSL.function("unnest", Record.class, array1, array2));
     }
 
     public static <T> Field<T[]> trim_array(Field<T[]> field, Field<Integer> elementsToTrim) {

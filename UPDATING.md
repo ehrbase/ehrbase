@@ -2,6 +2,11 @@
 
 This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
+## EHRbase 2.35.1
+
+An issue introduced in EHRbase 2.30.0 may, in rare cases, have lead to incorrect folder data and history.
+As it cannot be technically discriminated between data corruption and intent by the user, automatic data correction cannot be performed by EHRbase.  
+
 ## EHRbase 2.30.0
 
 ### REST API changes
