@@ -38,7 +38,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.jooq.pg.enums.ContributionChangeType;
-import org.ehrbase.jooq.pg.enums.ContributionDataType;
 import org.ehrbase.jooq.pg.tables.EhrFolderData;
 import org.ehrbase.jooq.pg.tables.EhrFolderVersion;
 import org.ehrbase.jooq.pg.tables.EhrFolderVersionHistory;
@@ -175,8 +174,8 @@ public class EhrFolderRepository
                 Stream.concat(base.historyFields(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
     }
 
-
-    /// Creates an SQL expression that aggregates the `item_uuids` arrays of an EHR root folder and its subfolders into one array with `null` as separator.
+    /// Creates an SQL expression that aggregates the `item_uuids` arrays of an EHR root folder and its subfolders into
+    /// one array with `null` as separator.
     /// Implies that `null` is not allowed as array entry.
     ///
     /// |num|item_uuids       |
