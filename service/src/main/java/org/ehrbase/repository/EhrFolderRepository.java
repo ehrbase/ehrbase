@@ -175,24 +175,38 @@ public class EhrFolderRepository
                 Stream.concat(base.historyFields(), Stream.of(EHR_FOLDER_VERSION_HISTORY.OV_ITEM_UUIDS)));
     }
 
+
+    /// Creates an SQL expression that aggregates the `item_uuids` arrays of an EHR root folder and its subfolders into one array with `null` as separator.
+    /// Implies that `null` is not allowed as array entry.
+    ///
+    /// |num|item_uuids       |
+    /// |---|-----------------|
+    /// | 0 |`{c00, c01}`     |
+    /// | 1 |`{}`             |
+    /// | 2 |`{c20}`          |
+    /// | 3 |`{c30, c31, c32}`|
+    ///
+    /// into `{c01, c02, null, null, c20, null, c30, c31, c32}`
+    ///
+    ///
     /// ``` sql
-    /// select trim_array((
-    /// SELECT array_agg(uid.v ORDER BY num ASC, uid.idx ASC)
-    /// FROM ehr_folder_data h2
-    /// join lateral (
-    /// select u.v, u.idx
-    /// from unnest(
-    /// array_append(h2.item_uuids, null),
-    /// ARRAY(SELECT generate_series(0, cardinality(h2.item_uuids)))
-    /// ) as u(v, idx)
-    /// ) as uid(v, idx) on true
-    /// where (h.ehr_id, h.ehr_folders_idx) = (h2.ehr_id, h2.ehr_folders_idx)
-    /// ) , 1)
+    /// trim_array((
+    ///   SELECT array_agg(uid.v ORDER BY num ASC, uid.idx ASC)
+    ///   FROM ehr_folder_data AS h2
+    ///   JOIN LATERAL (
+    ///     SELECT u.v, u.idx
+    ///     FROM unnest(
+    ///       array_append(h2.item_uuids, null),
+    ///       ARRAY(SELECT generate_series(0, cardinality(h2.item_uuids)))
+    ///     ) AS u(v, idx)
+    ///   ) AS uid(v, idx) ON true
+    ///   WHERE (h.ehr_id, h.ehr_folders_idx) = (h2.ehr_id, h2.ehr_folders_idx)
+    /// ), 1)
     /// ```
     ///
     /// @param versionHead
     /// @param ctx
-    /// @return
+    /// @return a Field aggregating `item_uuids`
     public static Field<?> itemUuidFieldAggregation(final Table<?> versionHead, final DSLContext ctx) {
         EhrFolderData sqTable = EHR_FOLDER_DATA.as("h2");
 
