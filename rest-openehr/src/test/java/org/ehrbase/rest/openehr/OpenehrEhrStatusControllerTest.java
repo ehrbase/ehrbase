@@ -22,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.datavalues.DvText;
@@ -37,12 +38,14 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
+import org.ehrbase.api.exception.PreconditionFailedException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.rest.BaseController;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.http.HttpHeaders;
@@ -208,6 +211,62 @@ class OpenehrEhrStatusControllerTest {
             assertResponse(HttpStatus.NO_CONTENT, response, ehrId, nextVersionId, "Tue, 16 Jul 2024 12:00:00 GMT");
             assertThat(body).isNull();
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"%s", "\"%s\""})
+    void updateEhrStatusAcceptsQuotedAndUnquotedIfMatch(String ifMatchTemplate) {
+
+        UUID ehrId = UUID.fromString("d83a16ae-2644-4706-8911-282772c10137");
+        UUID ehrStatusId = UUID.fromString("305eb2fd-c228-445c-ada7-5429d852fbb2");
+        ObjectVersionId currentVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "2");
+        ObjectVersionId nextVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "3");
+        OffsetDateTime lastModified = OffsetDateTime.parse("2024-07-16T12:00:00Z");
+
+        EhrStatus ehrStatus = ehrStatus(nextVersionId, true, false);
+
+        doReturn(ehrStatus).when(mockEhrService).updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
+        doReturn(Optional.of(originalVersion(nextVersionId, currentVersionId, lastModified, ehrStatus)))
+                .when(mockEhrService)
+                .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
+
+        String ifMatch = ifMatchTemplate.formatted(currentVersionId.getValue());
+        ResponseEntity<EhrStatus> response =
+                controller().updateEhrStatus(ehrId, ifMatch, BaseController.RETURN_MINIMAL, ehrStatus);
+
+        assertResponse(HttpStatus.NO_CONTENT, response, ehrId, nextVersionId, "Tue, 16 Jul 2024 12:00:00 GMT");
+        assertThat(response.getBody()).isNull();
+    }
+
+    /**
+     * An unusable <code>If-Match</code> must be rejected with 412 <em>before</em> the EHR_STATUS is written,
+     * so that the client never receives an error for an update that has already been committed.
+     */
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(
+            strings = {
+                "*",
+                "\"*\"",
+                "W/\"305eb2fd-c228-445c-ada7-5429d852fbb2::test.ehr.controller::2\"",
+                "\"305eb2fd-c228-445c-ada7-5429d852fbb2::test.ehr.controller::2",
+                "305eb2fd-c228-445c-ada7-5429d852fbb2::test.ehr.controller::2\"",
+                "305eb2fd-c228-445c-ada7-5429d852fbb2",
+                "305eb2fd-c228-445c-ada7-5429d852fbb2::test.ehr.controller::",
+                "305eb2fd-c228-445c-ada7-5429d852fbb2::test.ehr.controller::2::3"
+            })
+    void updateEhrStatusRejectsUnusableIfMatch(String ifMatch) {
+
+        UUID ehrId = UUID.fromString("d83a16ae-2644-4706-8911-282772c10137");
+        UUID ehrStatusId = UUID.fromString("305eb2fd-c228-445c-ada7-5429d852fbb2");
+        EhrStatus ehrStatus =
+                ehrStatus(new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "3"), true, false);
+
+        OpenehrEhrStatusController controller = controller();
+        assertThatThrownBy(() -> controller.updateEhrStatus(ehrId, ifMatch, BaseController.RETURN_MINIMAL, ehrStatus))
+                .isInstanceOf(PreconditionFailedException.class);
+
+        verifyNoInteractions(mockEhrService);
     }
 
     private void runTestWithMockResult(BiFunction<UUID, EhrStatus, ResponseEntity<EhrStatus>> consumer) {
