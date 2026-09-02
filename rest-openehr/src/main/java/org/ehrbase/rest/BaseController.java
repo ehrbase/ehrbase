@@ -102,7 +102,7 @@ public abstract class BaseController {
      * @return URI for the given base URL and segments
      */
     protected URI createLocationUri(String... pathSegments) {
-        return UriComponentsBuilder.fromHttpUrl(getContextPath())
+        return UriComponentsBuilder.fromUriString(getContextPath())
                 .path(UriUtils.encodePath(apiContextPathWithVersion, "UTF-8"))
                 .pathSegment(pathSegments)
                 .build()

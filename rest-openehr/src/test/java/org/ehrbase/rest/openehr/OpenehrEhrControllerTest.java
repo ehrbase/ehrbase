@@ -30,7 +30,6 @@ import static org.mockito.Mockito.when;
 import com.nedap.archie.rm.ehr.Ehr;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -140,7 +139,7 @@ class OpenehrEhrControllerTest {
 
         var response = creation.get();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/ehr/" + ehrId));
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION)).containsExactly(CONTEXT_PATH + "/ehr/" + ehrId);
 
         var body = response.getBody();
         if (prefer.equals(BaseController.RETURN_REPRESENTATION)) {
@@ -211,7 +210,7 @@ class OpenehrEhrControllerTest {
     private static void assertEhrResponseData(ResponseEntity<Ehr> response, UUID ehrId, EhrStatus ehrStatus) {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/ehr/" + ehrId));
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION)).containsExactly(CONTEXT_PATH + "/ehr/" + ehrId);
 
         assertResponseDataBody(response, ehrId, ehrStatus);
     }

@@ -18,21 +18,24 @@
 package org.ehrbase.configuration.config.security;
 
 import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.context.ShutdownEndpoint;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.util.AntPathMatcher;
 
 /**
  * Common Security config interface that allows to secure the spring actuator endpoints in common way between basic-auth
@@ -95,7 +98,37 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
                     String pattern,
                     String... roles) {
-        return auth.requestMatchers(antMatcher(pattern)).hasAnyRole(roles);
+        return auth.requestMatchers(requestMatcherFor(pattern)).hasAnyRole(roles);
+    }
+
+    /**
+     * Configured {@code security.additional-authorizations} patterns may use Ant syntax that
+     * {@code PathPatternRequestMatcher} rejects (mid-path {@code **}, missing leading slash); those
+     * fall back to Ant matching instead of failing startup. A bare {@code **} matches every request,
+     * an empty pattern fails at startup.
+     */
+    static RequestMatcher requestMatcherFor(String pattern) {
+        if (StringUtils.isBlank(pattern)) {
+            throw new IllegalArgumentException("Additional authorization pattern is not present.");
+        }
+
+        if ("**".equals(pattern)) {
+            return pathPattern("/**");
+        }
+        try {
+            return pathPattern(pattern);
+        } catch (IllegalArgumentException e) {
+            LoggerFactory.getLogger(SecurityConfig.class)
+                    .warn(
+                            "Additional authorization patterns [{}] are not valid path patterns ({}). Falling back to legacy Ant matching.",
+                            pattern,
+                            e.getMessage());
+            AntPathMatcher antPathMatcher = new AntPathMatcher();
+            return request -> {
+                String path = request.getServletPath() + (request.getPathInfo() != null ? request.getPathInfo() : "");
+                return antPathMatcher.match(pattern, path);
+            };
+        }
     }
 
     /**

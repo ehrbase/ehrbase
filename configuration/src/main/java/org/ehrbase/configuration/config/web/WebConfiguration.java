@@ -17,12 +17,20 @@
  */
 package org.ehrbase.configuration.config.web;
 
+import java.util.List;
 import org.ehrbase.configuration.util.IsoDateTimeConverter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.converter.AbstractJacksonHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.xml.AbstractXmlHttpMessageConverter;
+import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
+import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.web.filter.UrlHandlerFilter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -48,8 +56,41 @@ public class WebConfiguration implements WebMvcConfigurer {
         registry.addMapping("/**").combine(properties.toCorsConfiguration());
     }
 
+    /**
+     * Keeps {@code /x/} reaching the handler for {@code /x} (Boot 3 behavior). Must stay at default
+     * filter order so that Security still evaluates the path as sent.
+     */
+    @Bean
+    public UrlHandlerFilter trailingSlashFilter() {
+        return UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build();
+    }
+
+    /**
+     * Jackson converters go last, XML after JSON, so that byte/String bodies and clients accepting any
+     * media type are never handled by a Jackson converter. Boot registers custom converter beans ahead
+     * of the defaults, which would otherwise put a JSON converter in front of the String one.
+     */
     @Override
-    public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
+        List<HttpMessageConverter<?>> jacksonConverters =
+                converters.stream().filter(WebConfiguration::isJacksonConverter).toList();
+        converters.removeAll(jacksonConverters);
+        converters.addAll(
+                jacksonConverters.stream().filter(c -> !isXmlConverter(c)).toList());
+        converters.addAll(jacksonConverters.stream()
+                .filter(WebConfiguration::isXmlConverter)
+                .toList());
+    }
+
+    private static boolean isJacksonConverter(HttpMessageConverter<?> converter) {
+        return converter instanceof AbstractJackson2HttpMessageConverter
+                || converter instanceof AbstractJacksonHttpMessageConverter
+                || isXmlConverter(converter);
+    }
+
+    private static boolean isXmlConverter(HttpMessageConverter<?> converter) {
+        return converter instanceof AbstractXmlHttpMessageConverter
+                || converter instanceof MappingJackson2XmlHttpMessageConverter
+                || converter instanceof JacksonXmlHttpMessageConverter;
     }
 }

@@ -32,6 +32,12 @@
 spring:
   application:
     name: ehrbase
+  # Spring Boot 4 prefers Jackson 3 by default. Using Jackson 2 for SDK compatibility.
+  http:
+    converters:
+      preferred-json-mapper: jackson2
+    codecs:
+      preferred-json-mapper: jackson2
 
   cache:
     # change to type redis if usage of redis distributed cache is intended. Also turn on management.health.redis.enabled
@@ -69,7 +75,8 @@ spring:
   jooq:
     sql-dialect: POSTGRES
 
-  jackson:
+  # `spring.jackson.*` configures Jackson 3
+  jackson2:
     default-property-inclusion: NON_NULL
 
 security:
