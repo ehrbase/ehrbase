@@ -17,6 +17,7 @@
  */
 package org.ehrbase.configuration.config.web;
 
+import java.util.Comparator;
 import java.util.List;
 import org.ehrbase.configuration.util.IsoDateTimeConverter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -66,31 +67,32 @@ public class WebConfiguration implements WebMvcConfigurer {
     }
 
     /**
-     * Jackson converters go last, XML after JSON, so that byte/String bodies and clients accepting any
-     * media type are never handled by a Jackson converter. Boot registers custom converter beans ahead
-     * of the defaults, which would otherwise put a JSON converter in front of the String one.
+     * Reorders the converters by {@link #converterRank(HttpMessageConverter)}. The sort is stable, so
+     * converters of the same rank keep their registration order.
      */
     @Override
     public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        List<HttpMessageConverter<?>> jacksonConverters =
-                converters.stream().filter(WebConfiguration::isJacksonConverter).toList();
-        converters.removeAll(jacksonConverters);
-        converters.addAll(
-                jacksonConverters.stream().filter(c -> !isXmlConverter(c)).toList());
-        converters.addAll(jacksonConverters.stream()
-                .filter(WebConfiguration::isXmlConverter)
-                .toList());
+        converters.sort(Comparator.comparingInt(WebConfiguration::converterRank));
     }
 
-    private static boolean isJacksonConverter(HttpMessageConverter<?> converter) {
-        return converter instanceof AbstractJackson2HttpMessageConverter
-                || converter instanceof AbstractJacksonHttpMessageConverter
-                || isXmlConverter(converter);
-    }
-
-    private static boolean isXmlConverter(HttpMessageConverter<?> converter) {
-        return converter instanceof AbstractXmlHttpMessageConverter
+    /**
+     * The order to maintain is: all other converters (byte[], String, ...), then Jackson JSON, then XML.
+     * Spring Boot registers custom converter beans ahead of the defaults, which would otherwise put a JSON
+     * converter in front of the String one. Clients accepting any media type must negotiate JSON before XML.
+     *
+     * @return the ordering rank of the converter
+     */
+    private static int converterRank(HttpMessageConverter<?> converter) {
+        if (converter instanceof AbstractXmlHttpMessageConverter
                 || converter instanceof MappingJackson2XmlHttpMessageConverter
-                || converter instanceof JacksonXmlHttpMessageConverter;
+                || converter instanceof JacksonXmlHttpMessageConverter) {
+            return 2;
+        }
+
+        if (converter instanceof AbstractJackson2HttpMessageConverter
+                || converter instanceof AbstractJacksonHttpMessageConverter) {
+            return 1;
+        }
+        return 0;
     }
 }
