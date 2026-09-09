@@ -274,10 +274,6 @@ client:
   ssl:
     enabled: false
 
-# JavaMelody
-javamelody:
-  enabled: false
-
 #  plugin configuration
 plugin-manager:
   plugin-dir: ./plugin_dir
