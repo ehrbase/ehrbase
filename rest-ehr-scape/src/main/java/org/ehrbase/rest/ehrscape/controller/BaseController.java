@@ -45,7 +45,7 @@ public abstract class BaseController {
      * @return URI for the given base URL and segments
      */
     protected String createLocationUri(String... pathSegments) {
-        return UriComponentsBuilder.fromHttpUrl(getContextPath())
+        return UriComponentsBuilder.fromUriString(getContextPath())
                 .path(API_ECIS_CONTEXT_PATH_WITH_VERSION)
                 .pathSegment(pathSegments)
                 .build()

@@ -2,6 +2,24 @@
 
 This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
+## EHRbase 2.36.0
+
+### Spring Boot 4
+
+EHRbase now runs on Spring Boot 4 (Spring Framework 7, Spring Security 7).
+
+#### Additional authorization path patterns
+
+The `path-pattern` of `security.additional-authorizations` entries is now parsed as a Spring `PathPattern`
+instead of an Ant pattern. Patterns that were accepted before but are invalid now cause EHRbase to fail at startup.
+
+Limitations:
+- The pattern must start with `/`.
+- `**` is accepted only as the end of a pattern. A bare `**` is not accepted.
+- Path segments can be captured with `{*path}` or `{segment}`.
+
+For a more detailed usage description, check the Spring `org.springframework.web.util.pattern.PathPattern` documentation. 
+
 ## EHRbase 2.35.1
 
 An issue introduced in EHRbase 2.30.0 may, in rare cases, have lead to incorrect folder data and history.

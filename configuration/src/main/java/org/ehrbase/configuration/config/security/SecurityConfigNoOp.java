@@ -17,8 +17,8 @@
  */
 package org.ehrbase.configuration.config.security;
 
+import jakarta.annotation.PostConstruct;
 import java.util.List;
-import javax.annotation.PostConstruct;
 import org.ehrbase.service.IAuthenticationFacade;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -70,13 +70,13 @@ public final class SecurityConfigNoOp extends SecurityConfig {
      *
      * The reason for this warning is that <code>spring.security.user.password</code> is not configured and no auth
      * is used at all. In such cases the <code>spring.security.user.password</code> will be a generated
-     * <code>UUID4</code> {@link  org.springframework.boot.autoconfigure.security.SecurityProperties.User}. But  we start
+     * <code>UUID4</code> {@link  org.springframework.boot.security.autoconfigure.SecurityProperties.User}. But  we start
      * the app with security enabled to be able to use an external oauth2 client.
      */
     @Bean
     public InMemoryUserDetailsManager inMemoryUserDetailsManager(
-            org.springframework.boot.autoconfigure.security.SecurityProperties properties) {
-        final org.springframework.boot.autoconfigure.security.SecurityProperties.User user = properties.getUser();
+            org.springframework.boot.security.autoconfigure.SecurityProperties properties) {
+        final org.springframework.boot.security.autoconfigure.SecurityProperties.User user = properties.getUser();
         final List<String> roles = user.getRoles();
         return new InMemoryUserDetailsManager(User.withUsername(user.getName())
                 .password(user.getPassword())

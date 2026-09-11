@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.flywaydb.core.Flyway;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.tools.jdbc.SingleConnectionDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +75,7 @@ public class EhrbasePostgreSQLContainer extends JdbcDatabaseContainer<EhrbasePos
     @Override
     @SuppressWarnings("deprecation")
     @Deprecated
-    protected @NotNull Set<Integer> getLivenessCheckPorts() {
+    protected Set<Integer> getLivenessCheckPorts() {
         return super.getLivenessCheckPorts();
     }
 

@@ -18,7 +18,7 @@
 package org.ehrbase.configuration.config.security;
 
 import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
+import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
@@ -28,8 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.boot.actuate.context.ShutdownEndpoint;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -78,7 +78,7 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     // Permit welcome page and img
                     auth = auth.requestMatchers("/", "/img/**").permitAll();
                     // secure /rest/admin/** so that only admins can access it
-                    auth = antRequestMatcherWithRoles(auth, "/rest/admin/**", params.adminRole());
+                    auth = requestMatcherWithRoles(auth, "/rest/admin/**", params.adminRole());
 
                     auth = applyAdditionalAuthorizations(auth, params);
 
@@ -91,11 +91,11 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     }
 
     private static AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
-            antRequestMatcherWithRoles(
+            requestMatcherWithRoles(
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
                     String pattern,
                     String... roles) {
-        return auth.requestMatchers(antMatcher(pattern)).hasAnyRole(roles);
+        return auth.requestMatchers(pathPattern(pattern)).hasAnyRole(roles);
     }
 
     /**
@@ -140,7 +140,7 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
 
         for (SecurityProperties.EndpointAuthorization rule : params.additionalAuthorizations()) {
             if (rule.authType() == null || rule.authType() == params.authType()) {
-                auth = antRequestMatcherWithRoles(auth, rule.pathPattern(), resolveRoles(rule.roles(), params));
+                auth = requestMatcherWithRoles(auth, rule.pathPattern(), resolveRoles(rule.roles(), params));
             }
         }
         return auth;
