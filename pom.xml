@@ -28,12 +28,12 @@
   <parent>
     <groupId>org.ehrbase.openehr</groupId>
     <artifactId>bom</artifactId>
-    <version>2.35.1</version>
+    <version>2.36.0</version>
     <relativePath>/bom/pom.xml</relativePath>
   </parent>
 
   <artifactId>server</artifactId>
-  <version>2.35.1</version>
+  <version>2.36.0</version>
   <packaging>pom</packaging>
   <name>EHRbase</name>
   <description>EHRbase openEHR server</description>
@@ -162,7 +162,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-enforcer-plugin</artifactId>
-        <version>3.6.3</version>
+        <version>${maven-enforcer-plugin.version}</version>
         <configuration>
           <rules>
             <bannedDependencies>
