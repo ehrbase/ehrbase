@@ -8,7 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed
- - Upgrade to Sprint Boot 4 [#1652](https://github.com/ehrbase/ehrbase/pull/1652)
+ - Upgrade to Spring Boot 4 [#1652](https://github.com/ehrbase/ehrbase/pull/1652)
  ### Fixed 
 
 ## [2.35.1]
