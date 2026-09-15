@@ -20,19 +20,13 @@ package org.ehrbase.application.server;
 import org.ehrbase.configuration.EhrBaseServerConfiguration;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(
-        exclude = {
-            ManagementWebSecurityAutoConfiguration.class,
-            R2dbcAutoConfiguration.class,
-            SecurityAutoConfiguration.class
-        })
+@SpringBootApplication(exclude = {ManagementWebSecurityAutoConfiguration.class, SecurityAutoConfiguration.class})
 @Import({EhrBaseServerConfiguration.class})
 @SuppressWarnings("java:S1118")
 public class EhrBaseServer {
