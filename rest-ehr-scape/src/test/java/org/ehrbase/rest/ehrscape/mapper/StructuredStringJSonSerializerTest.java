@@ -17,6 +17,8 @@
  */
 package org.ehrbase.rest.ehrscape.mapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -25,13 +27,12 @@ import org.ehrbase.api.mapper.StructuredStringJSonSerializer;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredString;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.StructuredStringFormat;
 import org.ehrbase.rest.ehrscape.responsedata.CompositionResponseData;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class StructuredStringJSonSerializerTest {
+class StructuredStringJSonSerializerTest {
 
     @Test
-    public void serialize() throws JsonProcessingException {
+    void serialize() throws JsonProcessingException {
         SimpleModule mapperModule = new SimpleModule();
         mapperModule.addSerializer(StructuredString.class, new StructuredStringJSonSerializer());
 
@@ -46,7 +47,7 @@ public class StructuredStringJSonSerializerTest {
             String actual = objectMapper.writer().writeValueAsString(responseData);
             String expected =
                     "{\"meta\":null,\"action\":null,\"composition\":{\"test\":false},\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
-            Assert.assertEquals(expected, actual);
+            assertEquals(expected, actual);
         }
 
         // XML in JSON
@@ -58,7 +59,7 @@ public class StructuredStringJSonSerializerTest {
             String actual = objectMapper.writer().writeValueAsString(responseData);
             String expected =
                     "{\"meta\":null,\"action\":null,\"composition\":\"<test>Test<test>\",\"format\":null,\"templateId\":null,\"ehrId\":null,\"compositionUid\":null}";
-            Assert.assertEquals(expected, actual);
+            assertEquals(expected, actual);
         }
 
         // JSON in XML
@@ -72,7 +73,7 @@ public class StructuredStringJSonSerializerTest {
             String actual = xmlMapper.writer().writeValueAsString(responseData);
             String expected =
                     "<CompositionResponseData><meta/><action/><composition>{\"test\":false}</composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
-            Assert.assertEquals(expected, actual);
+            assertEquals(expected, actual);
         }
 
         // XML in XML
@@ -84,7 +85,7 @@ public class StructuredStringJSonSerializerTest {
             String actual = xmlMapper.writer().writeValueAsString(responseData);
             String expected =
                     "<CompositionResponseData><meta/><action/><composition><test>Test<test></composition><format/><templateId/><ehrId/><compositionUid/></CompositionResponseData>";
-            Assert.assertEquals(expected, actual);
+            assertEquals(expected, actual);
         }
     }
 }

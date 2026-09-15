@@ -26,12 +26,12 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
-@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class, RedisAutoConfiguration.class})
+@SpringBootApplication(exclude = {WebMvcAutoConfiguration.class, DataRedisAutoConfiguration.class})
 @Import({EhrBaseCliConfiguration.class, CliConfiguration.class})
 public class EhrBaseCli implements CommandLineRunner {
 
