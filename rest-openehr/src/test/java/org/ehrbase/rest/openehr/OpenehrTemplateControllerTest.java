@@ -86,9 +86,9 @@ class OpenehrTemplateControllerTest {
 
         var response = controller().getTemplatesClassic(accept);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
-        assertThat(response.getHeaders())
-                .containsEntry(HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/definition/template/adl1.4"));
+        assertThat(response.getHeaders().get(HttpHeaders.CONTENT_TYPE)).containsExactly(accept);
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/definition/template/adl1.4");
         assertThat(response.getBody())
                 .hasSize(1)
                 .allMatch(m -> m.getTemplateId().equals(SAMPLE_ID));
@@ -100,11 +100,10 @@ class OpenehrTemplateControllerTest {
 
         var response = controller().createTemplateClassic(prefer, SAMPLE_OPT);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getHeaders())
-                .containsEntry(HttpHeaders.CONTENT_TYPE, List.of(MediaType.APPLICATION_XML_VALUE));
-        assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID));
+        assertThat(response.getHeaders().get(HttpHeaders.CONTENT_TYPE))
+                .containsExactly(MediaType.APPLICATION_XML_VALUE);
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID);
 
         if ("return=representation".equals(prefer)) {
             assertThat(response.getBody()).isEqualTo(SAMPLE_OPT);
@@ -126,10 +125,9 @@ class OpenehrTemplateControllerTest {
 
         ResponseEntity<?> response = controller().getTemplateClassic(MediaType.APPLICATION_XML_VALUE, SAMPLE_ID);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of("application/xml"));
-        assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID));
+        assertThat(response.getHeaders().get(HttpHeaders.CONTENT_TYPE)).containsExactly("application/xml");
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID);
         assertThat(response.getBody()).isInstanceOf(String.class).isEqualTo(SAMPLE_OPT);
     }
 
@@ -139,10 +137,9 @@ class OpenehrTemplateControllerTest {
 
         ResponseEntity<?> response = controller().getTemplateClassic(accept, SAMPLE_ID);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
-        assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.LOCATION, List.of(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID));
+        assertThat(response.getHeaders().get(HttpHeaders.CONTENT_TYPE)).containsExactly(accept);
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID);
         assertThat(response.getBody()).isInstanceOf(WebTemplate.class).isEqualTo(SAMPLE_WEB_TEMPLATE);
     }
 
@@ -163,11 +160,9 @@ class OpenehrTemplateControllerTest {
 
         ResponseEntity<?> response = controller().getTemplateExample(accept, SAMPLE_ID, null);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
-        assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.LOCATION,
-                        List.of(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID + "/example"));
+        assertThat(response.getHeaders().get(HttpHeaders.CONTENT_TYPE)).containsExactly(accept);
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID + "/example");
         assertThat(response.getBody()).isEqualTo("\"string\"");
     }
 
@@ -177,13 +172,11 @@ class OpenehrTemplateControllerTest {
 
         ResponseEntity<?> response = controller().getWebTemplate(accept, SAMPLE_ID);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.CONTENT_TYPE, List.of(accept));
-        assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.LOCATION,
-                        List.of(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID + "/webtemplate"));
-        assertThat(response.getHeaders()).containsKey("Deprecated");
-        assertThat(response.getHeaders()).containsKey("Link");
+        assertThat(response.getHeaders().get(HttpHeaders.CONTENT_TYPE)).containsExactly(accept);
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/definition/template/adl1.4/" + SAMPLE_ID + "/webtemplate");
+        assertThat(response.getHeaders().containsHeader("Deprecated")).isTrue();
+        assertThat(response.getHeaders().containsHeader("Link")).isTrue();
         assertThat(response.getBody()).isInstanceOf(WebTemplate.class).isEqualTo(SAMPLE_WEB_TEMPLATE);
     }
 

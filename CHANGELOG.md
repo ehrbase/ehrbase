@@ -12,6 +12,24 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Fixed 
 - Accept double-quoted (RFC 7232 ETag-style) `If-Match` header values on composition and EHR_STATUS update, fixes [#1639](https://github.com/ehrbase/ehrbase/issues/1639)
 
+## [2.36.0]
+ ### Added
+ ### Changed
+ - Upgrade to Spring Boot 4 [#1652](https://github.com/ehrbase/ehrbase/pull/1652)
+ ### Fixed 
+
+## [2.35.1]
+ ### Added
+ ### Changed 
+ ### Fixed 
+ - [#1648](https://github.com/ehrbase/ehrbase/pull/1648) Fixes possibly misplaced or removed folder items when retrieving a directory, as well as corruption of the folder history.
+   Since EHRbase version 2.30.0, the order of references to compositions may have changed, references may have disappeared, or appeared in a different subfolder.
+
+## [2.35.0]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.34.0]
  ### Added
  ### Changed 
@@ -333,4 +351,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.32.0]: https://github.com/ehrbase/ehrbase/compare/v2.31.0...v2.32.0
 [2.33.0]: https://github.com/ehrbase/ehrbase/compare/v2.32.0...v2.33.0
 [2.34.0]: https://github.com/ehrbase/ehrbase/compare/v2.33.0...v2.34.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...HEAD
+[2.35.0]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...v2.35.0
+[2.35.1]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...v2.35.1
+[2.36.0]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...v2.36.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...HEAD
