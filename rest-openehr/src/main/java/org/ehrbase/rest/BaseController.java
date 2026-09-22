@@ -72,6 +72,7 @@ public abstract class BaseController {
     public static final String LAST_MODIFIED = HttpHeaders.LAST_MODIFIED;
 
     public static final String IF_MATCH = HttpHeaders.IF_MATCH;
+    static final String IF_MATCH_NOT_A_VERSION_UID = "If-Match header [%s] is not a valid version uid";
 
     // constants of all API resources
     public static final String EHR = "ehr";
@@ -273,14 +274,13 @@ public abstract class BaseController {
         if (ifMatch.charAt(0) == '"') {
             // quoted: precondition failed if the end quote is missing
             if (ifMatch.indexOf('"', 1) != length - 1) {
-                throw new PreconditionFailedException(
-                        "If-Match header [%s] is not a valid version uid".formatted(ifMatch));
+                throw new PreconditionFailedException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
             }
             start = 1;
             end = length - 1;
             // unquoted - precondition failed if there are other quotes in the header value
         } else if (ifMatch.indexOf('"') >= 0) {
-            throw new PreconditionFailedException("If-Match header [%s] is not a valid version uid".formatted(ifMatch));
+            throw new PreconditionFailedException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
         }
 
         // precondition failed if the header is using a wildcard
@@ -301,7 +301,7 @@ public abstract class BaseController {
         // sep2 + 2 >= end => no s3
         // sep3 >= 0 => multiple separators
         if (sep1 <= start || sep2 <= sep1 + 2 || sep2 + 2 >= end || sep3 >= 0) {
-            throw new PreconditionFailedException("If-Match header [%s] is not a valid version uid".formatted(ifMatch));
+            throw new PreconditionFailedException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
         }
 
         return start == 0 ? ifMatch : ifMatch.substring(start, end);
