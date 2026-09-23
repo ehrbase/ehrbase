@@ -94,6 +94,12 @@ ehrbase:
     check-for-extra-nodes: true
     validate-rm-constraints: true
     validate-folders: true
+    # Date/time patterns of C_DATE, C_TIME and C_DATE_TIME constraints.
+    # DISABLED: values are not validated against patterns
+    # LENIENT: values are validated; an unsupported pattern is ignored with a warning whenever the template is parsed
+    # STRICT: as LENIENT, but a template with an unsupported pattern is rejected at upload and cannot be loaded from
+    #         the store any more; run LENIENT first and adjust the templates reported in the log
+    temporal-pattern-mode: LENIENT
   versioning:
     ehr-folder:
       # Controls how much of a folder's data is kept in the history tables.

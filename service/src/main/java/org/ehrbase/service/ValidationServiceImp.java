@@ -55,6 +55,7 @@ import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidat
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyValidationVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
+import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.ehrbase.util.FolderUtils;
 import org.slf4j.Logger;
@@ -93,6 +94,9 @@ public class ValidationServiceImp implements ValidationService {
         if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
         }
+        if (validationProperties.temporalPatternMode() == TemporalPatternMode.DISABLED) {
+            logger.warn("Disabling date/time pattern validation. Caution is advised.");
+        }
 
         APathQueryCache delegator;
         if (sharedAqlQueryCache) {
@@ -107,16 +111,21 @@ public class ValidationServiceImp implements ValidationService {
             delegator = null;
         }
         locatableValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
-                objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
+                objectProvider,
+                disableStrictValidation,
+                delegator,
+                validationProperties.checkForExtraNodes(),
+                validationProperties.temporalPatternMode()));
     }
 
     private static LocatableValidator createCompositionValidator(
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
             APathQueryCache delegator,
-            boolean checkForChildrenNotInTemplate) {
-        LocatableValidator validator =
-                new LocatableValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
+            boolean checkForChildrenNotInTemplate,
+            TemporalPatternMode temporalPatternMode) {
+        LocatableValidator validator = new LocatableValidator(
+                null, checkForChildrenNotInTemplate, !disableStrictValidation, null, temporalPatternMode);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
 
         setSharedAPathQueryCache(validator, delegator);
