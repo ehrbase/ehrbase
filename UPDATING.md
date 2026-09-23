@@ -2,6 +2,22 @@
 
 This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
+## EHRbase 2.37.0
+
+### `If-Match` header validation
+
+`If-Match` header values that do not identify a single version are now rejected with `412 Precondition Failed`
+before the update is applied, instead of failing later with a misleading error. This affects composition update,
+EHR_STATUS update, and directory update and delete.
+
+Rejected values:
+- Weak validators, e.g. `W/"..."`.
+- The `*` wildcard.
+- Improperly quoted values, e.g. an unbalanced or stray `"`.
+- Values not shaped like `object_id::creating_system_id::version_tree_id`.
+
+Double-quoted values, as returned in the `ETag` response header, are now accepted alongside unquoted values.
+
 ## EHRbase 2.36.0
 
 ### Spring Boot 4
