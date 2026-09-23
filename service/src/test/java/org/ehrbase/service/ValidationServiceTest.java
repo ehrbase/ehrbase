@@ -39,6 +39,7 @@ import com.nedap.archie.rm.datastructures.ItemTree;
 import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
+import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.generic.AuditDetails;
@@ -71,6 +72,7 @@ import org.ehrbase.openehr.sdk.test_data.composition.CompositionTestDataCanonica
 import org.ehrbase.openehr.sdk.test_data.contribution.ContributionTestDataCanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.ehr.EhrTestDataCanonicalJson;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.openehr.sdk.util.OpenEHRDateTimeParseUtils;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolation;
 import org.ehrbase.openehr.sdk.validation.ConstraintViolationException;
 import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidation;
@@ -290,6 +292,31 @@ class ValidationServiceTest {
         ValidationService service = service();
 
         assertThatThrownBy(() -> service.check(composition)).isInstanceOf(ConstraintViolationException.class);
+    }
+
+    @Test
+    void checkCompositionTemporalPattern() {
+        Composition composition = loadComposition(CompositionTestDataCanonicalJson.ALL_TYPES);
+        composition.setUid(new ObjectVersionId("85379aa8-a16a-4d5b-97ad-242880066803", "test-system", "42"));
+        String templateID = Objects.requireNonNull(
+                        composition.getArchetypeDetails().getTemplateId())
+                .getValue();
+        when(templateService.getInternalTemplate(templateID))
+                .thenReturn(loadWebTemplate(OperationalTemplateTestData.findByTemplateId(templateID)));
+        DvDateTime partialDateTime = (DvDateTime)
+                composition.itemAtPath(
+                        "/content[openEHR-EHR-SECTION.test_all_types.v1]/items[at0001]/items[at0002]"
+                                + "/items[openEHR-EHR-INSTRUCTION.test_all_types.v1]/activities[at0001]/description[at0002]/items[at0004]/value");
+        partialDateTime.setValue(OpenEHRDateTimeParseUtils.parseDateTime("2019-01-28"));
+        ValidationService service = service();
+
+        assertThatThrownBy(() -> service.check(composition))
+                .isInstanceOf(ConstraintViolationException.class)
+                .extracting(t -> ((ConstraintViolationException) t).getConstraintViolations())
+                .asList()
+                .singleElement()
+                .asString()
+                .contains("items[at0004]/value", "yyyy-mm-ddTHH:??:??", "hour is mandatory");
     }
 
     @Test
