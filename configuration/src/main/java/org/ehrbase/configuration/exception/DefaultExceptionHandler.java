@@ -147,8 +147,7 @@ public class DefaultExceptionHandler {
 
     // 422
     @ExceptionHandler(UnprocessableEntityException.class)
-    public ResponseEntity<Object> handleUnprocessableEntityException(
-            UnprocessableEntityException ex) {
+    public ResponseEntity<Object> handleUnprocessableEntityException(UnprocessableEntityException ex) {
         return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
