@@ -6,7 +6,7 @@ This file documents any backwards-incompatible changes in EHRBase and assists us
 
 ### `If-Match` header validation
 
-`If-Match` header values that do not identify a single version are now rejected with `412 Precondition Failed`
+`If-Match` header values that do not identify a single version are now rejected with `400 Bad Request`
 before the update is applied, instead of failing later with a misleading error. This affects composition update,
 EHR_STATUS update, and directory update and delete.
 
