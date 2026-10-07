@@ -7,7 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
+- Property `ehrbase.validation.temporal-pattern-mode` (allowed values: `DISABLED`, `STRICT`, `LENIENT` - default), controls validation of date and time pattern constraints. 
+ ### Changed
+- Compositions whose DV_DATE, DV_TIME or DV_DATE_TIME values do not match the `pattern` of their template constraint are rejected.
 - Extended `If-Match` header validation for versioned objects [#1644](https://github.com/ehrbase/ehrbase/pull/1644)
  ### Fixed 
 - Accept double-quoted (RFC 7232 ETag-style) `If-Match` header values on composition and EHR_STATUS update, fixes [#1639](https://github.com/ehrbase/ehrbase/issues/1639)
