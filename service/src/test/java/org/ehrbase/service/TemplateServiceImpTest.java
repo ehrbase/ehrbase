@@ -33,6 +33,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
+import org.apache.xmlbeans.XmlException;
+import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -42,7 +44,9 @@ import org.ehrbase.cache.CacheProperties;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
+import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.ehrbase.repository.TemplateStoreRepository;
+import org.ehrbase.service.validation.ValidationProperties;
 import org.ehrbase.test.fixtures.TemplateFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,24 +80,31 @@ class TemplateServiceImpTest {
     }
 
     private TemplateServiceImp service() {
-        return service(false);
+        return service(false, TemporalPatternMode.LENIENT, "false");
     }
 
     private TemplateServiceImp service(boolean allowTemplateOverwrite) {
+        return service(allowTemplateOverwrite, TemporalPatternMode.LENIENT, "false");
+    }
+
+    private TemplateServiceImp service(TemporalPatternMode temporalPatternMode) {
+        return service(false, temporalPatternMode, "false");
+    }
+
+    private TemplateServiceImp serviceWithInitOnStartup(String initOnStartup) {
+        return service(false, TemporalPatternMode.LENIENT, initOnStartup);
+    }
+
+    private TemplateServiceImp service(
+            boolean allowTemplateOverwrite, TemporalPatternMode temporalPatternMode, String initOnStartup) {
         CacheProperties cacheProperties = new CacheProperties();
-        cacheProperties.setTemplateInitOnStartup("false");
+        cacheProperties.setTemplateInitOnStartup(initOnStartup);
         return new TemplateServiceImp(
                 mockTemplateStoreRepository,
                 new CacheProviderImp(cacheManager),
                 cacheProperties,
+                new ValidationProperties(true, true, true, temporalPatternMode),
                 allowTemplateOverwrite);
-    }
-
-    private TemplateServiceImp serviceWithInitOnStartup(String initOnStartup) {
-        CacheProperties cacheProperties = new CacheProperties();
-        cacheProperties.setTemplateInitOnStartup(initOnStartup);
-        return new TemplateServiceImp(
-                mockTemplateStoreRepository, new CacheProviderImp(cacheManager), cacheProperties, false);
     }
 
     // ---------------------------------------------------------------------------
@@ -155,6 +166,24 @@ class TemplateServiceImpTest {
 
         verify(mockTemplateStoreRepository, times(1)).store(testTemplate.metaData());
         assertThat(templateId).isNotNull().isEqualTo(testTemplate.templateId());
+    }
+
+    @Test
+    void storeOperationalTemplateRejectsAnUnsupportedTemporalPatternWhenStrict() throws XmlException {
+        TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.ALL_TYPES);
+        // the C_DATE pattern yyyy-??-XX of the all-types template replaced by one the parser does not support
+        OPERATIONALTEMPLATE withUnsupportedPattern = TemplateService.buildOperationalTemplate(
+                testTemplate.metaData().operationalTemplate().replace("yyyy-??-XX", "yyyy-mm-dd-XX"));
+
+        assertThatThrownBy(() -> service(TemporalPatternMode.STRICT)
+                        .storeOperationalTemplate(withUnsupportedPattern, false, false, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("yyyy-mm-dd-XX");
+        verify(mockTemplateStoreRepository, never()).store(any());
+
+        String templateId = service(TemporalPatternMode.LENIENT)
+                .storeOperationalTemplate(withUnsupportedPattern, false, false, false);
+        assertThat(templateId).isEqualTo(testTemplate.templateId());
     }
 
     @Test
@@ -297,6 +326,24 @@ class TemplateServiceImpTest {
     // ---------------------------------------------------------------------------
     // getInternalTemplate()
     // ---------------------------------------------------------------------------
+
+    @Test
+    void getInternalTemplateFailsOnAnUnsupportedTemporalPatternWhenStrict() {
+        TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.ALL_TYPES);
+        TemplateServiceImp.TemplateWithDetails data = testTemplate.metaData();
+        // a stored template whose C_DATE pattern the parser does not support
+        var stored = new TemplateServiceImp.TemplateWithDetails(
+                data.operationalTemplate().replace("yyyy-??-XX", "yyyy-mm-dd-XX"), data.meta());
+        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+                .thenReturn(List.of(stored));
+
+        assertThatThrownBy(() -> service(TemporalPatternMode.STRICT).getInternalTemplate(testTemplate.templateId()))
+                .isInstanceOf(InternalServerException.class)
+                .hasMessageContaining("yyyy-mm-dd-XX");
+
+        assertThat(service(TemporalPatternMode.LENIENT).getInternalTemplate(testTemplate.templateId()))
+                .isNotNull();
+    }
 
     @Test
     void getInternalTemplateCachesResult() {

@@ -18,6 +18,25 @@ Rejected values:
 
 Double-quoted values, as returned in the `ETag` response header, are now accepted alongside unquoted values.
 
+### Date and time pattern constraints
+
+The `pattern` of `C_DATE`, `C_TIME` and `C_DATE_TIME` template constraints is now enforced when a composition is created or updated. 
+Pattern notations:
+ - letters mark a mandatory field
+ - `??` mark an optional field
+ - `XX` mark a prohibited field.
+
+Compositions stored before this version are not checked retroactively, but updating such a composition is rejected
+when its values do not match the template. Adjust the data or the template in that case.
+
+The behaviour is controlled by `ehrbase.validation.temporal-pattern-mode`:
+- `LENIENT` (default): values are validated. A template with a pattern EHRbase does not support is accepted, and a
+  warning naming the pattern and its path is logged whenever the template is parsed.
+- `STRICT`: as `LENIENT`, but a template with an unsupported pattern is rejected at upload with `400`, and such a
+  template already in the store can no longer be loaded. Run with `LENIENT` first, adjust the templates
+  reported in the log, then switch to `STRICT`. Templates can still be deleted through the admin API in `STRICT` mode.
+- `DISABLED`: restores the previous behaviour, patterns are not validated.
+
 ## EHRbase 2.36.0
 
 ### Spring Boot 4
