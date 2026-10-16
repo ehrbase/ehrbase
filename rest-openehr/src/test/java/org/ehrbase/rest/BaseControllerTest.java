@@ -20,7 +20,7 @@ package org.ehrbase.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.ValidationException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -86,7 +86,7 @@ class BaseControllerTest {
 
     private static void assertRejected(String ifMatch, String expectedMessage) {
         assertThatThrownBy(() -> BaseController.parseIfMatchHeaderValue(ifMatch))
-                .isInstanceOf(PreconditionFailedException.class)
+                .isInstanceOf(ValidationException.class)
                 .hasMessage(expectedMessage);
     }
 }
