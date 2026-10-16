@@ -127,6 +127,16 @@ public record VersionDataDbRecord(
         rec.setData(JSONB.valueOf(
                 VersionedObjectDataStructure.applyRmAliases(node.getJsonNode()).toString()));
 
+        if (node.getNum() == 0) {
+            rec.setUidRoot(voId.toString());
+        } else if (Locatable.class.isAssignableFrom(node.getStructureRmType().type)) {
+            String uidValue = node.getJsonNode().findPath("U").findPath("V").asText();
+            if (uidValue != null) {
+                int i = uidValue.indexOf("::");
+                rec.setUidRoot(i < 0 ? uidValue : uidValue.substring(0, i));
+            }
+        }
+
         // system columns
         rec.setVoId(voId);
 

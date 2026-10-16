@@ -97,14 +97,18 @@ class AqlSqlQueryBuilderTest {
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0006]/value,
 o/data[at0001]/events[at0002]/data[at0003]/items[at0004]/items[openEHR-EHR-CLUSTER.cl.v0]/items[at0005]/items[at0009]/value,
 o/data[at0001]/events[at0002]/state[at0006]/items[at0008]/value,
-o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value
+o/data[at0001]/events[at0002]/state[at0006]/items[at0007]/value,
+o/uid/value
 FROM EHR e
+CONTAINS FOLDER f
 CONTAINS COMPOSITION c
 CONTAINS OBSERVATION o[openEHR-EHR-OBSERVATION.ooo.v1]
 WHERE e/ehr_id/value matches {'e6fad8ba-fb4f-46a2-bf82-66edb43f142f','e5fad8ba-fb4f-46a2-bf82-66edb43f142f'}
 AND c/archetype_details/template_id/value matches {'abc.v0','abc.v1'}
-AND c/uid/value = 'e6fad8ba-fb4f-46a2-bf82-66edb43f142a'
+AND c/uid/value = 'ccfad8ba-fb4f-46a2-bf82-66edb43f142a'
 AND c/archetype_node_id = 'openEHR-EHR-COMPOSITION.test.v0'
+AND o/uid/value like 'aafad8ba-fb4f-46a2-bf82-66edb43f142a::test*'
+AND f/uid/value like 'fffad8ba-fb4f-46a2-bf82-66edb43f142a::test*'
         """);
 
         System.out.println("/*");

@@ -328,6 +328,11 @@ public final class AslUtils {
                                 aslOperator,
                                 templateUuids);
                     }
+                    case LOCATABLE_UID ->
+                        new AslFieldValueQueryCondition<>(
+                                AslComplexExtractedColumnField.uidField(ownerSource),
+                                aslOperator,
+                                conditionValue(value, operator, String.class));
                     case OV_CONTRIBUTION_ID,
                             OV_TIME_COMMITTED,
                             OV_TIME_COMMITTED_DV,
