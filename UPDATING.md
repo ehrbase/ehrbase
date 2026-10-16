@@ -2,6 +2,40 @@
 
 This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
+## EHRbase 2.37.0
+
+### `If-Match` header validation
+
+`If-Match` header values that do not identify a single version are now rejected with `400 Bad Request`
+before the update is applied, instead of failing later with a misleading error. This affects composition update,
+EHR_STATUS update, and directory update and delete.
+
+Rejected values:
+- Weak validators, e.g. `W/"..."`.
+- The `*` wildcard.
+- Improperly quoted values, e.g. an unbalanced or stray `"`.
+- Values not shaped like `object_id::creating_system_id::version_tree_id`.
+
+Double-quoted values, as returned in the `ETag` response header, are now accepted alongside unquoted values.
+
+## EHRbase 2.36.0
+
+### Spring Boot 4
+
+EHRbase now runs on Spring Boot 4 (Spring Framework 7, Spring Security 7).
+
+#### Additional authorization path patterns
+
+The `path-pattern` of `security.additional-authorizations` entries is now parsed as a Spring `PathPattern`
+instead of an Ant pattern. Patterns that were accepted before but are invalid now cause EHRbase to fail at startup.
+
+Limitations:
+- The pattern must start with `/`.
+- `**` is accepted only as the end of a pattern. A bare `**` is not accepted.
+- Path segments can be captured with `{*path}` or `{segment}`.
+
+For a more detailed usage description, check the Spring `org.springframework.web.util.pattern.PathPattern` documentation. 
+
 ## EHRbase 2.35.1
 
 An issue introduced in EHRbase 2.30.0 may, in rare cases, have lead to incorrect folder data and history.

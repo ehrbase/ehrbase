@@ -18,6 +18,7 @@
 package org.ehrbase.service;
 
 import com.nedap.archie.rm.composition.Composition;
+import jakarta.annotation.PostConstruct;
 import java.text.MessageFormat;
 import java.time.OffsetDateTime;
 import java.util.Collection;
@@ -26,7 +27,6 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.annotation.PostConstruct;
 import javax.xml.namespace.QName;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xmlbeans.XmlException;

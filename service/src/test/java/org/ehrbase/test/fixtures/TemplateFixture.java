@@ -22,13 +22,13 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import org.apache.commons.io.IOUtils;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.api.service.TemplateService;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.ehrbase.service.TemplateServiceImp.TemplateWithDetails;
 import org.ehrbase.util.TemplateUtils;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
-import org.testcontainers.shaded.org.apache.commons.io.IOUtils;
 
 public class TemplateFixture {
 

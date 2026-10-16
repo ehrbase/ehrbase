@@ -31,7 +31,6 @@ import com.nedap.archie.rm.generic.AuditDetails;
 import com.nedap.archie.rm.generic.PartySelf;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BiFunction;
@@ -246,13 +245,11 @@ class OpenehrEhrStatusControllerTest {
             String lastModified) {
 
         assertThat(response.getStatusCode()).isEqualTo(status);
-        assertThat(response.getHeaders())
-                .containsEntry(
-                        HttpHeaders.LOCATION,
-                        List.of(CONTEXT_PATH + "/ehr/" + ehrId + "/ehr_status/" + versionId.getValue()));
-        assertThat(response.getHeaders())
-                .containsEntry(HttpHeaders.ETAG, List.of("\"%s\"".formatted(versionId.getValue())));
-        assertThat(response.getHeaders()).containsEntry(HttpHeaders.LAST_MODIFIED, List.of(lastModified));
+        assertThat(response.getHeaders().get(HttpHeaders.LOCATION))
+                .containsExactly(CONTEXT_PATH + "/ehr/" + ehrId + "/ehr_status/" + versionId.getValue());
+        assertThat(response.getHeaders().get(HttpHeaders.ETAG))
+                .containsExactly("\"%s\"".formatted(versionId.getValue()));
+        assertThat(response.getHeaders().get(HttpHeaders.LAST_MODIFIED)).containsExactly(lastModified);
     }
 
     private static void assertEhrStatusResponseDataBody(

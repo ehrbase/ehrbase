@@ -8,6 +8,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- Extended `If-Match` header validation for versioned objects [#1644](https://github.com/ehrbase/ehrbase/pull/1644) [#1656](https://github.com/ehrbase/ehrbase/pull/1656)
+ ### Fixed 
+- Accept double-quoted (RFC 7232 ETag-style) `If-Match` header values on composition and EHR_STATUS update, fixes [#1639](https://github.com/ehrbase/ehrbase/issues/1639)
+
+## [2.36.0]
+ ### Added
+ ### Changed
+ - Upgrade to Spring Boot 4 [#1652](https://github.com/ehrbase/ehrbase/pull/1652)
  ### Fixed 
 
 ## [2.35.1]
@@ -345,4 +353,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.34.0]: https://github.com/ehrbase/ehrbase/compare/v2.33.0...v2.34.0
 [2.35.0]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...v2.35.0
 [2.35.1]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...v2.35.1
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...HEAD
+[2.36.0]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...v2.36.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...HEAD

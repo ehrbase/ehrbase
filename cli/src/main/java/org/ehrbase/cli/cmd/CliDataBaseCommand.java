@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import org.ehrbase.configuration.config.flyway.MigrationStrategy;
 import org.ehrbase.configuration.config.flyway.MigrationStrategyConfig;
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
+import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
 import org.springframework.stereotype.Component;
 
 @Component
