@@ -49,7 +49,9 @@ jobs:
           fail-on-cache-miss: true # we run only with cached dependencies
 
       - name: Publish - Maven Central
-        run: mvn -B deploy -P release -DskipTests -DsdkSubmoduleBuild
+        # Maven 3.10+ binds server credentials to the origins of repositories with the same id. The id 'central' is
+        # bound to repo.maven.apache.org by the super POM, so restore id-only matching for central.sonatype.com.
+        run: mvn -B deploy -P release -DskipTests -DsdkSubmoduleBuild -Dmaven.repository.credentialScope=id
         env:
           CENTRAL_SONATYPE_USERNAME: ${{ secrets.CENTRAL_SONATYPE_USERNAME }}
           CENTRAL_SONATYPE_TOKEN: ${{ secrets.CENTRAL_SONATYPE_TOKEN }}
