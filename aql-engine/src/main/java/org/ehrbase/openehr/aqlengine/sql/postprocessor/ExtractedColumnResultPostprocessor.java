@@ -85,6 +85,7 @@ public class ExtractedColumnResultPostprocessor implements AqlSqlResultPostproce
             case ARCHETYPE_NODE_ID -> ARCHETYPE_NODE_ID_PP;
             case EHR_SYSTEM_ID_DV -> SYSTEM_ID_PP;
             case NAME_VALUE,
+                    LOCATABLE_UID,
                     EHR_ID,
                     OV_CONTRIBUTION_ID,
                     AD_SYSTEM_ID,

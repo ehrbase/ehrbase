@@ -325,7 +325,7 @@ final class AslPathCreator {
                 new AslConstantField<>(String.class, "openehr", fieldSource, ec);
             case AD_SYSTEM_ID, EHR_SYSTEM_ID, EHR_SYSTEM_ID_DV ->
                 new AslConstantField<>(String.class, systemId, fieldSource, ec);
-            case VO_ID, ARCHETYPE_NODE_ID -> new AslComplexExtractedColumnField(ec, fieldSource);
+            case VO_ID, ARCHETYPE_NODE_ID, LOCATABLE_UID -> new AslComplexExtractedColumnField(ec, fieldSource);
         };
     }
 
