@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.PreconditionFailedException;
+import org.ehrbase.api.exception.ValidationException;
 import org.ehrbase.openehr.sdk.response.dto.ehrscape.CompositionFormat;
 import org.ehrbase.rest.openehr.format.CompositionRepresentation;
 import org.ehrbase.rest.openehr.format.OpenEHRMediaType;
@@ -252,20 +252,19 @@ public abstract class BaseController {
     ///
     /// @param ifMatch raw `If-Match` header value
     /// @return the value without surrounding double quotes
-    /// @throws PreconditionFailedException if the value is missing, a weak validator (`W/`), the `*` wildcard,
+    /// @throws ValidationException if the value is missing, a weak validator (`W/`), the `*` wildcard,
     ///         improperly quoted, or not shaped like an OBJECT_VERSION_ID
     protected static String parseIfMatchHeaderValue(String ifMatch) {
         int length = ifMatch == null ? 0 : ifMatch.length();
 
         // precondition failed on no content in the header
         if (length == 0) {
-            throw new PreconditionFailedException("If-Match header is missing or empty");
+            throw new ValidationException("If-Match header is missing or empty");
         }
 
         // precondition failed if header uses a weak validator
         if (length >= 2 && ifMatch.charAt(0) == 'W' && ifMatch.charAt(1) == '/') {
-            throw new PreconditionFailedException(
-                    "If-Match header [%s] must not be a weak validator".formatted(ifMatch));
+            throw new ValidationException("If-Match header [%s] must not be a weak validator".formatted(ifMatch));
         }
 
         int start = 0;
@@ -274,19 +273,18 @@ public abstract class BaseController {
         if (ifMatch.charAt(0) == '"') {
             // quoted: precondition failed if the end quote is missing
             if (ifMatch.indexOf('"', 1) != length - 1) {
-                throw new PreconditionFailedException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
+                throw new ValidationException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
             }
             start = 1;
             end = length - 1;
             // unquoted - precondition failed if there are other quotes in the header value
         } else if (ifMatch.indexOf('"') >= 0) {
-            throw new PreconditionFailedException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
+            throw new ValidationException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
         }
 
         // precondition failed if the header is using a wildcard
         if (end - start == 1 && ifMatch.charAt(start) == '*') {
-            throw new PreconditionFailedException(
-                    "If-Match header must reference a specific version, '*' is not supported");
+            throw new ValidationException("If-Match header must reference a specific version, '*' is not supported");
         }
 
         int sep1 = ifMatch.indexOf("::", start);
@@ -301,7 +299,7 @@ public abstract class BaseController {
         // sep2 + 2 >= end => no s3
         // sep3 >= 0 => multiple separators
         if (sep1 <= start || sep2 <= sep1 + 2 || sep2 + 2 >= end || sep3 >= 0) {
-            throw new PreconditionFailedException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
+            throw new ValidationException(IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
         }
 
         return start == 0 ? ifMatch : ifMatch.substring(start, end);
