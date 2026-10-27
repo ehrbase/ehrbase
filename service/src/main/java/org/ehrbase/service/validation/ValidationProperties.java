@@ -17,7 +17,6 @@
  */
 package org.ehrbase.service.validation;
 
-import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
@@ -26,4 +25,4 @@ public record ValidationProperties(
         boolean validateRmConstraints,
         boolean checkForExtraNodes,
         boolean validateFolders,
-        @DefaultValue("LENIENT") TemporalPatternMode temporalPatternMode) {}
+        @DefaultValue("true") boolean validateTemporalPatterns) {}

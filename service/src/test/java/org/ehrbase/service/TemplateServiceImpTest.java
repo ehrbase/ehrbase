@@ -22,11 +22,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,9 +46,7 @@ import org.ehrbase.cache.CacheProperties;
 import org.ehrbase.cache.CacheProvider;
 import org.ehrbase.cache.CacheProviderImp;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
-import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.ehrbase.repository.TemplateStoreRepository;
-import org.ehrbase.service.validation.ValidationProperties;
 import org.ehrbase.test.fixtures.TemplateFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,30 +80,30 @@ class TemplateServiceImpTest {
     }
 
     private TemplateServiceImp service() {
-        return service(false, TemporalPatternMode.LENIENT, "false");
+        return service(false, true, "false");
     }
 
-    private TemplateServiceImp service(boolean allowTemplateOverwrite) {
-        return service(allowTemplateOverwrite, TemporalPatternMode.LENIENT, "false");
+    private TemplateServiceImp serviceWithTemplateOverwrite() {
+        return service(true, true, "false");
     }
 
-    private TemplateServiceImp service(TemporalPatternMode temporalPatternMode) {
-        return service(false, temporalPatternMode, "false");
+    private TemplateServiceImp serviceWithRejectInvalidTemporalPatterns(boolean rejectInvalidTemporalPatterns) {
+        return service(false, rejectInvalidTemporalPatterns, "false");
     }
 
     private TemplateServiceImp serviceWithInitOnStartup(String initOnStartup) {
-        return service(false, TemporalPatternMode.LENIENT, initOnStartup);
+        return service(false, true, initOnStartup);
     }
 
     private TemplateServiceImp service(
-            boolean allowTemplateOverwrite, TemporalPatternMode temporalPatternMode, String initOnStartup) {
+            boolean allowTemplateOverwrite, boolean rejectInvalidTemporalPatterns, String initOnStartup) {
         CacheProperties cacheProperties = new CacheProperties();
         cacheProperties.setTemplateInitOnStartup(initOnStartup);
         return new TemplateServiceImp(
                 mockTemplateStoreRepository,
                 new CacheProviderImp(cacheManager),
                 cacheProperties,
-                new ValidationProperties(true, true, true, temporalPatternMode),
+                rejectInvalidTemporalPatterns,
                 allowTemplateOverwrite);
     }
 
@@ -124,9 +124,9 @@ class TemplateServiceImpTest {
     void initLoadsAllTemplatesWhenInitOnStartupIsEnabled(String initOnStartup) {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findAllTemplates())
+        when(mockTemplateStoreRepository.findAllTemplates())
                 .thenReturn(List.of(testTemplate.metaData().meta()));
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         serviceWithInitOnStartup(initOnStartup).init();
@@ -140,12 +140,12 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate t2 = parseAndMock(OperationalTemplateTestData.MINIMAL_EVALUATION);
         TemplateFixture.TestTemplate t3 = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION_2);
 
-        Mockito.when(mockTemplateStoreRepository.findAllTemplates())
+        when(mockTemplateStoreRepository.findAllTemplates())
                 .thenReturn(List.of(
                         t1.metaData().meta(),
                         t2.metaData().meta(),
                         t3.metaData().meta()));
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(t1.templateId(), t2.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(t1.templateId(), t2.templateId()))
                 .thenReturn(List.of(t1.metaData(), t2.metaData()));
 
         TemplateServiceImp svc = serviceWithInitOnStartup(t1.templateId() + ", " + t2.templateId());
@@ -175,13 +175,13 @@ class TemplateServiceImpTest {
         OPERATIONALTEMPLATE withUnsupportedPattern = TemplateService.buildOperationalTemplate(
                 testTemplate.metaData().operationalTemplate().replace("yyyy-??-XX", "yyyy-mm-dd-XX"));
 
-        assertThatThrownBy(() -> service(TemporalPatternMode.STRICT)
+        assertThatThrownBy(() -> serviceWithRejectInvalidTemporalPatterns(true)
                         .storeOperationalTemplate(withUnsupportedPattern, false, false, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("yyyy-mm-dd-XX");
         verify(mockTemplateStoreRepository, never()).store(any());
 
-        String templateId = service(TemporalPatternMode.LENIENT)
+        String templateId = serviceWithRejectInvalidTemporalPatterns(false)
                 .storeOperationalTemplate(withUnsupportedPattern, false, false, false);
         assertThat(templateId).isEqualTo(testTemplate.templateId());
     }
@@ -190,7 +190,7 @@ class TemplateServiceImpTest {
     void storeOperationalTemplateRejectOverwrite() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(UUID.randomUUID()));
 
         TemplateServiceImp service = service();
@@ -207,7 +207,7 @@ class TemplateServiceImpTest {
     void storeOperationalTemplateAllowOverwrite() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         TemplateServiceImp service = spy(service());
@@ -220,7 +220,7 @@ class TemplateServiceImpTest {
     void storeOperationalTemplateUpdateThrowsWhenTemplateDoesNotExist() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.empty());
 
         TemplateServiceImp service = service();
@@ -235,9 +235,9 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         UUID existingUuid = UUID.randomUUID();
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(existingUuid));
-        Mockito.when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(true);
+        when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(true);
 
         TemplateServiceImp service = service();
         TemplateServiceImp.TemplateWithDetails templateData = testTemplate.metaData();
@@ -251,10 +251,10 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         UUID existingUuid = UUID.randomUUID();
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(existingUuid));
-        Mockito.when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(true);
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(true);
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         String templateId = service().storeOperationalTemplate(testTemplate.metaData(), true, true, false);
@@ -290,13 +290,13 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         UUID existingUuid = UUID.randomUUID();
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(existingUuid));
-        Mockito.when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(false);
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(false);
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
-        String templateId = service(true).create(testTemplate.operationaltemplate());
+        String templateId = serviceWithTemplateOverwrite().create(testTemplate.operationaltemplate());
 
         assertThat(templateId).isEqualTo(testTemplate.templateId());
         verify(mockTemplateStoreRepository, times(1)).update(any());
@@ -311,7 +311,7 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         TemplateService.TemplateDetails details = testTemplate.metaData().meta();
 
-        Mockito.when(mockTemplateStoreRepository.findAllTemplates()).thenReturn(List.of(details));
+        when(mockTemplateStoreRepository.findAllTemplates()).thenReturn(List.of(details));
 
         TemplateServiceImp service = service();
         var first = service.findAllTemplates();
@@ -334,14 +334,15 @@ class TemplateServiceImpTest {
         // a stored template whose C_DATE pattern the parser does not support
         var stored = new TemplateServiceImp.TemplateWithDetails(
                 data.operationalTemplate().replace("yyyy-??-XX", "yyyy-mm-dd-XX"), data.meta());
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(stored));
 
-        assertThatThrownBy(() -> service(TemporalPatternMode.STRICT).getInternalTemplate(testTemplate.templateId()))
+        assertThatThrownBy(() ->
+                        serviceWithRejectInvalidTemporalPatterns(true).getInternalTemplate(testTemplate.templateId()))
                 .isInstanceOf(InternalServerException.class)
                 .hasMessageContaining("yyyy-mm-dd-XX");
 
-        assertThat(service(TemporalPatternMode.LENIENT).getInternalTemplate(testTemplate.templateId()))
+        assertThat(serviceWithRejectInvalidTemporalPatterns(false).getInternalTemplate(testTemplate.templateId()))
                 .isNotNull();
     }
 
@@ -349,7 +350,7 @@ class TemplateServiceImpTest {
     void getInternalTemplateCachesResult() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         TemplateServiceImp service = service();
@@ -368,7 +369,7 @@ class TemplateServiceImpTest {
     void findOperationalTemplateCachesResult() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         TemplateServiceImp service = service();
@@ -387,10 +388,10 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         UUID existingUuid = testTemplate.metaData().meta().id();
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(existingUuid));
-        Mockito.when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(false);
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.isTemplateUsed(existingUuid)).thenReturn(false);
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         String templateId = service().adminUpdateTemplate(testTemplate.operationaltemplate());
@@ -403,7 +404,7 @@ class TemplateServiceImpTest {
     void adminUpdateTemplateThrowsWhenTemplateDoesNotExist() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.empty());
 
         TemplateServiceImp service = service();
@@ -421,7 +422,7 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         UUID existingUuid = testTemplate.metaData().meta().id();
 
-        Mockito.when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findUuidByTemplateId(testTemplate.templateId()))
                 .thenReturn(Optional.of(existingUuid), Optional.empty());
 
         service().adminDeleteTemplate(testTemplate.templateId());
@@ -439,7 +440,7 @@ class TemplateServiceImpTest {
     void buildExampleReturnsComposition() {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
 
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(testTemplate.metaData()));
 
         var composition = service().buildExample(testTemplate.templateId());
@@ -450,7 +451,7 @@ class TemplateServiceImpTest {
 
     @Test
     void buildExampleThrowsWhenTemplateNotFound() {
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(anyString())).thenReturn(List.of());
+        when(mockTemplateStoreRepository.findByTemplateIds(anyString())).thenReturn(List.of());
 
         TemplateServiceImp service = service();
         assertThatThrownBy(() -> service.buildExample("missing-template")).isInstanceOf(ObjectNotFoundException.class);
@@ -466,7 +467,7 @@ class TemplateServiceImpTest {
         TemplateServiceImp.TemplateWithDetails corrupt = corruptTemplate(testTemplate);
 
         // store() returns the corrupt record (simulates DB returning bad content)
-        Mockito.doReturn(corrupt)
+        doReturn(corrupt)
                 .when(mockTemplateStoreRepository)
                 .store(argThat(t ->
                         t != null && t.meta().templateId().equals(corrupt.meta().templateId())));
@@ -482,9 +483,9 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         TemplateServiceImp.TemplateWithDetails corrupt = corruptTemplate(testTemplate);
 
-        Mockito.when(mockTemplateStoreRepository.findAllTemplates())
+        when(mockTemplateStoreRepository.findAllTemplates())
                 .thenReturn(List.of(testTemplate.metaData().meta()));
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(corrupt));
 
         TemplateServiceImp svc = serviceWithInitOnStartup("true");
@@ -496,7 +497,7 @@ class TemplateServiceImpTest {
         TemplateFixture.TestTemplate testTemplate = parseAndMock(OperationalTemplateTestData.MINIMAL_ACTION);
         TemplateServiceImp.TemplateWithDetails corrupt = corruptTemplate(testTemplate);
 
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
+        when(mockTemplateStoreRepository.findByTemplateIds(testTemplate.templateId()))
                 .thenReturn(List.of(corrupt));
 
         TemplateServiceImp service = service();
@@ -510,7 +511,7 @@ class TemplateServiceImpTest {
     @ParameterizedTest
     @MethodSource("templateNotFoundCases")
     void throwsObjectNotFoundWhenTemplateDoesNotExist(Consumer<TemplateService> serviceCall) {
-        Mockito.when(mockTemplateStoreRepository.findByTemplateIds(anyString())).thenReturn(List.of());
+        when(mockTemplateStoreRepository.findByTemplateIds(anyString())).thenReturn(List.of());
         TemplateServiceImp service = service();
         assertThatThrownBy(() -> serviceCall.accept(service)).isInstanceOf(ObjectNotFoundException.class);
     }
@@ -530,10 +531,10 @@ class TemplateServiceImpTest {
     private TemplateFixture.TestTemplate parseAndMock(OperationalTemplateTestData operationalTemplateTestData) {
         TemplateFixture.TestTemplate testTemplate = TemplateFixture.fixtureTemplate(operationalTemplateTestData);
         TemplateServiceImp.TemplateWithDetails data = testTemplate.metaData();
-        Mockito.doReturn(data)
+        doReturn(data)
                 .when(mockTemplateStoreRepository)
                 .store(argThat(t -> t.meta().templateId().equals(data.meta().templateId())));
-        Mockito.doReturn(data)
+        doReturn(data)
                 .when(mockTemplateStoreRepository)
                 .update(argThat(t -> t.meta().templateId().equals(data.meta().templateId())));
         return testTemplate;

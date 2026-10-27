@@ -79,7 +79,6 @@ import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidat
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyParam;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
-import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -93,8 +92,7 @@ class ValidationServiceTest {
 
     private final TemplateService templateService = mock();
 
-    private final ValidationProperties serverConfig =
-            new ValidationProperties(true, true, true, TemporalPatternMode.LENIENT);
+    private final ValidationProperties serverConfig = new ValidationProperties(true, true, true, true);
 
     private final ObjectProvider<ExternalTerminologyValidation> objectProvider = mock();
 

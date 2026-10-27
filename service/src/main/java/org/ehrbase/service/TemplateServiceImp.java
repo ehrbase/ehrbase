@@ -52,10 +52,8 @@ import org.ehrbase.openehr.sdk.util.exception.SdkException;
 import org.ehrbase.openehr.sdk.webtemplate.filter.Filter;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
 import org.ehrbase.openehr.sdk.webtemplate.parser.OPTParser;
-import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.ehrbase.openehr.sdk.webtemplate.webtemplateskeletonbuilder.WebTemplateSkeletonBuilder;
 import org.ehrbase.repository.TemplateStoreRepository;
-import org.ehrbase.service.validation.ValidationProperties;
 import org.ehrbase.util.TemplateUtils;
 import org.jspecify.annotations.NonNull;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
@@ -88,6 +86,9 @@ public class TemplateServiceImp implements TemplateService {
 
     public static final String PROP_ALLOW_TEMPLATE_OVERWRITE = "ehrbase.template.allow-overwrite";
 
+    public static final String PROP_REJECT_INVALID_TEMPORAL_PATTERNS =
+            "ehrbase.template.reject-invalid-temporal-patterns";
+
     private static final Logger log = LoggerFactory.getLogger(TemplateServiceImp.class);
 
     private final TemplateStoreRepository templateStoreRepository;
@@ -98,13 +99,13 @@ public class TemplateServiceImp implements TemplateService {
 
     private final boolean allowTemplateOverwrite;
 
-    private final TemporalPatternMode temporalPatternMode;
+    private final boolean rejectInvalidTemporalPatterns;
 
     public TemplateServiceImp(
             TemplateStoreRepository templateStoreRepository,
             CacheProvider cacheProvider,
             CacheProperties cacheProperties,
-            ValidationProperties validationProperties,
+            @Value("${" + PROP_REJECT_INVALID_TEMPORAL_PATTERNS + ":true}") boolean rejectInvalidTemporalPatterns,
             @Value("${" + PROP_ALLOW_TEMPLATE_OVERWRITE + ":false}") boolean allowTemplateOverwrite) {
         this.templateStoreRepository = templateStoreRepository;
         this.cacheHelper = new TemplateCacheHelper(cacheProvider);
@@ -117,8 +118,8 @@ public class TemplateServiceImp implements TemplateService {
             default -> templateInitOnStartup.split("\\s*,\\s*");
         };
 
+        this.rejectInvalidTemporalPatterns = rejectInvalidTemporalPatterns;
         this.allowTemplateOverwrite = allowTemplateOverwrite;
-        this.temporalPatternMode = validationProperties.temporalPatternMode();
         if (allowTemplateOverwrite) {
             log.warn(
                     "Template overwriting is enabled, this is not recommended for production use and can lead to unexpected behavior, consider disabling {}",
@@ -160,7 +161,7 @@ public class TemplateServiceImp implements TemplateService {
             }
         }
         String templateId = TemplateUtils.getTemplateId(operationaltemplate);
-        WebTemplate tpl = buildWebTemplate(operationaltemplate, inbound, temporalPatternMode);
+        WebTemplate tpl = buildWebTemplate(operationaltemplate, inbound, rejectInvalidTemporalPatterns);
 
         cacheHelper.addToCache(template.meta().id(), templateId, tpl, inbound);
     }
@@ -171,7 +172,7 @@ public class TemplateServiceImp implements TemplateService {
             boolean allowUsedTemplateOverwrite,
             boolean updateOnly) {
 
-        validateTemplate(template, temporalPatternMode);
+        validateTemplate(template, rejectInvalidTemporalPatterns);
         TemplateWithDetails templateData = getTemplateFields(template);
 
         return storeOperationalTemplate(templateData, allowTemplateOverwrite, allowUsedTemplateOverwrite, updateOnly);
@@ -229,9 +230,9 @@ public class TemplateServiceImp implements TemplateService {
      * @return
      */
     private static WebTemplate buildWebTemplate(
-            OPERATIONALTEMPLATE operationaltemplate, boolean inbound, TemporalPatternMode temporalPatternMode) {
+            OPERATIONALTEMPLATE operationaltemplate, boolean inbound, boolean rejectInvalidTemporalPatterns) {
         try {
-            return new OPTParser(operationaltemplate, temporalPatternMode).parse();
+            return OPTParser.parse(operationaltemplate, rejectInvalidTemporalPatterns);
         } catch (SdkException | NoSuchElementException | IllegalArgumentException | IllegalStateException e) {
             String message = "Invalid template: %s".formatted(e.getMessage());
             if (inbound) {
@@ -269,7 +270,7 @@ public class TemplateServiceImp implements TemplateService {
                             } catch (XmlException e) {
                                 throw new InternalServerException("Cannot process template: " + e.getMessage(), e);
                             }
-                            return buildWebTemplate(operationaltemplate, false, temporalPatternMode);
+                            return buildWebTemplate(operationaltemplate, false, rejectInvalidTemporalPatterns);
                         })
                         .orElseThrow(() -> templateNotFound(templateId));
             });
@@ -329,7 +330,7 @@ public class TemplateServiceImp implements TemplateService {
      *
      * @param template the template to validate
      */
-    private static void validateTemplate(OPERATIONALTEMPLATE template, TemporalPatternMode temporalPatternMode) {
+    private static void validateTemplate(OPERATIONALTEMPLATE template, boolean rejectInvalidTemporalPatterns) {
         if (template == null) {
             throw new InvalidApiParameterException("Could not parse input template");
         }
@@ -352,7 +353,7 @@ public class TemplateServiceImp implements TemplateService {
             throw new IllegalArgumentException("Supplied template has nil or empty description");
         }
 
-        var webTemplate = buildWebTemplate(template, true, temporalPatternMode);
+        var webTemplate = buildWebTemplate(template, true, rejectInvalidTemporalPatterns);
         if (!TemplateUtils.isSupported(webTemplate)) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "The supplied template is not supported (unsupported types: {0})",

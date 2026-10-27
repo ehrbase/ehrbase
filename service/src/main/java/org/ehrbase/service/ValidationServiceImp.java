@@ -55,7 +55,6 @@ import org.ehrbase.openehr.sdk.validation.terminology.ExternalTerminologyValidat
 import org.ehrbase.openehr.sdk.validation.terminology.TerminologyValidationVisitor;
 import org.ehrbase.openehr.sdk.validation.webtemplate.FastRMObjectValidator;
 import org.ehrbase.openehr.sdk.webtemplate.model.WebTemplate;
-import org.ehrbase.openehr.sdk.webtemplate.parser.TemporalPatternMode;
 import org.ehrbase.service.validation.ValidationProperties;
 import org.ehrbase.util.FolderUtils;
 import org.slf4j.Logger;
@@ -94,7 +93,7 @@ public class ValidationServiceImp implements ValidationService {
         if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
         }
-        if (validationProperties.temporalPatternMode() == TemporalPatternMode.DISABLED) {
+        if (!validationProperties.validateTemporalPatterns()) {
             logger.warn("Disabling date/time pattern validation. Caution is advised.");
         }
 
@@ -115,7 +114,7 @@ public class ValidationServiceImp implements ValidationService {
                 disableStrictValidation,
                 delegator,
                 validationProperties.checkForExtraNodes(),
-                validationProperties.temporalPatternMode()));
+                validationProperties.validateTemporalPatterns()));
     }
 
     private static LocatableValidator createCompositionValidator(
@@ -123,9 +122,9 @@ public class ValidationServiceImp implements ValidationService {
             boolean disableStrictValidation,
             APathQueryCache delegator,
             boolean checkForChildrenNotInTemplate,
-            TemporalPatternMode temporalPatternMode) {
+            boolean validateTemporalPatterns) {
         LocatableValidator validator = new LocatableValidator(
-                null, checkForChildrenNotInTemplate, !disableStrictValidation, null, temporalPatternMode);
+                null, checkForChildrenNotInTemplate, !disableStrictValidation, null, validateTemporalPatterns);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
 
         setSharedAPathQueryCache(validator, delegator);
