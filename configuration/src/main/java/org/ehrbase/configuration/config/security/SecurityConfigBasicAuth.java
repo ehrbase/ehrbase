@@ -17,8 +17,8 @@
  */
 package org.ehrbase.configuration.config.security;
 
+import jakarta.annotation.PostConstruct;
 import java.util.List;
-import javax.annotation.PostConstruct;
 import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
