@@ -63,8 +63,7 @@ public class UserServiceImp implements UserService {
         } catch (Cache.ValueRetrievalException e) {
             Throwable cause = e.getCause();
             if (cause instanceof DuplicateKeyException c) {
-                throw new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR, "User already created concurrently by different request", c);
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "User already created concurrently by different request:" + c.getMessage());
             } else if (cause instanceof RuntimeException c) {
                 throw c;
             } else {
