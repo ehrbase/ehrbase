@@ -321,7 +321,10 @@ final class FeatureCheckUtils {
         if (operand instanceof NullPrimitive) {
             throw new AqlFeatureNotImplementedException("NULL is not supported");
         }
-        if (pathWithType.extractedColumn() == AslExtractedColumn.VO_ID) {
+        if (pathWithType.extractedColumn() == AslExtractedColumn.LOCATABLE_UID
+                && !(operand instanceof StringPrimitive)) {
+            throw new IllegalAqlException("/uid/value comparisons require a string operand");
+        } else if (pathWithType.extractedColumn() == AslExtractedColumn.VO_ID) {
             if (!(operand instanceof StringPrimitive sp)) {
                 throw new IllegalAqlException("/uid/value comparisons require a string operand");
             }

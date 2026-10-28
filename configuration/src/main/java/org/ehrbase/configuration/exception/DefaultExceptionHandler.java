@@ -49,7 +49,6 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
@@ -148,9 +147,8 @@ public class DefaultExceptionHandler {
 
     // 422
     @ExceptionHandler(UnprocessableEntityException.class)
-    public ResponseEntity<Object> handleUnprocessableEntityException(
-            UnprocessableEntityException ex, WebRequest request) {
-        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.UNPROCESSABLE_ENTITY);
+    public ResponseEntity<Object> handleUnprocessableEntityException(UnprocessableEntityException ex) {
+        return handleExceptionInternal(ex, ex.getMessage(), HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
     // custom status
