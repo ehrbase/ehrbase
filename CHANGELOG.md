@@ -7,8 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
-- Extended `If-Match` header validation for versioned objects [#1644](https://github.com/ehrbase/ehrbase/pull/1644) [#1656](https://github.com/ehrbase/ehrbase/pull/1656)
+- Validation of temporal pattern constraints [#1654](https://github.com/ehrbase/ehrbase/pull/1654) 
+ ### Changed
+- Extended `If-Match` header validation for versioned objects [#1644](https://github.com/ehrbase/ehrbase/pull/1644)
  ### Fixed 
 - Accept double-quoted (RFC 7232 ETag-style) `If-Match` header values on composition and EHR_STATUS update, fixes [#1639](https://github.com/ehrbase/ehrbase/issues/1639)
 
