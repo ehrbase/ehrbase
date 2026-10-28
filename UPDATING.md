@@ -18,6 +18,13 @@ Rejected values:
 
 Double-quoted values, as returned in the `ETag` response header, are now accepted alongside unquoted values.
 
+### Date and time pattern constraints
+
+- Template validation of compositions now applies `pattern` constraints to DV_DATE, DV_TIME, and DV_DATE_TIME values.
+  To disable this check, set the property `ehrbase.validation.validate-temporal-patterns` to `false`.
+- Template parsing now checks the syntax of temporal patterns.
+  To keep accepting templates with invalid patterns, set the property `ehrbase.template.reject-invalid-temporal-patterns` to `false`.
+
 ## EHRbase 2.36.0
 
 ### Spring Boot 4

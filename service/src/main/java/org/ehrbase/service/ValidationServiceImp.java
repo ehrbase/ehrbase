@@ -93,6 +93,9 @@ public class ValidationServiceImp implements ValidationService {
         if (disableStrictValidation) {
             logger.warn("Disabling strict invariant validation. Caution is advised.");
         }
+        if (!validationProperties.validateTemporalPatterns()) {
+            logger.warn("Disabling date/time pattern validation. Caution is advised.");
+        }
 
         APathQueryCache delegator;
         if (sharedAqlQueryCache) {
@@ -107,16 +110,21 @@ public class ValidationServiceImp implements ValidationService {
             delegator = null;
         }
         locatableValidator = ThreadLocal.withInitial(() -> createCompositionValidator(
-                objectProvider, disableStrictValidation, delegator, validationProperties.checkForExtraNodes()));
+                objectProvider,
+                disableStrictValidation,
+                delegator,
+                validationProperties.checkForExtraNodes(),
+                validationProperties.validateTemporalPatterns()));
     }
 
     private static LocatableValidator createCompositionValidator(
             ObjectProvider<ExternalTerminologyValidation> objectProvider,
             boolean disableStrictValidation,
             APathQueryCache delegator,
-            boolean checkForChildrenNotInTemplate) {
-        LocatableValidator validator =
-                new LocatableValidator(null, checkForChildrenNotInTemplate, !disableStrictValidation, null);
+            boolean checkForChildrenNotInTemplate,
+            boolean validateTemporalPatterns) {
+        LocatableValidator validator = new LocatableValidator(
+                null, checkForChildrenNotInTemplate, !disableStrictValidation, null, validateTemporalPatterns);
         objectProvider.ifAvailable(validator::setExternalTerminologyValidation);
 
         setSharedAPathQueryCache(validator, delegator);
