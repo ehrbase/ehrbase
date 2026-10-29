@@ -18,7 +18,11 @@
 package org.ehrbase.service.validation;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 @ConfigurationProperties(prefix = "ehrbase.validation")
 public record ValidationProperties(
-        boolean validateRmConstraints, boolean checkForExtraNodes, boolean validateFolders) {}
+        boolean validateRmConstraints,
+        boolean checkForExtraNodes,
+        boolean validateFolders,
+        @DefaultValue("true") boolean validateTemporalPatterns) {}
