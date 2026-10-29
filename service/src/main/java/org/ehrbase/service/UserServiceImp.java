@@ -64,8 +64,7 @@ public class UserServiceImp implements UserService {
             Throwable cause = e.getCause();
             if (cause instanceof DuplicateKeyException c) {
                 throw new ResponseStatusException(
-                        HttpStatus.CONFLICT,
-                        "User already created concurrently by different request:" + c.getMessage());
+                        HttpStatus.CONFLICT, "User already created concurrently by different request.", c);
             } else if (cause instanceof RuntimeException c) {
                 throw c;
             } else {
