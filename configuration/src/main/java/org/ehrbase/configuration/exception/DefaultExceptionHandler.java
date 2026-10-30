@@ -186,12 +186,13 @@ public class DefaultExceptionHandler {
 
     private ResponseEntity<Object> handleExceptionInternal(
             Exception ex, String message, HttpStatusCode status, HttpHeaders headers) {
-        if (status.is5xxServerError()) {
+
+        if (status.is5xxServerError() && !status.isSameCodeAs(HttpStatus.NOT_IMPLEMENTED)) {
             logger.error(ex.getMessage(), ex);
         } else {
-            logger.warn(ex.getMessage());
+            logger.warn("Request failed with status {}: {}", status, ex.getClass().getSimpleName());
             if (logger.isDebugEnabled()) {
-                logger.debug("Exception stack trace", ex);
+                logger.debug("Exception details: {}", ex.getMessage(), ex);
             }
         }
 
