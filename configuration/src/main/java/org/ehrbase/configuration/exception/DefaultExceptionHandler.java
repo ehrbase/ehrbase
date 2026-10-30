@@ -190,7 +190,7 @@ public class DefaultExceptionHandler {
         if (status.is5xxServerError() && !status.isSameCodeAs(HttpStatus.NOT_IMPLEMENTED)) {
             logger.error(ex.getMessage(), ex);
         } else {
-            logger.warn("Request failed with status {}: {}", status, message);
+            logger.warn("Request failed with status {}: {}", status, ex.getClass().getSimpleName());
             if (logger.isDebugEnabled()) {
                 logger.debug("Exception details: {}", ex.getMessage(), ex);
             }
