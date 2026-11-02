@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [unreleased]
+ ### Added
+ ### Changed 
+ ### Fixed 
+
 ## [2.37.1]
  ### Changed
 - Updated the gitmodules to point to the SDK release branch
@@ -361,3 +366,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.36.0]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...v2.36.0
 [2.37.0]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...v2.37.0
 [2.37.1]: https://github.com/ehrbase/ehrbase/compare/v2.37.0...v2.37.1
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.37.1...HEAD
