@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.37.1]
+ ### Changed
+- Updated the gitmodules to point to the SDK release branch
+
 ## [2.37.0]
  ### Added
 - Validation of temporal pattern constraints [#1654](https://github.com/ehrbase/ehrbase/pull/1654) [SDK #767](https://github.com/ehrbase/openEHR_SDK/pull/767)
@@ -356,3 +360,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.35.1]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...v2.35.1
 [2.36.0]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...v2.36.0
 [2.37.0]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...v2.37.0
+[2.37.1]: https://github.com/ehrbase/ehrbase/compare/v2.37.0...v2.37.1
