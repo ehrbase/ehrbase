@@ -52,8 +52,7 @@ services:
       - ehrbase-net
 
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0.3
-    #image: registry.vitasystems.dev/docker-registry/keycloak-x:0.9.9
+    image: quay.io/keycloak/keycloak:26.7.4
     container_name: keycloak
     command: "start-dev --import-realm"
     ports:
