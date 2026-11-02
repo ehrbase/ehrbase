@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+ ### Changed 
+ ### Fixed 
+
+## [2.37.0]
+ ### Added
 - Validation of temporal pattern constraints [#1654](https://github.com/ehrbase/ehrbase/pull/1654) [SDK #767](https://github.com/ehrbase/openEHR_SDK/pull/767)
  ### Changed
 - Extended `If-Match` header validation for versioned objects [#1644](https://github.com/ehrbase/ehrbase/pull/1644)
@@ -355,4 +360,5 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.35.0]: https://github.com/ehrbase/ehrbase/compare/v2.34.0...v2.35.0
 [2.35.1]: https://github.com/ehrbase/ehrbase/compare/v2.35.0...v2.35.1
 [2.36.0]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...v2.36.0
-[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...HEAD
+[2.37.0]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...v2.37.0
+[unreleased]: https://github.com/ehrbase/ehrbase/compare/v2.37.0...HEAD
