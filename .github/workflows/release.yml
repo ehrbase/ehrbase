@@ -52,6 +52,29 @@ jobs:
           echo "VERSION=${version}" >> $GITHUB_ENV
 
       #
+      # Ensure the SDK submodule points to a stable SDK release branch and the bom uses the same SDK version.
+      # Fails otherwise (e.g. develop or a feature branch), the SDK has to be updated before releasing.
+      #
+      - name: Ensure stable SDK release
+        run: |
+          SDK_BRANCH=$(git config -f .gitmodules submodule.openEHR_SDK.branch || echo "")
+          SDK_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout -f openEHR_SDK/pom.xml)
+          BOM_SDK_VERSION=$(mvn help:evaluate -Dexpression=ehrbase.openehr.sdk.version -q -DforceStdout -f bom/pom.xml)
+          echo "SDK submodule branch: ${SDK_BRANCH}, version: ${SDK_VERSION}, bom SDK version: ${BOM_SDK_VERSION}"
+          if [[ "${SDK_BRANCH}" =~ ^release/v[0-9]+\.[0-9]+\.[0-9]+$ ]] \
+            && [[ "${SDK_VERSION}" != *-SNAPSHOT ]] \
+            && [[ "${SDK_VERSION}" == "${BOM_SDK_VERSION}" ]]
+          then
+            echo "SDK submodule points to a stable release"
+            exit 0
+          fi
+          # latest SDK release branch by semantic version, as a hint for the fix
+          LATEST_SDK_BRANCH=$(git -C openEHR_SDK ls-remote --heads origin 'release/v*' \
+            | sed 's|.*refs/heads/||' | grep -E '^release/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          echo "::error::SDK submodule is not on a stable release (branch '${SDK_BRANCH}', version '${SDK_VERSION}', bom '${BOM_SDK_VERSION}'). Point the submodule to a SDK release branch (latest: '${LATEST_SDK_BRANCH}') and set ehrbase.openehr.sdk.version in bom/pom.xml to match before releasing."
+          exit 1
+
+      #
       # Uses the enforcer plugin to ensure no -SNAPSHOT version are used
       #
       - name: Enforce no SNAPSHOT used
