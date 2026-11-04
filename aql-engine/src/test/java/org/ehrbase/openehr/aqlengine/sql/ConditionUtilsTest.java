@@ -36,6 +36,8 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.jooq.Condition;
 import org.jooq.impl.QOM;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ConditionUtilsTest {
 
@@ -87,82 +89,78 @@ class ConditionUtilsTest {
                 .isEqualToIgnoringWhitespace("(%s or %s)".formatted(conditionId, conditionVersion));
     }
 
-    @Test
-    void escapeAsJsonString() {
-        assertThat(ConditionUtils.escapeAsJsonString(null)).isNull();
-        assertThat(ConditionUtils.escapeAsJsonString(" Test ")).isEqualTo("\" Test \"");
-        assertThat(ConditionUtils.escapeAsJsonString("")).isEqualTo("\"\"");
-        assertThat(ConditionUtils.escapeAsJsonString("\"Test\"")).isEqualTo("\"\\\"Test\\\"\"");
-        assertThat(ConditionUtils.escapeAsJsonString("\"Test\"")).isEqualTo("\"\\\"Test\\\"\"");
-        assertThat(ConditionUtils.escapeAsJsonString("C:\\temp\\")).isEqualTo("\"C:\\\\temp\\\\\"");
-        assertThat(ConditionUtils.escapeAsJsonString("Cluck Ol' Hen")).isEqualTo("\"Cluck Ol' Hen\"");
+    // Text blocks still process Java escapes (\\ is one backslash); ` quotes cells needing leading/trailing spaces
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', quoteCharacter = '`', nullValues = "NULL", textBlock = """
+            NULL            | NULL
+            ` Test `        | `" Test "`
+            ``              | ""
+            "Test"          | "\\"Test\\""
+            C:\\temp\\      | "C:\\\\temp\\\\"
+            Cluck Ol' Hen   | "Cluck Ol' Hen"
+            """)
+    void escapeAsJsonString(String input, String expected) {
+        assertThat(ConditionUtils.escapeAsJsonString(input)).isEqualTo(expected);
     }
 
-    @Test
-    void translateAqlLikePatern() {
-
-        assertEquals("a", ConditionUtils.translateAqlLikePatternToSql("a"));
-        assertEquals("a%", ConditionUtils.translateAqlLikePatternToSql("a*"));
-        assertEquals("a_", ConditionUtils.translateAqlLikePatternToSql("a?"));
-        assertEquals("a*", ConditionUtils.translateAqlLikePatternToSql("a\\*"));
-        assertEquals("a?", ConditionUtils.translateAqlLikePatternToSql("a\\?"));
-        assertEquals("a\\\\", ConditionUtils.translateAqlLikePatternToSql("a\\\\"));
-
-        assertEquals("abc", ConditionUtils.translateAqlLikePatternToSql("abc"));
-
-        assertEquals("%", ConditionUtils.translateAqlLikePatternToSql("*"));
-        assertEquals("_", ConditionUtils.translateAqlLikePatternToSql("?"));
-        assertEquals("\\\\", ConditionUtils.translateAqlLikePatternToSql("\\\\"));
-
-        assertEquals("X\\\\?*\\%\\_%_X", ConditionUtils.translateAqlLikePatternToSql("X\\\\\\?\\*%_*?X"));
-        assertEquals("\\\\?*\\%\\_%_X", ConditionUtils.translateAqlLikePatternToSql("\\\\\\?\\*%_*?X"));
-        assertEquals("X\\%\\_%_X\\\\?*", ConditionUtils.translateAqlLikePatternToSql("X%_*?X\\\\\\?\\*"));
-
-        assertEquals("20\\%", ConditionUtils.translateAqlLikePatternToSql("20%"));
-        assertEquals("20\\_", ConditionUtils.translateAqlLikePatternToSql("20_"));
-
-        assertEquals("% 20%", ConditionUtils.translateAqlLikePatternToSql("* 20*"));
-        assertEquals("% 20\\%%", ConditionUtils.translateAqlLikePatternToSql("* 20%*"));
-        // *20\\%* => %20\\\\\\%%
-        assertEquals("%20\\\\\\%%", ConditionUtils.translateAqlLikePatternToSql("*20\\\\%*"));
-        // *20\\\\%* => %20\\\\\\%%
-        assertEquals("%20\\\\\\\\\\%%", ConditionUtils.translateAqlLikePatternToSql("*20\\\\\\\\%*"));
-
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\%"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\_"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\n"));
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', textBlock = """
+            a                   | a
+            a*                  | a%
+            a?                  | a_
+            a\\*                | a*
+            a\\?                | a?
+            a\\\\               | a\\\\
+            abc                 | abc
+            *                   | %
+            ?                   | _
+            \\\\                | \\\\
+            X\\\\\\?\\*%_*?X    | X\\\\?*\\%\\_%_X
+            \\\\\\?\\*%_*?X     | \\\\?*\\%\\_%_X
+            X%_*?X\\\\\\?\\*    | X\\%\\_%_X\\\\?*
+            20%                 | 20\\%
+            20_                 | 20\\_
+            * 20*               | % 20%
+            * 20%*              | % 20\\%%
+            *20\\\\%*           | %20\\\\\\%%
+            *20\\\\\\\\%*       | %20\\\\\\\\\\%%
+            """)
+    void translateAqlLikePattern(String aqlPattern, String expected) {
+        assertEquals(expected, ConditionUtils.translateAqlLikePatternToSql(aqlPattern));
     }
 
-    @Test
-    void translateAqlJsonLikePattern() {
+    @ParameterizedTest
+    @CsvSource({"\\", "\\%", "\\_", "\\n"})
+    void translateAqlLikePatternInvalid(String aqlPattern) {
+        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql(aqlPattern));
+    }
 
-        assertEquals("\"a_", ConditionUtils.translateAqlLikePatternToJsonSql("a"));
-        assertEquals("\"a%_", ConditionUtils.translateAqlLikePatternToJsonSql("a*"));
-        assertEquals("\"a__", ConditionUtils.translateAqlLikePatternToJsonSql("a?"));
-        assertEquals("\"a*_", ConditionUtils.translateAqlLikePatternToJsonSql("a\\*"));
-        assertEquals("\"a?_", ConditionUtils.translateAqlLikePatternToJsonSql("a\\?"));
-        assertEquals("\"a\\\\\\\\_", ConditionUtils.translateAqlLikePatternToJsonSql("a\\\\"));
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', textBlock = """
+            a                   | "a_
+            a*                  | "a%_
+            a?                  | "a__
+            a\\*                | "a*_
+            a\\?                | "a?_
+            a\\\\               | "a\\\\\\\\_
+            abc                 | "abc_
+            *                   | "%_
+            ?                   | "__
+            \\\\                | "\\\\\\\\_
+            20%                 | "20\\%_
+            20_                 | "20\\__
+            * 20*               | "% 20%_
+            * 20%*              | "% 20\\%%_
+            *20\\\\%*           | "%20\\\\\\\\\\%%_
+            *20\\\\\\\\%*       | "%20\\\\\\\\\\\\\\\\\\%%_
+            """)
+    void translateAqlJsonLikePattern(String aqlPattern, String expected) {
+        assertEquals(expected, ConditionUtils.translateAqlLikePatternToJsonSql(aqlPattern));
+    }
 
-        assertEquals("\"abc_", ConditionUtils.translateAqlLikePatternToJsonSql("abc"));
-
-        assertEquals("\"%_", ConditionUtils.translateAqlLikePatternToJsonSql("*"));
-        assertEquals("\"__", ConditionUtils.translateAqlLikePatternToJsonSql("?"));
-        assertEquals("\"\\\\\\\\_", ConditionUtils.translateAqlLikePatternToJsonSql("\\\\"));
-
-        assertEquals("\"20\\%_", ConditionUtils.translateAqlLikePatternToJsonSql("20%"));
-        assertEquals("\"20\\__", ConditionUtils.translateAqlLikePatternToJsonSql("20_"));
-
-        assertEquals("\"% 20%_", ConditionUtils.translateAqlLikePatternToJsonSql("* 20*"));
-        assertEquals("\"% 20\\%%_", ConditionUtils.translateAqlLikePatternToJsonSql("* 20%*"));
-        // *20\\%* => %20\\\\\\%%
-        assertEquals("\"%20\\\\\\\\\\%%_", ConditionUtils.translateAqlLikePatternToJsonSql("*20\\\\%*"));
-        // *20\\\\%* => %20\\\\\%%
-        assertEquals("\"%20\\\\\\\\\\\\\\\\\\%%_", ConditionUtils.translateAqlLikePatternToJsonSql("*20\\\\\\\\%*"));
-
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\%"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\_"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\n"));
+    @ParameterizedTest
+    @CsvSource({"\\", "\\%", "\\_", "\\n"})
+    void translateAqlJsonLikePatternInvalid(String aqlPattern) {
+        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql(aqlPattern));
     }
 }
