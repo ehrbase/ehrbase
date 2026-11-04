@@ -310,22 +310,42 @@ final class ConditionUtils {
                 FieldUtils.field(dataTable, ecf, COMP_DATA.DATA.getName(), JSONB.class, useAliases), "U", "V");
         return values.stream()
                 .map(v -> {
-                    int separator = v.indexOf(':');
                     Condition uidRootCond;
                     Condition fullUidCond;
-                    if (separator == -1) {
-                        uidRootCond = applyOperatorSimpleString(uidRoot, op, v);
-                        fullUidCond =
-                                op == AslConditionOperator.LIKE ? applyOperatorSimpleString(fullUid, op, v) : null;
-                    } else {
-                        uidRootCond = applyOperatorSimpleString(uidRoot, op, v.substring(0, separator));
-                        fullUidCond = applyOperatorSimpleString(fullUid, op, v);
-                    }
 
-                    return fullUidCond == null ? uidRootCond : uidRootCond.and(fullUidCond);
+                    String uidRootValue = extractUidRootConditionValue(op, v);
+                    uidRootCond = uidRootValue == null
+                            ? DSL.noCondition()
+                            : applyOperatorSimpleString(uidRoot, op, uidRootValue);
+                    fullUidCond =
+                            v.equals(uidRootValue) ? DSL.noCondition() : applyOperatorSimpleString(fullUid, op, v);
+
+                    return DSL.and(uidRootCond, fullUidCond);
                 })
                 .reduce(Condition::or)
                 .orElseThrow();
+    }
+
+    static String extractUidRootConditionValue(AslConditionOperator op, String v) {
+        // ':' -> "::" since root types are OID, UUID, INTERNET_ID
+        int separator = v.indexOf(':');
+        String uidRootCandidate = separator == -1 ? v : v.substring(0, separator);
+        if (op == AslConditionOperator.LIKE) {
+            int length = uidRootCandidate.length();
+            for (int i = 0; i < length; i++) {
+                switch (uidRootCandidate.charAt(i)) {
+                    case '\\' -> i++;
+                    case '*', '?' -> {
+                        if (i == 0) {
+                            return null;
+                        } else {
+                            return v.substring(0, i) + '*';
+                        }
+                    }
+                }
+            }
+        }
+        return uidRootCandidate;
     }
 
     private static Condition applyOperatorSimpleString(Field<String> field, AslConditionOperator operator, String val) {

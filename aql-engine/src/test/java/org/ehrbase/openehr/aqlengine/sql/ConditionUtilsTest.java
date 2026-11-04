@@ -38,6 +38,8 @@ import org.jooq.impl.QOM;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ConditionUtilsTest {
 
@@ -130,7 +132,7 @@ class ConditionUtilsTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"\\", "\\%", "\\_", "\\n"})
+    @ValueSource(strings = {"\\", "\\%", "\\_", "\\n"})
     void translateAqlLikePatternInvalid(String aqlPattern) {
         assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql(aqlPattern));
     }
@@ -159,8 +161,57 @@ class ConditionUtilsTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"\\", "\\%", "\\_", "\\n"})
+    @ValueSource(strings = {"\\", "\\%", "\\_", "\\n"})
     void translateAqlJsonLikePatternInvalid(String aqlPattern) {
         assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql(aqlPattern));
+    }
+
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "NULL", textBlock = """
+            # version part is stripped
+            EQ   | a6ddec4c-a68a-49ef-963e-3e0bc1970a28                         | a6ddec4c-a68a-49ef-963e-3e0bc1970a28
+            EQ   | a6ddec4c-a68a-49ef-963e-3e0bc1970a28::local.ehrbase.org::1   | a6ddec4c-a68a-49ef-963e-3e0bc1970a28
+            EQ   | abc::::2                                                     | abc
+            # wildcards are not interpreted for non-LIKE operators
+            EQ   | ab*c                                                         | ab*c
+            EQ   | *ab::x::1                                                    | *ab
+            EQ   | ab?c                                                         | ab?c
+            EQ   | ?ab::x::1                                                    | ?ab
+            # LIKE: wildcards in the root part truncate it to a prefix pattern
+            LIKE | ab*                                                          | ab*
+            LIKE | ab?                                                          | ab*
+            LIKE | ab?cd                                                        | ab*
+            LIKE | ab*cd::x::1                                                  | ab*
+            LIKE | ab?cd::x::1                                                  | ab*
+            # LIKE: leading wildcard -> no uid_root condition possible
+            LIKE | *                                                            | NULL
+            LIKE | ?                                                            | NULL
+            LIKE | *ab                                                          | NULL
+            LIKE | ?ab::x::1                                                    | NULL
+            # LIKE: wildcards only in the version part do not affect the root
+            LIKE | abc::*                                                       | abc
+            LIKE | abc::local.ehrbase.org::?                                    | abc
+            # LIKE: escaped wildcards are kept as literals
+            LIKE | a\\*b                                                        | a\\*b
+            LIKE | a\\?b::x::1                                                  | a\\?b
+            LIKE | \\*ab                                                        | \\*ab
+            LIKE | \\?ab                                                        | \\?ab
+            LIKE | a\\*b*c                                                      | a\\*b*
+            LIKE | a\\?b?c                                                      | a\\?b*
+            LIKE | a\\\\*                                                       | a\\\\*
+            """)
+    void extractUidRootConditionValue(AslQueryCondition.AslConditionOperator op, String value, String expected) {
+        assertThat(ConditionUtils.extractUidRootConditionValue(op, value)).isEqualTo(expected);
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = AslQueryCondition.AslConditionOperator.class,
+            names = {"IS_NULL", "IS_NOT_NULL"},
+            mode = EnumSource.Mode.EXCLUDE)
+    void extractUidRootConditionValueReturnsSameInstanceWithoutVersion(AslQueryCondition.AslConditionOperator op) {
+        // callers rely on identity to detect that no full uid condition is needed
+        String plainUid = "a6ddec4c-a68a-49ef-963e-3e0bc1970a28";
+        assertThat(ConditionUtils.extractUidRootConditionValue(op, plainUid)).isSameAs(plainUid);
     }
 }
