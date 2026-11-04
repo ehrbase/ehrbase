@@ -112,6 +112,9 @@ final class EncapsulatingQueryUtils {
                 Objects.requireNonNull(src);
                 yield switch (ecf.getExtractedColumn()) {
                     case VO_ID -> FieldUtils.field(src, ecf, COMP_DATA.VO_ID.getName(), true);
+                    case LOCATABLE_UID ->
+                        AdditionalSQLFunctions.jsonbAttributePathText(
+                                FieldUtils.field(src, ecf, COMP_DATA.DATA.getName(), JSONB.class, true), "U", "V");
                     case ARCHETYPE_NODE_ID ->
                         DSL.field(DSL.row(
                                 FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true),
@@ -177,6 +180,9 @@ final class EncapsulatingQueryUtils {
                 DSL.row(
                         FieldUtils.field(src, ecf, COMP_DATA.VO_ID.getName(), true),
                         FieldUtils.field(src, ecf, COMP_VERSION.SYS_VERSION.getName(), true));
+            case LOCATABLE_UID ->
+                AdditionalSQLFunctions.jsonbAttributePathText(
+                        (Field<JSONB>) FieldUtils.field(src, ecf, COMP_DATA.DATA.getName(), true), "U", "V");
             case ARCHETYPE_NODE_ID ->
                 DSL.row(
                         FieldUtils.field(src, ecf, COMP_DATA.ENTITY_CONCEPT.getName(), true),
@@ -351,6 +357,10 @@ final class EncapsulatingQueryUtils {
                         Field<?> typeField = FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true);
                         yield Stream.of(typeField, conceptField);
                     }
+                    case LOCATABLE_UID -> {
+                        yield Stream.of(AdditionalSQLFunctions.jsonbAttributePathText(
+                                FieldUtils.field(src, ecf, COMP_DATA.DATA.getName(), JSONB.class, true), "U", "V"));
+                    }
                     default ->
                         throw new IllegalArgumentException(
                                 "%s is not a complex extracted column".formatted(ecf.getExtractedColumn()));
@@ -372,6 +382,9 @@ final class EncapsulatingQueryUtils {
             AslComplexExtractedColumnField ecf, Table<?> src) {
         return switch (ecf.getExtractedColumn()) {
             case VO_ID -> Stream.of(FieldUtils.field(src, ecf, COMP_DATA.VO_ID.getName(), true));
+            case LOCATABLE_UID ->
+                Stream.of(AdditionalSQLFunctions.jsonbAttributePathText(
+                        FieldUtils.field(src, ecf, COMP_DATA.DATA.getName(), JSONB.class, true), "U", "V"));
             case ARCHETYPE_NODE_ID -> {
                 Field<?> conceptField = FieldUtils.field(src, ecf, COMP_DATA.ENTITY_CONCEPT.getName(), true);
                 Field<?> typeField = FieldUtils.field(src, ecf, COMP_DATA.RM_ENTITY.getName(), true);

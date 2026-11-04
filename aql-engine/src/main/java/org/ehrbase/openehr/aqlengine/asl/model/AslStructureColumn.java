@@ -45,6 +45,7 @@ public enum AslStructureColumn {
     DATA(ObjectDataTablePrototype.INSTANCE.DATA, JSONB.class, false),
     TEMPLATE_ID(COMP_VERSION.TEMPLATE_ID, UUID.class, AslExtractedColumn.TEMPLATE_ID, true),
     SYS_VERSION(ObjectVersionTablePrototype.INSTANCE.SYS_VERSION, Integer.class, true),
+    UID_ROOT(ObjectDataTablePrototype.INSTANCE.UID_ROOT, String.class, false),
 
     // Columns for FOLDER querying
     EHR_FOLDER_IDX(EHR_FOLDER_VERSION.EHR_FOLDERS_IDX, Integer.class, true),
