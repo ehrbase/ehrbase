@@ -7,8 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
- ### Changed 
- ### Fixed 
+- Upgrade to Spring Boot 4.1.1 [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
+- Exception messages and logs no longer contain subject identifiers. The conflict error for a duplicate EHR subject no longer includes the party id and namespace [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
+ ### Fixed
+- Concurrent creation of the same user now returns `409 Conflict` instead of `500 Internal Server Error` [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
 
 ## [2.37.1]
  ### Changed
