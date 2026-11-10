@@ -34,6 +34,7 @@ import org.ehrbase.jooq.pg.tables.Ehr;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.dbformat.AncestorStructureRmType;
 import org.ehrbase.openehr.dbformat.StructureRmType;
+import org.ehrbase.openehr.dbformat.jooq.prototypes.ObjectDataTablePrototype;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPath.PathNode;
 import org.ehrbase.openehr.sdk.aql.dto.path.AqlObjectPathUtil;
@@ -55,7 +56,6 @@ public enum AslExtractedColumn {
             String.class,
             true,
             StructureRmType.COMPOSITION.name(),
-            StructureRmType.EHR_STATUS.name(),
             RmConstants.ORIGINAL_VERSION),
     ROOT_CONCEPT(
             // same path as ARCHETYPE_NODE_ID (alternative for Compositions)
@@ -80,6 +80,15 @@ public enum AslExtractedColumn {
             String.class,
             true,
             StructureRmType.COMPOSITION.name()),
+    LOCATABLE_UID(
+            AqlObjectPath.parse("uid/value"),
+            List.of(ObjectDataTablePrototype.INSTANCE.UID_ROOT, ObjectDataTablePrototype.INSTANCE.DATA),
+            String.class,
+            false,
+            Stream.concat(Arrays.stream(StructureRmType.values()), Arrays.stream(AncestorStructureRmType.values()))
+                    .filter(st -> !StructureRmType.COMPOSITION.equals(st))
+                    .map(Enum::name)
+                    .toArray(String[]::new)),
 
     // EHR
     EHR_ID(AqlObjectPath.parse("ehr_id/value"), Ehr.EHR_.ID, UUID.class, false, RmConstants.EHR),

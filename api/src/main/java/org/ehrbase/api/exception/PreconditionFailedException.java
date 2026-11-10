@@ -20,7 +20,6 @@ package org.ehrbase.api.exception;
 /**
  * Project-custom exception that allows outbound APIs to react on backend problems. Shall be thrown to invoke
  * status 412 "Precondition Failed" or whatever is appropriate.
- * To be thrown in all cases where part of the request leads to problems, like malformed queries or non-existent referenced objects.
  */
 public class PreconditionFailedException extends RuntimeException {
 

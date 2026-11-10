@@ -36,6 +36,10 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.jooq.Condition;
 import org.jooq.impl.QOM;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ConditionUtilsTest {
 
@@ -87,82 +91,127 @@ class ConditionUtilsTest {
                 .isEqualToIgnoringWhitespace("(%s or %s)".formatted(conditionId, conditionVersion));
     }
 
-    @Test
-    void escapeAsJsonString() {
-        assertThat(ConditionUtils.escapeAsJsonString(null)).isNull();
-        assertThat(ConditionUtils.escapeAsJsonString(" Test ")).isEqualTo("\" Test \"");
-        assertThat(ConditionUtils.escapeAsJsonString("")).isEqualTo("\"\"");
-        assertThat(ConditionUtils.escapeAsJsonString("\"Test\"")).isEqualTo("\"\\\"Test\\\"\"");
-        assertThat(ConditionUtils.escapeAsJsonString("\"Test\"")).isEqualTo("\"\\\"Test\\\"\"");
-        assertThat(ConditionUtils.escapeAsJsonString("C:\\temp\\")).isEqualTo("\"C:\\\\temp\\\\\"");
-        assertThat(ConditionUtils.escapeAsJsonString("Cluck Ol' Hen")).isEqualTo("\"Cluck Ol' Hen\"");
+    // Text blocks still process Java escapes (\\ is one backslash); ` quotes cells needing leading/trailing spaces
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', quoteCharacter = '`', nullValues = "NULL", textBlock = """
+            NULL            | NULL
+            ` Test `        | `" Test "`
+            ``              | ""
+            "Test"          | "\\"Test\\""
+            C:\\temp\\      | "C:\\\\temp\\\\"
+            Cluck Ol' Hen   | "Cluck Ol' Hen"
+            """)
+    void escapeAsJsonString(String input, String expected) {
+        assertThat(ConditionUtils.escapeAsJsonString(input)).isEqualTo(expected);
     }
 
-    @Test
-    void translateAqlLikePatern() {
-
-        assertEquals("a", ConditionUtils.translateAqlLikePatternToSql("a"));
-        assertEquals("a%", ConditionUtils.translateAqlLikePatternToSql("a*"));
-        assertEquals("a_", ConditionUtils.translateAqlLikePatternToSql("a?"));
-        assertEquals("a*", ConditionUtils.translateAqlLikePatternToSql("a\\*"));
-        assertEquals("a?", ConditionUtils.translateAqlLikePatternToSql("a\\?"));
-        assertEquals("a\\\\", ConditionUtils.translateAqlLikePatternToSql("a\\\\"));
-
-        assertEquals("abc", ConditionUtils.translateAqlLikePatternToSql("abc"));
-
-        assertEquals("%", ConditionUtils.translateAqlLikePatternToSql("*"));
-        assertEquals("_", ConditionUtils.translateAqlLikePatternToSql("?"));
-        assertEquals("\\\\", ConditionUtils.translateAqlLikePatternToSql("\\\\"));
-
-        assertEquals("X\\\\?*\\%\\_%_X", ConditionUtils.translateAqlLikePatternToSql("X\\\\\\?\\*%_*?X"));
-        assertEquals("\\\\?*\\%\\_%_X", ConditionUtils.translateAqlLikePatternToSql("\\\\\\?\\*%_*?X"));
-        assertEquals("X\\%\\_%_X\\\\?*", ConditionUtils.translateAqlLikePatternToSql("X%_*?X\\\\\\?\\*"));
-
-        assertEquals("20\\%", ConditionUtils.translateAqlLikePatternToSql("20%"));
-        assertEquals("20\\_", ConditionUtils.translateAqlLikePatternToSql("20_"));
-
-        assertEquals("% 20%", ConditionUtils.translateAqlLikePatternToSql("* 20*"));
-        assertEquals("% 20\\%%", ConditionUtils.translateAqlLikePatternToSql("* 20%*"));
-        // *20\\%* => %20\\\\\\%%
-        assertEquals("%20\\\\\\%%", ConditionUtils.translateAqlLikePatternToSql("*20\\\\%*"));
-        // *20\\\\%* => %20\\\\\\%%
-        assertEquals("%20\\\\\\\\\\%%", ConditionUtils.translateAqlLikePatternToSql("*20\\\\\\\\%*"));
-
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\%"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\_"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql("\\n"));
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', textBlock = """
+            a                   | a
+            a*                  | a%
+            a?                  | a_
+            a\\*                | a*
+            a\\?                | a?
+            a\\\\               | a\\\\
+            abc                 | abc
+            *                   | %
+            ?                   | _
+            \\\\                | \\\\
+            X\\\\\\?\\*%_*?X    | X\\\\?*\\%\\_%_X
+            \\\\\\?\\*%_*?X     | \\\\?*\\%\\_%_X
+            X%_*?X\\\\\\?\\*    | X\\%\\_%_X\\\\?*
+            20%                 | 20\\%
+            20_                 | 20\\_
+            * 20*               | % 20%
+            * 20%*              | % 20\\%%
+            *20\\\\%*           | %20\\\\\\%%
+            *20\\\\\\\\%*       | %20\\\\\\\\\\%%
+            """)
+    void translateAqlLikePattern(String aqlPattern, String expected) {
+        assertEquals(expected, ConditionUtils.translateAqlLikePatternToSql(aqlPattern));
     }
 
-    @Test
-    void translateAqlJsonLikePattern() {
+    @ParameterizedTest
+    @ValueSource(strings = {"\\", "\\%", "\\_", "\\n"})
+    void translateAqlLikePatternInvalid(String aqlPattern) {
+        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToSql(aqlPattern));
+    }
 
-        assertEquals("\"a_", ConditionUtils.translateAqlLikePatternToJsonSql("a"));
-        assertEquals("\"a%_", ConditionUtils.translateAqlLikePatternToJsonSql("a*"));
-        assertEquals("\"a__", ConditionUtils.translateAqlLikePatternToJsonSql("a?"));
-        assertEquals("\"a*_", ConditionUtils.translateAqlLikePatternToJsonSql("a\\*"));
-        assertEquals("\"a?_", ConditionUtils.translateAqlLikePatternToJsonSql("a\\?"));
-        assertEquals("\"a\\\\\\\\_", ConditionUtils.translateAqlLikePatternToJsonSql("a\\\\"));
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', textBlock = """
+            a                   | "a_
+            a*                  | "a%_
+            a?                  | "a__
+            a\\*                | "a*_
+            a\\?                | "a?_
+            a\\\\               | "a\\\\\\\\_
+            abc                 | "abc_
+            *                   | "%_
+            ?                   | "__
+            \\\\                | "\\\\\\\\_
+            20%                 | "20\\%_
+            20_                 | "20\\__
+            * 20*               | "% 20%_
+            * 20%*              | "% 20\\%%_
+            *20\\\\%*           | "%20\\\\\\\\\\%%_
+            *20\\\\\\\\%*       | "%20\\\\\\\\\\\\\\\\\\%%_
+            """)
+    void translateAqlJsonLikePattern(String aqlPattern, String expected) {
+        assertEquals(expected, ConditionUtils.translateAqlLikePatternToJsonSql(aqlPattern));
+    }
 
-        assertEquals("\"abc_", ConditionUtils.translateAqlLikePatternToJsonSql("abc"));
+    @ParameterizedTest
+    @ValueSource(strings = {"\\", "\\%", "\\_", "\\n"})
+    void translateAqlJsonLikePatternInvalid(String aqlPattern) {
+        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql(aqlPattern));
+    }
 
-        assertEquals("\"%_", ConditionUtils.translateAqlLikePatternToJsonSql("*"));
-        assertEquals("\"__", ConditionUtils.translateAqlLikePatternToJsonSql("?"));
-        assertEquals("\"\\\\\\\\_", ConditionUtils.translateAqlLikePatternToJsonSql("\\\\"));
+    @ParameterizedTest
+    @CsvSource(delimiter = '|', nullValues = "NULL", textBlock = """
+            # version part is stripped
+            EQ   | a6ddec4c-a68a-49ef-963e-3e0bc1970a28                         | a6ddec4c-a68a-49ef-963e-3e0bc1970a28
+            EQ   | a6ddec4c-a68a-49ef-963e-3e0bc1970a28::local.ehrbase.org::1   | a6ddec4c-a68a-49ef-963e-3e0bc1970a28
+            EQ   | abc::::2                                                     | abc
+            # wildcards are not interpreted for non-LIKE operators
+            EQ   | ab*c                                                         | ab*c
+            EQ   | *ab::x::1                                                    | *ab
+            EQ   | ab?c                                                         | ab?c
+            EQ   | ?ab::x::1                                                    | ?ab
+            # LIKE: wildcards in the root part truncate it to a prefix pattern
+            LIKE | ab*                                                          | ab*
+            LIKE | ab?                                                          | ab*
+            LIKE | ab?cd                                                        | ab*
+            LIKE | ab*cd::x::1                                                  | ab*
+            LIKE | ab?cd::x::1                                                  | ab*
+            # LIKE: leading wildcard -> no uid_root condition possible
+            LIKE | *                                                            | NULL
+            LIKE | ?                                                            | NULL
+            LIKE | *ab                                                          | NULL
+            LIKE | ?ab::x::1                                                    | NULL
+            # LIKE: wildcards only in the version part do not affect the root
+            LIKE | abc::*                                                       | abc
+            LIKE | abc::local.ehrbase.org::?                                    | abc
+            # LIKE: escaped wildcards are kept as literals
+            LIKE | a\\*b                                                        | a\\*b
+            LIKE | a\\?b::x::1                                                  | a\\?b
+            LIKE | \\*ab                                                        | \\*ab
+            LIKE | \\?ab                                                        | \\?ab
+            LIKE | a\\*b*c                                                      | a\\*b*
+            LIKE | a\\?b?c                                                      | a\\?b*
+            LIKE | a\\\\*                                                       | a\\\\*
+            """)
+    void extractUidRootConditionValue(AslQueryCondition.AslConditionOperator op, String value, String expected) {
+        assertThat(ConditionUtils.extractUidRootConditionValue(op, value)).isEqualTo(expected);
+    }
 
-        assertEquals("\"20\\%_", ConditionUtils.translateAqlLikePatternToJsonSql("20%"));
-        assertEquals("\"20\\__", ConditionUtils.translateAqlLikePatternToJsonSql("20_"));
-
-        assertEquals("\"% 20%_", ConditionUtils.translateAqlLikePatternToJsonSql("* 20*"));
-        assertEquals("\"% 20\\%%_", ConditionUtils.translateAqlLikePatternToJsonSql("* 20%*"));
-        // *20\\%* => %20\\\\\\%%
-        assertEquals("\"%20\\\\\\\\\\%%_", ConditionUtils.translateAqlLikePatternToJsonSql("*20\\\\%*"));
-        // *20\\\\%* => %20\\\\\%%
-        assertEquals("\"%20\\\\\\\\\\\\\\\\\\%%_", ConditionUtils.translateAqlLikePatternToJsonSql("*20\\\\\\\\%*"));
-
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\%"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\_"));
-        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\n"));
+    @ParameterizedTest
+    @EnumSource(
+            value = AslQueryCondition.AslConditionOperator.class,
+            names = {"IS_NULL", "IS_NOT_NULL"},
+            mode = EnumSource.Mode.EXCLUDE)
+    void extractUidRootConditionValueReturnsSameInstanceWithoutVersion(AslQueryCondition.AslConditionOperator op) {
+        // callers rely on identity to detect that no full uid condition is needed
+        String plainUid = "a6ddec4c-a68a-49ef-963e-3e0bc1970a28";
+        assertThat(ConditionUtils.extractUidRootConditionValue(op, plainUid)).isSameAs(plainUid);
     }
 }

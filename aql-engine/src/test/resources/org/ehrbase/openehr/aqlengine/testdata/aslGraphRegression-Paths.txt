@@ -42,6 +42,7 @@ AslRootQuery
         sCO_c_0.sCO_c_0_data
         sCO_c_0.sCO_c_0_template_id /* archetype_details/template_id/value */
         sCO_c_0.sCO_c_0_sys_version
+        sCO_c_0.sCO_c_0_uid_root
         sCO_c_0.sCO_c_0_audit_id
         sCO_c_0.sCO_c_0_contribution_id
         sCO_c_0.sCO_c_0_sys_period_lower
@@ -65,6 +66,7 @@ AslRootQuery
         sOB_o_0.sOB_o_0_entity_name /* name/value */
         sOB_o_0.sOB_o_0_rm_entity
         sOB_o_0.sOB_o_0_data
+        sOB_o_0.sOB_o_0_uid_root
       WHERE
         sOB_o_0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=OB, concept=.sample_blood_pressure.v1]]
       FROM COMPOSITION
@@ -88,6 +90,7 @@ AslRootQuery
         p_data__0.p_data__0_entity_name /* name/value */
         p_data__0.p_data__0_rm_entity
         p_data__0.p_data__0_data
+        p_data__0.p_data__0_uid_root
         p_data__0.p_data__0_entity_attribute
         p_events__0.p_events__0_vo_id
         p_events__0.p_events__0_num
@@ -100,6 +103,7 @@ AslRootQuery
         p_events__0.p_events__0_entity_name /* name/value */
         p_events__0.p_events__0_rm_entity
         p_events__0.p_events__0_data
+        p_events__0.p_events__0_uid_root
         p_events__0.p_events__0_entity_attribute
         p_data__1.p_data__1_vo_id
         p_data__1.p_data__1_num
@@ -112,6 +116,7 @@ AslRootQuery
         p_data__1.p_data__1_entity_name /* name/value */
         p_data__1.p_data__1_rm_entity
         p_data__1.p_data__1_data
+        p_data__1.p_data__1_uid_root
         p_data__1.p_data__1_entity_attribute
         p_eq_1.p_items__0_vo_id
         p_eq_1.p_items__0_num
@@ -124,6 +129,7 @@ AslRootQuery
         p_eq_1.p_items__0_entity_name /* name/value */
         p_eq_1.p_items__0_rm_entity
         p_eq_1.p_items__0_data
+        p_eq_1.p_items__0_uid_root
         p_eq_1.p_items__0_entity_attribute
         p_eq_2.p_items__1_vo_id
         p_eq_2.p_items__1_num
@@ -136,6 +142,7 @@ AslRootQuery
         p_eq_2.p_items__1_entity_name /* name/value */
         p_eq_2.p_items__1_rm_entity
         p_eq_2.p_items__1_data
+        p_eq_2.p_items__1_uid_root
         p_eq_2.p_items__1_entity_attribute
         p_eq_3.p_items__2_vo_id
         p_eq_3.p_items__2_num
@@ -148,6 +155,7 @@ AslRootQuery
         p_eq_3.p_items__2_entity_name /* name/value */
         p_eq_3.p_items__2_rm_entity
         p_eq_3.p_items__2_data
+        p_eq_3.p_items__2_uid_root
         p_eq_3.p_items__2_entity_attribute
         p_eq_4.p_items__3_vo_id
         p_eq_4.p_items__3_num
@@ -160,6 +168,7 @@ AslRootQuery
         p_eq_4.p_items__3_entity_name /* name/value */
         p_eq_4.p_items__3_rm_entity
         p_eq_4.p_items__3_data
+        p_eq_4.p_items__3_uid_root
         p_eq_4.p_items__3_entity_attribute
         p_eq_5.p_items__4_vo_id
         p_eq_5.p_items__4_num
@@ -172,6 +181,7 @@ AslRootQuery
         p_eq_5.p_items__4_entity_name /* name/value */
         p_eq_5.p_items__4_rm_entity
         p_eq_5.p_items__4_data
+        p_eq_5.p_items__4_uid_root
         p_eq_5.p_items__4_entity_attribute
       WHERE
         OR
@@ -194,6 +204,7 @@ AslRootQuery
                 p_data__0.p_data__0_entity_name /* name/value */
                 p_data__0.p_data__0_rm_entity
                 p_data__0.p_data__0_data
+                p_data__0.p_data__0_uid_root
                 p_data__0.p_data__0_entity_attribute
               WHERE
                 p_data__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0001]]
@@ -214,6 +225,7 @@ AslRootQuery
                 p_events__0.p_events__0_entity_name /* name/value */
                 p_events__0.p_events__0_rm_entity
                 p_events__0.p_events__0_data
+                p_events__0.p_events__0_uid_root
                 p_events__0.p_events__0_entity_attribute
               WHERE
                 p_events__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0002]]
@@ -242,6 +254,7 @@ AslRootQuery
                 p_data__1.p_data__1_entity_name /* name/value */
                 p_data__1.p_data__1_rm_entity
                 p_data__1.p_data__1_data
+                p_data__1.p_data__1_uid_root
                 p_data__1.p_data__1_entity_attribute
               WHERE
                 p_data__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0003]]
@@ -270,6 +283,7 @@ AslRootQuery
                 p_items__0.p_items__0_entity_name /* name/value */
                 p_items__0.p_items__0_rm_entity
                 p_items__0.p_items__0_data
+                p_items__0.p_items__0_uid_root
                 p_items__0.p_items__0_entity_attribute
                 FROM
                   p_items__0: StructureQuery
@@ -285,6 +299,7 @@ AslRootQuery
                         p_items__0.p_items__0_entity_name /* name/value */
                         p_items__0.p_items__0_rm_entity
                         p_items__0.p_items__0_data
+                        p_items__0.p_items__0_uid_root
                         p_items__0.p_items__0_entity_attribute
                       WHERE
                         p_items__0.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0004]]
@@ -314,6 +329,7 @@ AslRootQuery
                 p_items__1.p_items__1_entity_name /* name/value */
                 p_items__1.p_items__1_rm_entity
                 p_items__1.p_items__1_data
+                p_items__1.p_items__1_uid_root
                 p_items__1.p_items__1_entity_attribute
                 FROM
                   p_items__1: StructureQuery
@@ -329,6 +345,7 @@ AslRootQuery
                         p_items__1.p_items__1_entity_name /* name/value */
                         p_items__1.p_items__1_rm_entity
                         p_items__1.p_items__1_data
+                        p_items__1.p_items__1_uid_root
                         p_items__1.p_items__1_entity_attribute
                       WHERE
                         p_items__1.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0006]]
@@ -358,6 +375,7 @@ AslRootQuery
                 p_items__2.p_items__2_entity_name /* name/value */
                 p_items__2.p_items__2_rm_entity
                 p_items__2.p_items__2_data
+                p_items__2.p_items__2_uid_root
                 p_items__2.p_items__2_entity_attribute
                 FROM
                   p_items__2: StructureQuery
@@ -373,6 +391,7 @@ AslRootQuery
                         p_items__2.p_items__2_entity_name /* name/value */
                         p_items__2.p_items__2_rm_entity
                         p_items__2.p_items__2_data
+                        p_items__2.p_items__2_uid_root
                         p_items__2.p_items__2_entity_attribute
                       WHERE
                         p_items__2.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at1005]]
@@ -402,6 +421,7 @@ AslRootQuery
                 p_items__3.p_items__3_entity_name /* name/value */
                 p_items__3.p_items__3_rm_entity
                 p_items__3.p_items__3_data
+                p_items__3.p_items__3_uid_root
                 p_items__3.p_items__3_entity_attribute
                 FROM
                   p_items__3: StructureQuery
@@ -417,6 +437,7 @@ AslRootQuery
                         p_items__3.p_items__3_entity_name /* name/value */
                         p_items__3.p_items__3_rm_entity
                         p_items__3.p_items__3_data
+                        p_items__3.p_items__3_uid_root
                         p_items__3.p_items__3_entity_attribute
                       WHERE
                         p_items__3.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at0005]]
@@ -446,6 +467,7 @@ AslRootQuery
                 p_items__4.p_items__4_entity_name /* name/value */
                 p_items__4.p_items__4_rm_entity
                 p_items__4.p_items__4_data
+                p_items__4.p_items__4_uid_root
                 p_items__4.p_items__4_entity_attribute
                 FROM
                   p_items__4: StructureQuery
@@ -461,6 +483,7 @@ AslRootQuery
                         p_items__4.p_items__4_entity_name /* name/value */
                         p_items__4.p_items__4_rm_entity
                         p_items__4.p_items__4_data
+                        p_items__4.p_items__4_uid_root
                         p_items__4.p_items__4_entity_attribute
                       WHERE
                         p_items__4.?? -- COMPLEX ARCHETYPE_NODE_ID archetype_node_id EQ [AslRmTypeAndConcept[aliasedRmType=null, concept=at1006]]

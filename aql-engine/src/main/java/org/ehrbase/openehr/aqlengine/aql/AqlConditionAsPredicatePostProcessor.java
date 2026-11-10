@@ -47,6 +47,7 @@ public class AqlConditionAsPredicatePostProcessor implements AqlQueryParsingPost
     private static final Set<AslExtractedColumn> SUPPORTED_EXCTRACTED_COLUMNS = EnumSet.of(
             AslExtractedColumn.EHR_ID,
             AslExtractedColumn.VO_ID,
+            AslExtractedColumn.LOCATABLE_UID,
             AslExtractedColumn.ARCHETYPE_NODE_ID,
             AslExtractedColumn.ROOT_CONCEPT,
             AslExtractedColumn.TEMPLATE_ID);
