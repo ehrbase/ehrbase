@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.38.0]
+ ### Added
+- Upgrade to Spring Boot 4.1.1 [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
+- Exception messages and logs no longer contain subject identifiers. The conflict error for a duplicate EHR subject no longer includes the party id and namespace [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
+ ### Fixed
+- Concurrent creation of the same user now returns `409 Conflict` instead of `500 Internal Server Error` [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
+
 ## [2.37.1]
  ### Changed
 - Updated the gitmodules to point to the SDK release branch
@@ -361,3 +368,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.36.0]: https://github.com/ehrbase/ehrbase/compare/v2.35.1...v2.36.0
 [2.37.0]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...v2.37.0
 [2.37.1]: https://github.com/ehrbase/ehrbase/compare/v2.37.0...v2.37.1
+[2.38.0]: https://github.com/ehrbase/ehrbase/compare/v2.37.1...v2.38.0
