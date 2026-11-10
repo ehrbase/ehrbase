@@ -149,7 +149,7 @@ public class EhrScapeExceptionHandler {
 
     private ResponseEntity<Object> handleExceptionInternal(
             Exception ex, String message, HttpStatusCode status, HttpHeaders headers) {
-        if (status.is5xxServerError()) {
+        if (status.is5xxServerError() && !status.isSameCodeAs(HttpStatus.NOT_IMPLEMENTED)) {
             logger.error(ex.getMessage(), ex);
         } else {
             logger.warn(ex.getMessage());
