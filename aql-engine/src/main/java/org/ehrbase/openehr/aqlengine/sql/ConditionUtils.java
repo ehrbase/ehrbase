@@ -574,6 +574,9 @@ final class ConditionUtils {
      */
     public static String translateAqlLikePatternToJsonSql(String aqlLike) {
 
+        if (aqlLike == null) {
+            throw new IllegalAqlException("Invalid LIKE pattern: null");
+        }
         String jsonLike = escapeAsJsonString(aqlLike);
 
         StringBuilder sb = new StringBuilder(jsonLike.length());
