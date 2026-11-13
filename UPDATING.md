@@ -2,6 +2,12 @@
 
 This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
+## EHRbase 2.39.0
+
+### Application jar no longer on Maven Central
+
+The executable `org.ehrbase.openehr:application` jar is no longer published to Maven Central. The library modules and the `bom` are still published.
+
 ## EHRbase 2.37.0
 
 ### `If-Match` header validation
