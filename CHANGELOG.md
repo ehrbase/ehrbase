@@ -8,6 +8,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [unreleased]
  ### Added
  ### Changed 
+- The `application` jar and the `test-coverage` pom are no longer published to Maven Central. [#1663](https://github.com/ehrbase/ehrbase/pull/1663)
  ### Fixed 
 
 ## [2.38.0]
