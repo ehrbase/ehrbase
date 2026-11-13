@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.configuration.test.EhrbaseConfigurationIntegrationTest;
+import org.ehrbase.rest.admin.AdminApiConfiguration;
 import org.ehrbase.rest.openehr.OpenehrSystemController;
 import org.ehrbase.rest.openehr.SystemOptionsProperties;
 import org.junit.jupiter.api.Nested;
@@ -47,7 +48,7 @@ class OpenehrSystemControllerIT {
     private static final String SYSTEM_PATH = "/rest/openehr/v1";
 
     @EhrbaseConfigurationIntegrationTest
-    @Import(OpenehrSystemController.class)
+    @Import({OpenehrSystemController.class, AdminApiConfiguration.class})
     @EnableConfigurationProperties(SystemOptionsProperties.class)
     abstract class SystemOptionsTest {
 
