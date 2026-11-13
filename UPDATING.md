@@ -7,6 +7,7 @@ This file documents any backwards-incompatible changes in EHRBase and assists us
 ### Application jar no longer on Maven Central
 
 The executable `org.ehrbase.openehr:application` jar is no longer published to Maven Central. The library modules and the `bom` are still published.
+Use the [`ehrbase/ehrbase`](https://hub.docker.com/r/ehrbase/ehrbase) Docker image instead, see [Quick Start: Run EHRbase with Docker](README.md#quick-start-run-ehrbase-with-docker).
 
 ## EHRbase 2.37.0
 
