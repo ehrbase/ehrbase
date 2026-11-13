@@ -39,8 +39,7 @@ class OpenehrSystemControllerTest {
 
     private ResponseEntity<SystemOptionsDto> options(String buildVersion) {
         when(statusService.getEhrbaseVersion()).thenReturn(buildVersion);
-        var properties = new SystemOptionsProperties("EHRbase", "my-vendor");
-        return new OpenehrSystemController(statusService, properties, adminApiConfiguration).options();
+        return new OpenehrSystemController(statusService, adminApiConfiguration).options();
     }
 
     @Test
@@ -57,7 +56,7 @@ class OpenehrSystemControllerTest {
                 .isEqualTo(new SystemOptionsDto(
                         "EHRbase",
                         "v2.38.0",
-                        "my-vendor",
+                        "Vitagroup",
                         "1.0.3",
                         "STANDARD",
                         List.of("/ehr", "/definition", "/query", "/admin")));

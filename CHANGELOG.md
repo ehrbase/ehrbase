@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
-- openEHR System API `OPTIONS /rest/openehr/v1` returning the options and conformance statement, configurable via `ehrbase.rest.system.*` [#1662](https://github.com/ehrbase/ehrbase/pull/1662)
+- openEHR System API `OPTIONS /rest/openehr/v1` returning the options and conformance statement [#1662](https://github.com/ehrbase/ehrbase/pull/1662)
  ### Changed 
  ### Fixed 
 

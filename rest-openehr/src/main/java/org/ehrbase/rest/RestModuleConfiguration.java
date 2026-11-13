@@ -26,9 +26,7 @@ import java.util.Spliterators;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.ehrbase.rest.openehr.SystemOptionsProperties;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -42,7 +40,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @ComponentScan(basePackages = {"org.ehrbase.rest.admin", "org.ehrbase.rest.openehr", "org.ehrbase.rest.status"})
 @EnableAspectJAutoProxy
-@EnableConfigurationProperties(SystemOptionsProperties.class)
 public class RestModuleConfiguration implements WebMvcConfigurer {
     public static final String NONE = "none";
 

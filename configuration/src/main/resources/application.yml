@@ -134,10 +134,6 @@ ehrbase:
         context-path: /rest/experimental/tags
     ehrscape:
       enabled: false
-    # options and conformance statement of the openEHR System API
-    system:
-      solution: EHRbase
-      vendor: Vitagroup
   security:
     # Configuration of actuator for reporting and health endpoints
     management:
