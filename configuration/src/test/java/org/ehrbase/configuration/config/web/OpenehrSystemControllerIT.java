@@ -29,13 +29,11 @@ import org.ehrbase.api.service.StatusService;
 import org.ehrbase.configuration.test.EhrbaseConfigurationIntegrationTest;
 import org.ehrbase.rest.admin.AdminApiConfiguration;
 import org.ehrbase.rest.openehr.OpenehrSystemController;
-import org.ehrbase.rest.openehr.SystemOptionsProperties;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -49,7 +47,6 @@ class OpenehrSystemControllerIT {
 
     @EhrbaseConfigurationIntegrationTest
     @Import({OpenehrSystemController.class, AdminApiConfiguration.class})
-    @EnableConfigurationProperties(SystemOptionsProperties.class)
     abstract class SystemOptionsTest {
 
         @Autowired

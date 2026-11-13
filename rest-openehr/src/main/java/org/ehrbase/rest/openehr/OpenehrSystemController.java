@@ -42,21 +42,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = BaseController.API_CONTEXT_PATH_WITH_VERSION)
 public class OpenehrSystemController extends BaseController implements SystemApiSpecification {
 
+    private static final String SOLUTION = "EHRbase";
+    private static final String VENDOR = "Vitagroup";
     private static final String RESTAPI_SPECS_VERSION = "1.0.3";
     private static final String CONFORMANCE_PROFILE = "STANDARD";
     private static final List<String> ENDPOINTS = List.of("/ehr", "/definition", "/query");
     private static final String ADMIN_ENDPOINT = "/admin";
 
     private final StatusService statusService;
-    private final SystemOptionsProperties properties;
     private final List<String> endpoints;
 
-    public OpenehrSystemController(
-            StatusService statusService,
-            SystemOptionsProperties properties,
-            AdminApiConfiguration adminApiConfiguration) {
+    public OpenehrSystemController(StatusService statusService, AdminApiConfiguration adminApiConfiguration) {
         this.statusService = Objects.requireNonNull(statusService);
-        this.properties = Objects.requireNonNull(properties);
         this.endpoints = adminApiConfiguration.getActive()
                 ? Stream.concat(ENDPOINTS.stream(), Stream.of(ADMIN_ENDPOINT)).toList()
                 : ENDPOINTS;
@@ -66,9 +63,9 @@ public class OpenehrSystemController extends BaseController implements SystemApi
     @Override
     public ResponseEntity<SystemOptionsDto> options() {
         SystemOptionsDto systemOptions = new SystemOptionsDto(
-                properties.solution(),
+                solution(),
                 solutionVersion(statusService.getEhrbaseVersion()),
-                properties.vendor(),
+                VENDOR,
                 RESTAPI_SPECS_VERSION,
                 CONFORMANCE_PROFILE,
                 endpoints);
@@ -76,6 +73,10 @@ public class OpenehrSystemController extends BaseController implements SystemApi
         return ResponseEntity.ok()
                 .allow(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.OPTIONS)
                 .body(systemOptions);
+    }
+
+    protected String solution() {
+        return SOLUTION;
     }
 
     /**
