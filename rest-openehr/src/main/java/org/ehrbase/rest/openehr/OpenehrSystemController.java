@@ -19,10 +19,12 @@ package org.ehrbase.rest.openehr;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.dto.SystemOptionsDto;
 import org.ehrbase.api.service.StatusService;
 import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.admin.AdminApiConfiguration;
 import org.ehrbase.rest.openehr.specification.SystemApiSpecification;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpMethod;
@@ -42,14 +44,22 @@ public class OpenehrSystemController extends BaseController implements SystemApi
 
     private static final String RESTAPI_SPECS_VERSION = "1.0.3";
     private static final String CONFORMANCE_PROFILE = "STANDARD";
-    private static final List<String> ENDPOINTS = List.of("/ehr", "/definition", "/query", "/admin");
+    private static final List<String> ENDPOINTS = List.of("/ehr", "/definition", "/query");
+    private static final String ADMIN_ENDPOINT = "/admin";
 
     private final StatusService statusService;
     private final SystemOptionsProperties properties;
+    private final List<String> endpoints;
 
-    public OpenehrSystemController(StatusService statusService, SystemOptionsProperties properties) {
+    public OpenehrSystemController(
+            StatusService statusService,
+            SystemOptionsProperties properties,
+            AdminApiConfiguration adminApiConfiguration) {
         this.statusService = Objects.requireNonNull(statusService);
         this.properties = Objects.requireNonNull(properties);
+        this.endpoints = adminApiConfiguration.getActive()
+                ? Stream.concat(ENDPOINTS.stream(), Stream.of(ADMIN_ENDPOINT)).toList()
+                : ENDPOINTS;
     }
 
     @RequestMapping(method = RequestMethod.OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -61,7 +71,7 @@ public class OpenehrSystemController extends BaseController implements SystemApi
                 properties.vendor(),
                 RESTAPI_SPECS_VERSION,
                 CONFORMANCE_PROFILE,
-                ENDPOINTS);
+                endpoints);
 
         return ResponseEntity.ok()
                 .allow(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.DELETE, HttpMethod.OPTIONS)

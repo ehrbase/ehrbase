@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import org.ehrbase.api.dto.SystemOptionsDto;
 import org.ehrbase.api.service.StatusService;
+import org.ehrbase.rest.admin.AdminApiConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -34,15 +35,18 @@ import org.springframework.http.ResponseEntity;
 class OpenehrSystemControllerTest {
 
     private final StatusService statusService = mock();
+    private final AdminApiConfiguration adminApiConfiguration = new AdminApiConfiguration();
 
     private ResponseEntity<SystemOptionsDto> options(String buildVersion) {
         when(statusService.getEhrbaseVersion()).thenReturn(buildVersion);
         var properties = new SystemOptionsProperties("EHRbase", "my-vendor");
-        return new OpenehrSystemController(statusService, properties).options();
+        return new OpenehrSystemController(statusService, properties, adminApiConfiguration).options();
     }
 
     @Test
     void options() {
+        adminApiConfiguration.setActive(true);
+
         var response = options("2.38.0");
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -57,6 +61,13 @@ class OpenehrSystemControllerTest {
                         "1.0.3",
                         "STANDARD",
                         List.of("/ehr", "/definition", "/query", "/admin")));
+    }
+
+    @Test
+    void endpointsOmitAdminWhenAdminApiIsInactive() {
+        assertThat(options("2.38.0").getBody())
+                .extracting(SystemOptionsDto::endpoints)
+                .isEqualTo(List.of("/ehr", "/definition", "/query"));
     }
 
     @ParameterizedTest
