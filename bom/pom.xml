@@ -212,11 +212,6 @@
             </dependency>
             <dependency>
                 <groupId>org.ehrbase.openehr</groupId>
-                <artifactId>application</artifactId>
-                <version>${ehrbase.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ehrbase.openehr</groupId>
                 <artifactId>api</artifactId>
                 <version>${ehrbase.version}</version>
             </dependency>
@@ -404,6 +399,11 @@
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
+                    <!-- -DignorePublishedComponents bypasses skipPublishing -->
+                    <excludeArtifacts>
+                        <excludeArtifact>application</excludeArtifact>
+                        <excludeArtifact>test-coverage</excludeArtifact>
+                    </excludeArtifacts>
                 </configuration>
             </plugin>
         </plugins>
