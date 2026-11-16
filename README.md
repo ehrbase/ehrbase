@@ -69,9 +69,7 @@ Run `mvn package`
 
 #### 4. Run EHRbase
 
-Replace the * with the current version, e.g. `application/target/ehrbase-2.0.0.jar`
-
-`java -jar application/target/ehrbase-*.jar`
+`java -jar application/target/ehrbase.jar`
 
 ### Authentication Types
 
@@ -151,7 +149,7 @@ For integration tests please refer to the [integration-test](https://github.com/
 
 ## Deployment
 
- 1. `java -jar application/target/ehrbase-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
+ 1. `java -jar application/target/ehrbase.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
  2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
 ## Updating
