@@ -169,6 +169,8 @@ jobs:
         test-suite: [
           ## Swagger EHRBase API endpoints checks
           { path: 'SWAGGER', name: 'SWAGGER', tags: 'SWAGGER_EHRBASE', env: { 'AUTH_TYPE': 'NONE' } },
+          ## SYSTEM API endpoints checks
+          { path: 'SYSTEM', name: 'SYSTEM', tags: 'SYSTEM_EHRBASE', env: { 'AUTH_TYPE': 'NONE' } },
           ## Basic and OUATH authorization type checks
           { path: 'AUTH_TYPE', name: 'BASIC_AUTH_TYPE', tags: 'AUTH_TYPE_TESTS_BASIC', env: { 'AUTH_TYPE': 'BASIC' } },
           { path: 'AUTH_TYPE', name: 'OAUTH_AUTH_TYPE', tags: 'AUTH_TYPE_TESTS_OAUTH', env: { 'AUTH_TYPE': 'OAUTH' } },
