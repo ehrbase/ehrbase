@@ -19,6 +19,7 @@ package org.ehrbase.openehr.dbformat;
 
 import java.util.List;
 import java.util.Optional;
+import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 
 /**
  * For the database: Shorter aliases for RmObject types
@@ -84,6 +85,7 @@ public record RmTypeAlias(String type, String alias, boolean structureAlias) {
             alias("LOCATABLE_REF", "LR"),
             alias("OBJECT_REF", "OR"),
             alias("OBJECT_VERSION_ID", "OV"),
+            alias(RmConstants.ORIGINAL_VERSION, "ORV"),
             alias("PARTICIPATION", "PA"),
             alias("PARTY_IDENTIFIED", "PI"),
             alias("PARTY_REF", "PF"),
@@ -163,6 +165,7 @@ public record RmTypeAlias(String type, String alias, boolean structureAlias) {
             case "LOCATABLE_REF" -> "LR";
             case "OBJECT_REF" -> "OR";
             case "OBJECT_VERSION_ID" -> "OV";
+            case RmConstants.ORIGINAL_VERSION -> "ORV";
             case "PARTICIPATION" -> "PA";
             case "PARTY_IDENTIFIED" -> "PI";
             case "PARTY_REF" -> "PF";
@@ -249,6 +252,7 @@ public record RmTypeAlias(String type, String alias, boolean structureAlias) {
             case "LR" -> "LOCATABLE_REF";
             case "OR" -> "OBJECT_REF";
             case "OV" -> "OBJECT_VERSION_ID";
+            case "ORV" -> RmConstants.ORIGINAL_VERSION;
             case "PA" -> "PARTICIPATION";
             case "PI" -> "PARTY_IDENTIFIED";
             case "PF" -> "PARTY_REF";
