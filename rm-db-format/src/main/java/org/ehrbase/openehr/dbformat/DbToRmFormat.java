@@ -601,6 +601,11 @@ public final class DbToRmFormat {
                     case "ad", "d", "ec", "f", "la", "lk", "op", "s" -> false;
                     default -> true;
                 };
+            case "ORV" ->
+                switch (attributeAlias) {
+                    case "U", "att", "ls", "oX", "pX" -> false;
+                    default -> true;
+                };
             case "PA" ->
                 switch (attributeAlias) {
                     case "mo", "ti" -> false;
