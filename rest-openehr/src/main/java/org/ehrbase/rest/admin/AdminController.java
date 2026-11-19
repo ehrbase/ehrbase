@@ -36,7 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Admin - Heartbeat")
 @RestController
 @RequestMapping(
-        path = "${admin-api.context-path:/rest/admin}",
+        path = BaseController.ADMIN_API_CONTEXT_PATH,
         produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 public class AdminController extends BaseController {
 
