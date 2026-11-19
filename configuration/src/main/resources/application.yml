@@ -87,6 +87,7 @@ security:
   authAdminPassword: EvenMoreSecretPassword
   oauth2OpenehrRoles:
     - ${security.oauth2UserRole:USER}
+    - ${security.oauth2AdminRole:ADMIN}
   oauth2AdminRoles:
     - ${security.oauth2AdminRole:ADMIN}
   oauth2ManagementRoles:
