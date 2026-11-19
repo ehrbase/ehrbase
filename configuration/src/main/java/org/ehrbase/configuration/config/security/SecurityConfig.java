@@ -18,12 +18,16 @@
 package org.ehrbase.configuration.config.security;
 
 import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
+import java.util.Arrays;
 import java.util.List;
 import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
+import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.experimental.ItemTagController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +56,15 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     @Value("${management.endpoints.web.access:ADMIN_ONLY}")
     protected SecurityProperties.AccessType managementEndpointsAccessType;
 
+    @Value(BaseController.ADMIN_API_CONTEXT_PATH)
+    private String adminApiContextPath;
+
+    @Value(BaseController.API_CONTEXT_PATH)
+    private String openehrApiContextPath;
+
+    @Value(ItemTagController.TAGS_CONTEXT_PATH)
+    private String tagsContextPath;
+
     protected SecurityConfig(WebEndpointProperties webEndpointProperties) {
         this.webEndpointProperties = webEndpointProperties;
     }
@@ -59,10 +72,10 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     protected record SecurityConfigParams(
             Class<? extends Filter> authFilterClass,
             AuthTypes authType,
-            String adminRole,
-            String userRole,
-            List<String> mgmtRoles,
-            List<String> otherRequestsRoles,
+            String[] adminRoles,
+            String[] openEhrRoles,
+            String[] mgmtRoles,
+            String[] basicAccessRequestsRoles,
             List<SecurityProperties.EndpointAuthorization> additionalAuthorizations) {}
 
     protected abstract SecurityConfigParams securityConfigParams();
@@ -78,14 +91,19 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     // Permit welcome page and img
                     auth = auth.requestMatchers("/", "/img/**").permitAll();
                     // secure /rest/admin/** so that only admins can access it
-                    auth = requestMatcherWithRoles(auth, "/rest/admin/**", params.adminRole());
+                    auth = requestMatcherWithRoles(auth, adminApiContextPath + "/**", params.adminRoles());
+                    // secure openehr endpoints
+                    auth = requestMatcherWithRoles(auth, openehrApiContextPath + "/**", params.openEhrRoles());
+                    auth = requestMatcherWithRoles(auth, tagsContextPath + "/**", params.openEhrRoles());
+                    auth = requestMatcherWithRoles(
+                            auth, API_ECIS_CONTEXT_PATH_WITH_VERSION + "/**", params.openEhrRoles());
 
                     auth = applyAdditionalAuthorizations(auth, params);
 
                     // secure /management/**
-                    auth = configureManagementEndpointAccess(auth, params.adminRole(), params.mgmtRoles());
+                    auth = configureManagementEndpointAccess(auth, params.adminRoles(), params.mgmtRoles());
                     // secure all other requests using either user and/or admin roles
-                    auth.anyRequest().hasAnyRole(params.otherRequestsRoles().toArray(String[]::new));
+                    auth.anyRequest().hasAnyRole(params.basicAccessRequestsRoles());
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
     }
@@ -104,8 +122,8 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     protected AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry
             configureManagementEndpointAccess(
                     AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
-                    String adminRoleSupplier,
-                    List<String> privateRolesSupplier) {
+                    String[] adminRoles,
+                    String[] privateMgmtRoles) {
 
         logger.info("Management endpoint access type {}", managementEndpointsAccessType);
 
@@ -115,10 +133,10 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
             // management endpoints are locked behind an authorization
             // and are only available for users with the admin role
             case AccessType.ADMIN_ONLY ->
-                auth.requestMatchers(endpointRequestMatcher).hasRole(adminRoleSupplier);
+                auth.requestMatchers(endpointRequestMatcher).hasAnyRole(adminRoles);
             // management endpoints are locked behind an authorization, but are available to any role
             case AccessType.PRIVATE ->
-                auth.requestMatchers(endpointRequestMatcher).hasAnyRole(privateRolesSupplier.toArray(new String[] {}));
+                auth.requestMatchers(endpointRequestMatcher).hasAnyRole(privateMgmtRoles);
             // management endpoints can be accessed without an authorization
             case AccessType.PUBLIC ->
                 auth.requestMatchers(endpointRequestMatcher.excluding(ShutdownEndpoint.class))
@@ -149,10 +167,12 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     private static String[] resolveRoles(List<String> roles, SecurityConfigParams params) {
         return roles.stream()
                 .map(role -> switch (role) {
-                    case SecurityProperties.EndpointAuthorization.ADMIN -> params.adminRole();
-                    case SecurityProperties.EndpointAuthorization.USER -> params.userRole();
-                    default -> role;
+                    case SecurityProperties.EndpointAuthorization.ADMIN -> params.adminRoles();
+                    case SecurityProperties.EndpointAuthorization.USER -> params.openEhrRoles();
+                    default -> new String[] {role};
                 })
+                .flatMap(Arrays::stream)
+                .distinct()
                 .toArray(String[]::new);
     }
 }
