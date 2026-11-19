@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -87,7 +88,11 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
     }
 
     private String[] merge(String[]... arrays) {
-        return Arrays.stream(arrays).flatMap(Arrays::stream).distinct().toArray(String[]::new);
+        return Arrays.stream(arrays)
+                .filter(Objects::nonNull)
+                .flatMap(Arrays::stream)
+                .distinct()
+                .toArray(String[]::new);
     }
 
     @Override
