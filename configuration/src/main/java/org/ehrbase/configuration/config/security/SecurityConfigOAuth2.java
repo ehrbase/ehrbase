@@ -44,8 +44,6 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 public final class SecurityConfigOAuth2 extends SecurityConfig {
 
-    public static final String PROFILE_SCOPE = "PROFILE";
-
     private final SecurityProperties securityProperties;
 
     private final OAuth2ResourceServerProperties oAuth2Properties;
@@ -63,24 +61,33 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
     public void initialize() {
         logger.info("Using OAuth2 authentication");
         logger.debug("Using issuer URI: {}", oAuth2Properties.getJwt().getIssuerUri());
-        logger.debug("Using user role: {}", securityProperties.getOauth2UserRole());
-        logger.debug("Using admin role: {}", securityProperties.getOauth2AdminRole());
+        logger.debug("Using openehr roles: {}", (Object) securityProperties.getOauth2OpenehrRoles());
+        logger.debug("Using admin roles: {}", (Object) securityProperties.getOauth2AdminRoles());
+        logger.debug("Using management roles: {}", (Object) securityProperties.getOauth2ManagementRoles());
+        logger.debug("Using access-only roles: {}", (Object) securityProperties.getOauth2AccessOnlyRoles());
     }
 
     @Override
     protected SecurityConfigParams securityConfigParams() {
-        final String userRole = securityProperties.getOauth2UserRole();
-        final String adminRole = securityProperties.getOauth2AdminRole();
-        List<String> mgmtRoles = List.of(adminRole, userRole, PROFILE_SCOPE);
-        List<String> otherRequestsRoles = List.of(adminRole, userRole, PROFILE_SCOPE);
+        final String[] openEhrRoles = securityProperties.getOauth2OpenehrRoles();
+        final String[] adminRoles = securityProperties.getOauth2AdminRoles();
+        final String[] managementRoles = securityProperties.getOauth2ManagementRoles();
+        final String[] accessOnlyRoles = securityProperties.getOauth2AccessOnlyRoles();
+
+        String[] mgmtRoles = merge(adminRoles, managementRoles);
+        String[] accessRoles = merge(adminRoles, openEhrRoles, accessOnlyRoles);
         return new SecurityConfigParams(
                 BearerTokenAuthenticationFilter.class,
                 AuthTypes.OAUTH,
-                adminRole,
-                userRole,
+                adminRoles,
+                openEhrRoles,
                 mgmtRoles,
-                otherRequestsRoles,
+                accessRoles,
                 securityProperties.getAdditionalAuthorizations());
+    }
+
+    private String[] merge(String[]... arrays) {
+        return Arrays.stream(arrays).flatMap(Arrays::stream).distinct().toArray(String[]::new);
     }
 
     @Override
@@ -103,14 +110,6 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
             if (realmAccess != null && realmAccess.containsKey("roles")) {
                 authority.addAll(((List<String>) realmAccess.get("roles"))
                         .stream()
-                                .map(roleName -> "ROLE_" + roleName.toUpperCase())
-                                .map(SimpleGrantedAuthority::new)
-                                .toList());
-            }
-
-            if (jwt.getClaims().containsKey("scope")) {
-                authority.addAll(
-                        Arrays.stream(jwt.getClaims().get("scope").toString().split(" "))
                                 .map(roleName -> "ROLE_" + roleName.toUpperCase())
                                 .map(SimpleGrantedAuthority::new)
                                 .toList());
