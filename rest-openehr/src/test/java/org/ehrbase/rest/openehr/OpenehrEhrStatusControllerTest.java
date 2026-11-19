@@ -198,7 +198,7 @@ class OpenehrEhrStatusControllerTest {
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
 
         ResponseEntity<EhrStatus> response =
-                controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, ehrStatus);
+                controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, new HttpHeaders(), ehrStatus);
 
         var body = response.getBody();
         if (prefer.equals(BaseController.RETURN_REPRESENTATION)) {

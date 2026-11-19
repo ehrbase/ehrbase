@@ -73,8 +73,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @PostMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<Folder> createDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
@@ -96,8 +95,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestBody Folder folder) {
 
         folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
@@ -115,8 +113,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @DeleteMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<Folder> deleteDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 

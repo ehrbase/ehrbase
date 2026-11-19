@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -44,14 +45,9 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "400"),
                 @ApiResponse(responseCode = "404")
             })
+    @CommitAuditHeaderDocs
     ResponseEntity<Folder> createDirectory(
-            UUID ehrId,
-            String openEhrVersion,
-            String openEhrAuditDetails,
-            String contentType,
-            String accept,
-            String prefer,
-            Folder folder);
+            UUID ehrId, HttpHeaders headers, String contentType, String accept, String prefer, Folder folder);
 
     @Operation(
             summary = "Update directory",
@@ -66,14 +62,14 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "404"),
                 @ApiResponse(responseCode = "412")
             })
+    @CommitAuditHeaderDocs
     ResponseEntity<Folder> updateDirectory(
             UUID ehrId,
             ObjectVersionId folderId,
             String contentType,
             String accept,
             String prefer,
-            String openEhrVersion,
-            String openEhrAuditDetails,
+            HttpHeaders headers,
             Folder folder);
 
     @Operation(
@@ -88,8 +84,8 @@ public interface DirectoryApiSpecification {
                 @ApiResponse(responseCode = "404"),
                 @ApiResponse(responseCode = "412")
             })
-    ResponseEntity<Folder> deleteDirectory(
-            UUID ehrId, String openEhrVersion, String openEhrAuditDetails, String accept, ObjectVersionId folderId);
+    @CommitAuditHeaderDocs
+    ResponseEntity<Folder> deleteDirectory(UUID ehrId, HttpHeaders headers, String accept, ObjectVersionId folderId);
 
     @Operation(
             summary = "Get folder in directory version",

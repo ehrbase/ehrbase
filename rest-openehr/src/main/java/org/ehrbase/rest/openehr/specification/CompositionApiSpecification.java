@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 @Tag(name = "COMPOSITION")
@@ -34,9 +35,9 @@ public interface CompositionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-post"))
+    @CommitAuditHeaderDocs
     ResponseEntity createComposition(
-            String openehrVersion,
-            String openehrAuditDetails,
+            HttpHeaders headers,
             String contentType,
             String accept,
             String prefer,
@@ -57,9 +58,9 @@ public interface CompositionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-put"))
+    @CommitAuditHeaderDocs
     ResponseEntity updateComposition(
-            String openehrVersion,
-            String openehrAuditDetails,
+            HttpHeaders headers,
             String contentType,
             String accept,
             String prefer,
@@ -82,8 +83,8 @@ public interface CompositionApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#composition-composition-delete"))
-    ResponseEntity deleteComposition(
-            String openehrVersion, String openehrAuditDetails, String ehrIdString, String precedingVersionUid);
+    @CommitAuditHeaderDocs
+    ResponseEntity deleteComposition(HttpHeaders headers, String ehrIdString, String precedingVersionUid);
 
     @Operation(
             summary = "Get composition at time",

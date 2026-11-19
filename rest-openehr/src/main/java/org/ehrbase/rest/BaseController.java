@@ -49,9 +49,9 @@ public abstract class BaseController {
 
     // HTTP Headers
 
-    public static final String OPENEHR_AUDIT_DETAILS = "openEHR-AUDIT_DETAILS";
+    public static final String OPENEHR_AUDIT_DETAILS = "openehr-audit-details";
 
-    public static final String OPENEHR_VERSION = "openEHR-VERSION";
+    public static final String OPENEHR_VERSION = "openehr-version";
 
     public static final String PREFER = "Prefer";
 

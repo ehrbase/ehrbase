@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.UUID;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -137,5 +138,7 @@ public interface EhrStatusApiSpecification {
                     @ExternalDocumentation(
                             url =
                                     "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#ehr_status-ehr_status-put"))
-    ResponseEntity<EhrStatus> updateEhrStatus(UUID ehrId, String versionUid, String prefer, EhrStatus ehrStatus);
+    @CommitAuditHeaderDocs
+    ResponseEntity<EhrStatus> updateEhrStatus(
+            UUID ehrId, String versionUid, String prefer, HttpHeaders headers, EhrStatus ehrStatus);
 }

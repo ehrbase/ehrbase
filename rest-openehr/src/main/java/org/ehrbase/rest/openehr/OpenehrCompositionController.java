@@ -102,8 +102,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
     @ResponseStatus(value = HttpStatus.CREATED)
     @Override
     public ResponseEntity<?> createComposition(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestHeader(value = CONTENT_TYPE) String contentType,
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
@@ -155,8 +154,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
             })
     @Override
     public ResponseEntity updateComposition(
-            String openehrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestHeader(value = CONTENT_TYPE, required = false) String contentType,
             @RequestHeader(value = ACCEPT, required = false) String accept,
             @RequestHeader(value = PREFER, required = false) String prefer,
@@ -227,13 +225,12 @@ public class OpenehrCompositionController extends BaseController implements Comp
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     @Override
     public ResponseEntity deleteComposition(
-            @RequestHeader(value = "openEHR-VERSION", required = false) String openehrVersion,
-            @RequestHeader(value = "openEHR-AUDIT_DETAILS", required = false) String openehrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @PathVariable(value = "ehr_id") String ehrIdString,
             @PathVariable(value = "preceding_version_uid") String precedingVersionUid) {
         UUID ehrId = getEhrUuid(ehrIdString);
 
-        HttpHeaders headers = new HttpHeaders();
+        HttpHeaders responseHeaders = new HttpHeaders();
 
         // prepare header data
 
@@ -248,9 +245,9 @@ public class OpenehrCompositionController extends BaseController implements Comp
             targetObjId.getVersionTreeId().setValue(String.valueOf(nextVersion));
             URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, targetObjId.getValue());
 
-            headers.setLocation(uri);
-            headers.setETag("\"" + targetObjId.getValue() + "\"");
-            headers.setLastModified(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault())
+            responseHeaders.setLocation(uri);
+            responseHeaders.setETag("\"" + targetObjId.getValue() + "\"");
+            responseHeaders.setLastModified(ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault())
                     .toInstant()
                     .toEpochMilli());
 
@@ -264,7 +261,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
                     TEMPLATE_ID,
                     compositionService.retrieveTemplateId(compositionUid));
 
-            return ResponseEntity.noContent().headers(headers).build();
+            return ResponseEntity.noContent().headers(responseHeaders).build();
         } catch (ObjectNotFoundException e) {
             // if composition not available at all --> 404
             throw new ObjectNotFoundException(

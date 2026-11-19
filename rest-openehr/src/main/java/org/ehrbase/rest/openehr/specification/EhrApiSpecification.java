@@ -27,6 +27,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -65,9 +66,9 @@ public interface EhrApiSpecification {
             externalDocs = @ExternalDocumentation(
                     url = "https://specifications.openehr.org/releases/ITS-REST/latest/ehr.html#tag/EHR/operation/ehr_create"
             ))
+    @CommitAuditHeaderDocs
     ResponseEntity<Ehr> createEhr(
-            String openehrVersion,
-            String openehrAuditDetails,
+            HttpHeaders headers,
             String prefer,
             @Parameter(hidden = true, allowEmptyValue = true) EhrStatus ehrStatusDto);
 
@@ -101,9 +102,9 @@ public interface EhrApiSpecification {
             externalDocs = @ExternalDocumentation(
                     url = "https://specifications.openehr.org/releases/ITS-REST/1.0.3/ehr.html#tag/EHR/operation/ehr_get_by_id"
             ))
+    @CommitAuditHeaderDocs
     ResponseEntity<Ehr> createEhrWithId(
-            String openehrVersion,
-            String openehrAuditDetails,
+            HttpHeaders headers,
             String prefer,
             String ehrIdString,
             EhrStatus ehrStatusDto);

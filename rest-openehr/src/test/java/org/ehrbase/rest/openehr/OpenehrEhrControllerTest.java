@@ -85,7 +85,7 @@ class OpenehrEhrControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus(), prefer, () -> {
             when(mockEhrService.create(isNull(), any())).thenReturn(ehrId);
-            return controller().createEhr("1.0.3", null, prefer, null);
+            return controller().createEhr(new HttpHeaders(), prefer, null);
         });
     }
 
@@ -97,7 +97,7 @@ class OpenehrEhrControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
             when(mockEhrService.create(isNull(), any())).thenReturn(ehrId);
-            return controller().createEhr("1.0.3", null, prefer, ehrStatus);
+            return controller().createEhr(new HttpHeaders(), prefer, ehrStatus);
         });
     }
 
@@ -108,7 +108,7 @@ class OpenehrEhrControllerTest {
         UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
         runCreateTest(ehrId, ehrStatus(), prefer, () -> {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
-            return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), null);
+            return controller().createEhrWithId(new HttpHeaders(), prefer, ehrId.toString(), null);
         });
     }
 
@@ -120,7 +120,7 @@ class OpenehrEhrControllerTest {
         var ehrStatus = ehrStatus();
         runCreateTest(ehrId, ehrStatus, prefer, () -> {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
-            return controller().createEhrWithId("1.0.3", null, prefer, ehrId.toString(), ehrStatus);
+            return controller().createEhrWithId(new HttpHeaders(), prefer, ehrId.toString(), ehrStatus);
         });
     }
 
@@ -128,7 +128,7 @@ class OpenehrEhrControllerTest {
     void createEhrWithIdInvalidUUID() {
 
         OpenehrEhrController controller = controller();
-        assertThatThrownBy(() -> controller.createEhrWithId("1.0.3", null, null, "invalid", null))
+        assertThatThrownBy(() -> controller.createEhrWithId(new HttpHeaders(), null, "invalid", null))
                 .isInstanceOf(InvalidApiParameterException.class)
                 .hasMessage("EHR ID format not a UUID");
     }
