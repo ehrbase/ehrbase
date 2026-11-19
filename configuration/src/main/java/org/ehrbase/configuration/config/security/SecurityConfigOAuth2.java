@@ -70,13 +70,11 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
 
     @Override
     protected SecurityConfigParams securityConfigParams() {
-        final String[] openEhrRoles = securityProperties.getOauth2OpenehrRoles();
-        final String[] adminRoles = securityProperties.getOauth2AdminRoles();
-        final String[] managementRoles = securityProperties.getOauth2ManagementRoles();
-        final String[] accessOnlyRoles = securityProperties.getOauth2AccessOnlyRoles();
+        final String[] openEhrRoles = toRoleArray(securityProperties.getOauth2OpenehrRoles());
+        final String[] adminRoles = toRoleArray(securityProperties.getOauth2AdminRoles());
 
-        String[] mgmtRoles = merge(adminRoles, managementRoles);
-        String[] accessRoles = merge(adminRoles, openEhrRoles, accessOnlyRoles);
+        String[] mgmtRoles = toRoleArray(adminRoles, securityProperties.getOauth2ManagementRoles());
+        String[] accessRoles = toRoleArray(adminRoles, openEhrRoles, securityProperties.getOauth2AccessOnlyRoles());
         return new SecurityConfigParams(
                 BearerTokenAuthenticationFilter.class,
                 AuthTypes.OAUTH,
@@ -87,10 +85,11 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
                 securityProperties.getAdditionalAuthorizations());
     }
 
-    private String[] merge(String[]... arrays) {
+    private static String[] toRoleArray(String[]... arrays) {
         return Arrays.stream(arrays)
                 .filter(Objects::nonNull)
                 .flatMap(Arrays::stream)
+                .map(String::toUpperCase)
                 .distinct()
                 .toArray(String[]::new);
     }
