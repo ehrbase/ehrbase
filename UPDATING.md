@@ -2,6 +2,19 @@
 
 This file documents any backwards-incompatible changes in EHRBase and assists users migrating to a new version.
 
+## EHRbase 2.39.0
+
+### Artifacts no longer on Maven Central
+
+EHRbase no longer publishes the following artifacts:
+- `org.ehrbase.openehr:application`, the executable jar. It is also no longer managed by the `bom`.
+- `org.ehrbase.openehr:test-coverage`, the pom that aggregates the test coverage reports.
+
+The library modules and the `bom` are still published.
+
+To run EHRbase, use the [`ehrbase/ehrbase`](https://hub.docker.com/r/ehrbase/ehrbase) Docker image instead, see [Quick Start: Run EHRbase with Docker](README.md#quick-start-run-ehrbase-with-docker).
+Projects that build the `application` module from source and depend on it must now declare its version explicitly.
+
 ## EHRbase 2.37.0
 
 ### `If-Match` header validation

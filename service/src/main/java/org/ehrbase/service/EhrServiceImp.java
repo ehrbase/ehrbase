@@ -33,6 +33,7 @@ import com.nedap.archie.rm.support.identification.PartyRef;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.exception.DuplicateSubjectException;
 import org.ehrbase.api.exception.InternalServerException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -170,12 +171,10 @@ public class EhrServiceImp implements EhrService {
         return result;
     }
 
-    private void handleDuplicatePartyRef(DuplicateKeyException e, EhrStatus status) throws StateConflictException {
+    private void handleDuplicatePartyRef(DuplicateKeyException e, EhrStatus status) throws DuplicateSubjectException {
         if (e.getMessage().contains("ehr_status_subject_idx")) {
             PartyRef pRef = status.getSubject().getExternalRef();
-            throw new StateConflictException(
-                    "Supplied partyId[%s] is used by a different EHR in the same partyNamespace[%s]."
-                            .formatted(pRef.getId().getValue(), pRef.getNamespace()));
+            throw new DuplicateSubjectException(pRef.getId().getValue(), pRef.getNamespace());
         }
     }
 

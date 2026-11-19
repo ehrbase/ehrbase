@@ -42,8 +42,8 @@ import com.nedap.archie.rm.support.identification.PartyRef;
 import com.nedap.archie.rm.support.identification.UIDBasedId;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.exception.DuplicateSubjectException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
-import org.ehrbase.api.exception.StateConflictException;
 import org.ehrbase.api.service.EhrService;
 import org.ehrbase.api.service.SystemService;
 import org.ehrbase.api.service.ValidationService;
@@ -187,9 +187,12 @@ class EhrServiceTest {
                         ArgumentMatchers.any());
 
         assertThatThrownBy(() -> runCreateEhr(service(), ehrId, ehrStatusDto))
-                .isInstanceOf(StateConflictException.class)
-                .hasMessage(
-                        "Supplied partyId[42] is used by a different EHR in the same partyNamespace[some:namespace].");
+                .isInstanceOf(DuplicateSubjectException.class)
+                .hasMessage("Supplied subject is already used by a different EHR in the same namespace.")
+                .hasMessageNotContaining("42")
+                .hasMessageNotContaining("some:namespace")
+                .extracting("subjectId", "subjectNamespace")
+                .containsExactly("42", "some:namespace");
     }
 
     private record CreationResult(UUID ehrId, EhrStatus ehrStatus) {}
