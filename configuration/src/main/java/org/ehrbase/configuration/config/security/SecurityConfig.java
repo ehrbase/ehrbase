@@ -18,6 +18,7 @@
 package org.ehrbase.configuration.config.security;
 
 import static org.ehrbase.configuration.config.security.SecurityProperties.AccessType;
+import static org.ehrbase.rest.ehrscape.controller.BaseController.API_ECIS_CONTEXT_PATH_WITH_VERSION;
 import static org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher.pathPattern;
 
 import jakarta.servlet.DispatcherType;
@@ -25,6 +26,8 @@ import jakarta.servlet.Filter;
 import java.util.Arrays;
 import java.util.List;
 import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
+import org.ehrbase.rest.BaseController;
+import org.ehrbase.rest.openehr.experimental.ItemTagController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,6 +56,15 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
     @Value("${management.endpoints.web.access:ADMIN_ONLY}")
     protected SecurityProperties.AccessType managementEndpointsAccessType;
 
+    @Value(BaseController.ADMIN_API_CONTEXT_PATH)
+    private String adminApiContextPath;
+
+    @Value(BaseController.API_CONTEXT_PATH)
+    private String openehrApiContextPath;
+
+    @Value(ItemTagController.TAGS_CONTEXT_PATH)
+    private String tagsContextPath;
+
     protected SecurityConfig(WebEndpointProperties webEndpointProperties) {
         this.webEndpointProperties = webEndpointProperties;
     }
@@ -79,7 +91,12 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
                     // Permit welcome page and img
                     auth = auth.requestMatchers("/", "/img/**").permitAll();
                     // secure /rest/admin/** so that only admins can access it
-                    auth = requestMatcherWithRoles(auth, "/rest/admin/**", params.adminRoles());
+                    auth = requestMatcherWithRoles(auth, adminApiContextPath + "/**", params.adminRoles());
+                    // secure openehr endpoints
+                    auth = requestMatcherWithRoles(auth, openehrApiContextPath + "/**", params.openEhrRoles());
+                    auth = requestMatcherWithRoles(auth, tagsContextPath + "/**", params.openEhrRoles());
+                    auth = requestMatcherWithRoles(
+                            auth, API_ECIS_CONTEXT_PATH_WITH_VERSION + "/**", params.openEhrRoles());
 
                     auth = applyAdditionalAuthorizations(auth, params);
 
