@@ -84,6 +84,7 @@ public class OpenehrContributionController extends BaseController implements Con
 
         UUID ehrId = getEhrUuid(ehrIdString);
 
+        contributionService.checkSystemIds(contribution);
         UUID contributionId = contributionService.commitContribution(ehrId, contribution);
 
         URI uri = createLocationUri(EHR, ehrId.toString(), CONTRIBUTION, contributionId.toString());

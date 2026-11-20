@@ -20,10 +20,15 @@ package org.ehrbase.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.ehrbase.api.audit.CommitAuditHeaders;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ValidationException;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.springframework.http.HttpHeaders;
 
 class BaseControllerTest {
 
@@ -82,6 +87,29 @@ class BaseControllerTest {
         """)
     void parseIfMatchHeaderValueRejectsMalformedVersionUid(String ifMatch) {
         assertRejected(ifMatch, BaseController.IF_MATCH_NOT_A_VERSION_UID.formatted(ifMatch));
+    }
+
+    @Test
+    void commitAuditBindsTheParsedHeadersOnlyForTheCommit() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("openehr-audit-details", "description.value=\"Sent by the test\"");
+
+        String description = BaseController.commitAudit(headers)
+                .call(() -> CommitAuditHeaders.SENT.get().description());
+
+        assertThat(description).isEqualTo("Sent by the test");
+        assertThat(CommitAuditHeaders.SENT.isBound()).isFalse();
+    }
+
+    @Test
+    void commitAuditRejectsMalformedHeadersBeforeTheCommit() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("openEHR-VERSION.lifecycle_state", "complete");
+        AtomicBoolean committed = new AtomicBoolean();
+
+        assertThatThrownBy(() -> BaseController.commitAudit(headers).run(() -> committed.set(true)))
+                .isInstanceOf(InvalidApiParameterException.class);
+        assertThat(committed).isFalse();
     }
 
     private static void assertRejected(String ifMatch, String expectedMessage) {

@@ -24,10 +24,12 @@ import com.nedap.archie.rm.datatypes.CodePhrase;
 import com.nedap.archie.rm.datavalues.DvCodedText;
 import com.nedap.archie.rm.datavalues.DvText;
 import com.nedap.archie.rm.datavalues.quantity.datetime.DvDateTime;
+import com.nedap.archie.rm.generic.PartyIdentified;
 import com.nedap.archie.rm.generic.PartyProxy;
 import com.nedap.archie.rm.support.identification.TerminologyId;
 import java.util.Optional;
 import java.util.UUID;
+import org.ehrbase.api.audit.CommitAuditHeaders;
 import org.ehrbase.api.exception.UnexpectedSwitchCaseException;
 import org.ehrbase.api.service.ContributionService;
 import org.ehrbase.api.service.SystemService;
@@ -108,8 +110,29 @@ public class ContributionRepository {
         auditDetailsRecord.setUserId(userService.getCurrentUserId());
         auditDetailsRecord.setChangeType(contributionChangeType);
 
+        if (CommitAuditHeaders.SENT.isBound()) {
+            mergeSent(CommitAuditHeaders.SENT.get(), contributionChangeType, auditDetailsRecord);
+        }
+
         auditDetailsRecord.store();
         return auditDetailsRecord.getId();
+    }
+
+    /// Applies the sent audit headers to a default audit.
+    private void mergeSent(
+            CommitAuditHeaders sent, ContributionChangeType defaultChangeType, AuditDetailsRecord auditDetailsRecord) {
+        CommitAuditRules.checkLifecycleState(sent.lifecycleState());
+        CommitAuditRules.checkSystemId(sent.systemId(), systemService.getSystemId());
+        auditDetailsRecord.setChangeType(to(CommitAuditRules.changeType(sent.changeType(), defaultChangeType)));
+        auditDetailsRecord.setDescription(sent.description());
+        PartyIdentified committer = CommitAuditRules.committer(
+                sent.committerName(),
+                sent.committerExternalRefId(),
+                sent.committerExternalRefNamespace(),
+                sent.committerExternalRefType());
+        if (committer != null) {
+            auditDetailsRecord.setCommitter(JSONB.jsonb(new CanonicalJson().marshal(committer)));
+        }
     }
 
     @Transactional

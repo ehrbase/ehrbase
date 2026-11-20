@@ -117,8 +117,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         var responseRepresentation = extractCompositionRepresentation(accept, format);
 
         var compoObj = compositionService.buildComposition(composition, requestRepresentation.format, templateId);
-        var compositionUuid = compositionService
-                .create(ehrId, compoObj)
+        var compositionUuid = commitAudit(headers)
+                .call(() -> compositionService.create(ehrId, compoObj))
                 .orElseThrow(() -> new InternalServerException("Failed to create composition"));
         URI uri = createLocationUri(EHR, ehrId.toString(), COMPOSITION, compositionUuid.toString());
 
@@ -191,8 +191,8 @@ public class OpenehrCompositionController extends BaseController implements Comp
         try {
             // If-Match may be sent with or without surrounding double quotes (RFC 7232 ETag form)
             ObjectVersionId ifMatchId = new ObjectVersionId(parseIfMatchHeaderValue(ifMatch));
-            String compositionVersionUid = compositionService
-                    .update(ehrId, ifMatchId, compoObj)
+            String compositionVersionUid = commitAudit(headers)
+                    .call(() -> compositionService.update(ehrId, ifMatchId, compoObj))
                     .orElseThrow(() -> new InternalServerException("Failed to create composition"))
                     .toString();
 
@@ -237,7 +237,7 @@ public class OpenehrCompositionController extends BaseController implements Comp
         try { // the actual deleting
             // precedingVersionUid needs to be checked already
             ObjectVersionId targetObjId = new ObjectVersionId(precedingVersionUid);
-            compositionService.delete(ehrId, targetObjId);
+            commitAudit(headers).run(() -> compositionService.delete(ehrId, targetObjId));
 
             // set next deleted version
             int version = LocatableUtils.uidVersion(targetObjId).orElseThrow();

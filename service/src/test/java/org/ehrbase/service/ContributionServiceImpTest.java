@@ -18,14 +18,19 @@
 package org.ehrbase.service;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.nedap.archie.rm.RMObject;
 import com.nedap.archie.rm.changecontrol.OriginalVersion;
 import com.nedap.archie.rm.composition.Composition;
 import com.nedap.archie.rm.directory.Folder;
 import com.nedap.archie.rm.ehr.EhrStatus;
+import com.nedap.archie.rm.generic.AuditDetails;
 import java.util.Arrays;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.StateConflictException;
+import org.ehrbase.api.service.SystemService;
 import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.junit.jupiter.api.Test;
 
@@ -60,6 +65,51 @@ class ContributionServiceImpTest {
         checkIsModifiableCheckNeeded(null, status(false), composition(), status(true), composition());
         checkIsModifiableCheckNeeded(false, status(false), status(true), composition());
         checkIsModifiableCheckNeeded(null, status(true), status(false), composition());
+    }
+
+    @Test
+    void checkSystemIdsAcceptsOwnOrMissingSystemIds() {
+        ContributionServiceImp service = serviceWithSystemId("local.ehrbase.org");
+        ContributionCreateDto contribution = contribution(audit("local.ehrbase.org"), audit(null), null);
+        contribution.getVersions().add(null);
+
+        assertDoesNotThrow(() -> service.checkSystemIds(contribution));
+    }
+
+    @Test
+    void checkSystemIdsRejectsAnotherSystemIdInTheAuditOrAnyVersion() {
+        ContributionServiceImp service = serviceWithSystemId("local.ehrbase.org");
+
+        assertThrows(
+                InvalidApiParameterException.class,
+                () -> service.checkSystemIds(contribution(audit("other.system"), audit("local.ehrbase.org"))));
+        assertThrows(
+                InvalidApiParameterException.class,
+                () -> service.checkSystemIds(contribution(audit("local.ehrbase.org"), audit("other.system"))));
+    }
+
+    private static ContributionServiceImp serviceWithSystemId(String systemId) {
+        SystemService systemService = mock(SystemService.class);
+        when(systemService.getSystemId()).thenReturn(systemId);
+        return new ContributionServiceImp(null, null, null, null, systemService, null, null, null, null);
+    }
+
+    /// A contribution with the given audit and one version per commit audit.
+    private static ContributionCreateDto contribution(AuditDetails audit, AuditDetails... commitAudits) {
+        ContributionCreateDto contribution = new ContributionCreateDto();
+        contribution.setAudit(audit);
+        for (AuditDetails commitAudit : commitAudits) {
+            OriginalVersion<Composition> version = new OriginalVersion<>();
+            version.setCommitAudit(commitAudit);
+            contribution.getVersions().add(version);
+        }
+        return contribution;
+    }
+
+    private static AuditDetails audit(String systemId) {
+        AuditDetails audit = new AuditDetails();
+        audit.setSystemId(systemId);
+        return audit;
     }
 
     @SafeVarargs

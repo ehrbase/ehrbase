@@ -15,17 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.audit;
+package org.ehrbase.api.audit;
 
-import jakarta.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import org.ehrbase.api.exception.InvalidApiParameterException;
-import org.springframework.http.HttpHeaders;
+import org.jspecify.annotations.Nullable;
 
-/// The commit metadata a client sends in the `openehr-version` and `openehr-audit-details` request headers,
-/// one component per header key; `null` when the client didn't send it.
+/// Values from the `openehr-version` and `openehr-audit-version` headers. Field is null when not sent.
 public record CommitAuditHeaders(
         @Nullable String lifecycleState,
         @Nullable String changeType,
@@ -36,8 +35,11 @@ public record CommitAuditHeaders(
         @Nullable String committerExternalRefNamespace,
         @Nullable String committerExternalRefType) {
 
-    /// The headers that are read, each with the prefix that turns its keys into REST 1.1.0 keys: the REST 1.0.3
-    /// headers name the attribute in the header, e.g. `openEHR-AUDIT_DETAILS.committer: name="..."`.
+    /// The headers of a direct commit, bound around its service call.
+    /// Commits without it keep the server defaults.
+    public static final ScopedValue<CommitAuditHeaders> SENT = ScopedValue.newInstance();
+
+    /// Supported headers for both REST 1.1.0 and 1.0.3 specs
     private static final List<Map.Entry<String, String>> HEADERS = List.of(
             Map.entry("openehr-version", ""),
             Map.entry("openehr-audit-details", ""),
@@ -46,14 +48,15 @@ public record CommitAuditHeaders(
             Map.entry("openEHR-AUDIT_DETAILS.description", "description."),
             Map.entry("openEHR-AUDIT_DETAILS.committer", "committer."));
 
-    /// Reads the eight REST 1.1.0 keys below; pairs with other keys are ignored, but still have to be well-formed,
+    /// Reads the supported headers; pairs with other keys are ignored, but still have to be well-formed,
     /// non-empty and not repeated.
     ///
+    /// @param headerValues the lines of a header by name, e.g. `HttpHeaders::getOrEmpty`
     /// @throws InvalidApiParameterException at the first malformed line, empty value or duplicate key
-    public static CommitAuditHeaders parse(HttpHeaders httpHeaders) {
+    public static CommitAuditHeaders parse(Function<String, List<String>> headerValues) {
         Map<String, String> values = new HashMap<>();
         for (Map.Entry<String, String> header : HEADERS) {
-            for (String line : httpHeaders.getOrEmpty(header.getKey())) {
+            for (String line : headerValues.apply(header.getKey())) {
                 read(header.getKey(), header.getValue(), line, values);
             }
         }
@@ -69,8 +72,7 @@ public record CommitAuditHeaders(
     }
 
     /// Reads one line of `key="value"` pairs separated by commas into `values`, with `prefix` in front of each key.
-    /// Like the auth-params of RFC 9110, 11.2, whitespace around `=` is accepted.
-    /// Works on indexes into `line`, so only the keys and values are copied.
+    /// Whitespace around `=` is accepted.
     private static void read(String header, String prefix, String line, Map<String, String> values) {
         int pos = skipSeparators(line, 0);
         while (pos < line.length()) {
@@ -83,6 +85,9 @@ public record CommitAuditHeaders(
             }
             String sentKey = line.substring(pos, equals).strip();
             String value = line.substring(openingQuote + 1, closingQuote);
+            if (!isKey(sentKey)) {
+                throw new InvalidApiParameterException("%s: expected key=\"value\" list".formatted(header));
+            }
             if (value.isEmpty()) {
                 throw new InvalidApiParameterException("%s: empty value for [%s]".formatted(header, sentKey));
             }
@@ -97,7 +102,12 @@ public record CommitAuditHeaders(
         }
     }
 
-    /// The index of the first character from `from` on that isn't a space or tab (RFC 9110, 5.6.3).
+    /// A key is not empty and has no whitespace, comma or quote.
+    private static boolean isKey(String text) {
+        return !text.isEmpty() && text.chars().noneMatch(c -> c == ',' || c == '"' || c == ' ' || c == '\t');
+    }
+
+    /// The index of the first character from `from` on that isn't a space or tab.
     private static int skipWhitespace(String line, int from) {
         int pos = from;
         while (pos < line.length() && (line.charAt(pos) == ' ' || line.charAt(pos) == '\t')) {
@@ -107,7 +117,7 @@ public record CommitAuditHeaders(
     }
 
     /// The index of the first character from `from` on that isn't a comma, space or tab: HTTP lists allow
-    /// whitespace around commas and empty elements, e.g. a trailing comma (RFC 9110, 5.6.1.2).
+    /// whitespace around commas and empty elements, e.g. a trailing comma
     private static int skipSeparators(String line, int from) {
         int pos = from;
         while (pos < line.length()

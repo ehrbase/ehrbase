@@ -15,16 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.ehrbase.rest.openehr.audit;
+package org.ehrbase.api.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.http.HttpHeaders;
 
 class CommitAuditHeadersTest {
+
+    /// Request headers as the controller passes them. Names are case-insensitive and a header may repeat.
+    private final Map<String, List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     /// Whitespace around commas and empty list elements (RFC 9110, 5.6.1.2), and whitespace around `=` (11.2).
     @ParameterizedTest
@@ -38,36 +46,50 @@ class CommitAuditHeadersTest {
                 "description.value=\"d\" , system_id=\"x\""
             })
     void acceptsOptionalWhitespaceAndEmptyElements(String line) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("openehr-audit-details", line);
+        add("openehr-audit-details", line);
 
-        assertThat(CommitAuditHeaders.parse(headers).systemId()).isEqualTo("x");
+        assertThat(parse().systemId()).isEqualTo("x");
     }
 
-    /// Unknown keys are ignored; a misspelt key is lost without an error.
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "complete",
+                "system_id=x",
+                "system_id=\"x",
+                "=\"x\"",
+                "foo, system_id=\"x\"",
+                "foo system_id=\"x\"",
+                "system_id=\"x\" description.value=\"d\"",
+                "description.value=\"\""
+            })
+    void rejectsMalformedLines(String line) {
+        add("openehr-audit-details", line);
+
+        assertThatThrownBy(this::parse).isInstanceOf(InvalidApiParameterException.class);
+    }
+
+    /// Unknown keys are ignored. A misspelt key is lost without an error.
     @Test
     void ignoresUnknownKeys() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("openehr-audit-details", "commiter.name=\"Jane\",foo=\"1\",system_id=\"x\"");
+        add("openehr-audit-details", "commiter.name=\"Jane\",foo=\"1\",system_id=\"x\"");
 
-        assertThat(CommitAuditHeaders.parse(headers))
-                .isEqualTo(new CommitAuditHeaders(null, null, null, "x", null, null, null, null));
+        assertThat(parse()).isEqualTo(new CommitAuditHeaders(null, null, null, "x", null, null, null, null));
     }
 
     /// The example from ITS-REST 1.1.0, overview, "openehr-version and openehr-audit-details".
     @Test
     void parsesSpecExample() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("openehr-version", "lifecycle_state.code_string=\"532\"");
-        headers.add("openehr-audit-details", "change_type.code_string=\"251\"");
-        headers.add("openehr-audit-details", "description.value=\"An updated composition contribution description\"");
-        headers.add(
+        add("openehr-version", "lifecycle_state.code_string=\"532\"");
+        add("openehr-audit-details", "change_type.code_string=\"251\"");
+        add("openehr-audit-details", "description.value=\"An updated composition contribution description\"");
+        add(
                 "openehr-audit-details",
                 "committer.name=\"John Doe\",committer.external_ref.id=\"BC8132EA-8F4A-11E7-BB31-BE2E44B06B34\","
                         + "committer.external_ref.namespace=\"demographic\",committer.external_ref.type=\"PERSON\"");
-        headers.add("openehr-audit-details", "system_id=\"example.openehr.systemid\"");
+        add("openehr-audit-details", "system_id=\"example.openehr.systemid\"");
 
-        assertThat(CommitAuditHeaders.parse(headers))
+        assertThat(parse())
                 .isEqualTo(new CommitAuditHeaders(
                         "532",
                         "251",
@@ -79,20 +101,18 @@ class CommitAuditHeadersTest {
                         "PERSON"));
     }
 
-    /// The example from ITS-REST 1.0.3, overview, "openEHR-VERSION and openEHR-AUDIT_DETAILS"; 1.0.3 has no
-    /// `system_id`.
+    /// The example from ITS-REST 1.0.3, which has no `system_id`.
     @Test
     void parsesDeprecatedSpecExample() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("openEHR-VERSION.lifecycle_state", "code_string=\"532\"");
-        headers.add("openEHR-AUDIT_DETAILS.change_type", "code_string=\"251\"");
-        headers.add("openEHR-AUDIT_DETAILS.description", "value=\"An updated composition contribution description\"");
-        headers.add(
+        add("openEHR-VERSION.lifecycle_state", "code_string=\"532\"");
+        add("openEHR-AUDIT_DETAILS.change_type", "code_string=\"251\"");
+        add("openEHR-AUDIT_DETAILS.description", "value=\"An updated composition contribution description\"");
+        add(
                 "openEHR-AUDIT_DETAILS.committer",
                 "name=\"John Doe\", external_ref.id=\"BC8132EA-8F4A-11E7-BB31-BE2E44B06B34\", "
                         + "external_ref.namespace=\"demographic\", external_ref.type=\"PERSON\"");
 
-        assertThat(CommitAuditHeaders.parse(headers))
+        assertThat(parse())
                 .isEqualTo(new CommitAuditHeaders(
                         "532",
                         "251",
@@ -102,5 +122,13 @@ class CommitAuditHeadersTest {
                         "BC8132EA-8F4A-11E7-BB31-BE2E44B06B34",
                         "demographic",
                         "PERSON"));
+    }
+
+    private void add(String name, String line) {
+        headers.computeIfAbsent(name, n -> new ArrayList<>()).add(line);
+    }
+
+    private CommitAuditHeaders parse() {
+        return CommitAuditHeaders.parse(name -> headers.getOrDefault(name, List.of()));
     }
 }

@@ -79,7 +79,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestBody Folder folder) {
 
-        var createdFolder = directoryService.create(ehrId, folder);
+        var createdFolder = commitAudit(headers).call(() -> directoryService.create(ehrId, folder));
 
         return createDirectoryResponse(POST, prefer, accept, createdFolder, ehrId);
     }
@@ -101,7 +101,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
         folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
 
         // Update folder and get new version
-        Folder updatedFolder = directoryService.update(ehrId, folder, folderId);
+        Folder updatedFolder = commitAudit(headers).call(() -> directoryService.update(ehrId, folder, folderId));
 
         return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder, ehrId);
     }
@@ -119,7 +119,7 @@ public class OpenehrDirectoryController extends BaseController implements Direct
 
         folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
 
-        directoryService.delete(ehrId, folderId);
+        commitAudit(headers).run(() -> directoryService.delete(ehrId, folderId));
 
         createRestContext(ehrId, folderId.toString());
 

@@ -26,6 +26,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
+import org.ehrbase.api.audit.CommitAuditHeaders;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.NotAcceptableException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
@@ -109,6 +110,12 @@ public abstract class BaseController {
                 .pathSegment(pathSegments)
                 .build()
                 .toUri();
+    }
+
+    /// Binds the parsed audit headers as `CommitAuditHeaders.SENT` for the call run in the carrier.
+    /// Wrap only the service call that commits; malformed headers are rejected before it runs.
+    protected static ScopedValue.Carrier commitAudit(HttpHeaders headers) {
+        return ScopedValue.where(CommitAuditHeaders.SENT, CommitAuditHeaders.parse(headers::getOrEmpty));
     }
 
     /**

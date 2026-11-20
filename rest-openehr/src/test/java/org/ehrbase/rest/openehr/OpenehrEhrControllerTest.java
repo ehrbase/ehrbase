@@ -32,7 +32,9 @@ import com.nedap.archie.rm.ehr.EhrStatus;
 import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import org.ehrbase.api.audit.CommitAuditHeaders;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
@@ -122,6 +124,48 @@ class OpenehrEhrControllerTest {
             when(mockEhrService.create(eq(ehrId), any())).thenReturn(ehrId);
             return controller().createEhrWithId(new HttpHeaders(), prefer, ehrId.toString(), ehrStatus);
         });
+    }
+
+    /// The audit headers reach the commit as `CommitAuditHeaders.SENT`, bound only for the service call.
+    @Test
+    void createEhrBindsTheAuditHeadersForTheCommit() {
+
+        UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
+        AtomicReference<CommitAuditHeaders> sent = new AtomicReference<>();
+        when(mockEhrService.create(isNull(), any())).thenAnswer(invocation -> {
+            sent.set(CommitAuditHeaders.SENT.get());
+            return ehrId;
+        });
+
+        controller().createEhr(auditHeaders(), "", null);
+
+        assertSentOnlyDuringTheCommit(sent);
+    }
+
+    @Test
+    void createEhrWithIdBindsTheAuditHeadersForTheCommit() {
+
+        UUID ehrId = UUID.fromString("a6ddec4c-a68a-49ef-963e-3e0bc1970a28");
+        AtomicReference<CommitAuditHeaders> sent = new AtomicReference<>();
+        when(mockEhrService.create(eq(ehrId), any())).thenAnswer(invocation -> {
+            sent.set(CommitAuditHeaders.SENT.get());
+            return ehrId;
+        });
+
+        controller().createEhrWithId(auditHeaders(), null, ehrId.toString(), null);
+
+        assertSentOnlyDuringTheCommit(sent);
+    }
+
+    static HttpHeaders auditHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("openehr-audit-details", "description.value=\"Sent by the test\"");
+        return headers;
+    }
+
+    static void assertSentOnlyDuringTheCommit(AtomicReference<CommitAuditHeaders> sent) {
+        assertThat(sent.get().description()).isEqualTo("Sent by the test");
+        assertThat(CommitAuditHeaders.SENT.isBound()).isFalse();
     }
 
     @Test
