@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
 - The `application` jar and the `test-coverage` pom are no longer published to Maven Central. [#1663](https://github.com/ehrbase/ehrbase/pull/1663)
+- Docker base images pinned to Temurin 25.0.5.1+2, which contains the fix for CVE-2026-114938. The test image builders move from Maven 3.9 to 3.10.0, and the JaCoCo CLI image moves from a Java 21 to a Java 25 runtime
  ### Fixed 
 
 ## [2.38.0]

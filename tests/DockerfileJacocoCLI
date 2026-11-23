@@ -1,7 +1,7 @@
 #
 # Builder to fetch jacoco
 #
-FROM maven:3.9-eclipse-temurin-25-alpine AS builder
+FROM maven:3.10.0-eclipse-temurin-25-alpine AS builder
 
 WORKDIR /build
 
@@ -19,7 +19,7 @@ RUN unzip jacoco-agent.zip && \
 #
 # Build test image on top of standard ehrbase image
 #
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25.0.5.1_2-jre-alpine
 
 COPY --from=builder /build/*.jar /app/
 
