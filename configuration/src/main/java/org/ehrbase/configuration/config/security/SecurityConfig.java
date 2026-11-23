@@ -131,10 +131,12 @@ public abstract sealed class SecurityConfig permits SecurityConfigNoOp, Security
 
         return switch (managementEndpointsAccessType) {
             // management endpoints are locked behind an authorization
-            // and are only available for users with the admin role
+            // and are only available for users with an admin role
             case AccessType.ADMIN_ONLY ->
                 auth.requestMatchers(endpointRequestMatcher).hasAnyRole(adminRoles);
-            // management endpoints are locked behind an authorization, but are available to any role
+            // management endpoints are locked behind an authorization
+            // and are only available for users with a management role
+            // (or, if not configured, an admin role)
             case AccessType.PRIVATE ->
                 auth.requestMatchers(endpointRequestMatcher).hasAnyRole(privateMgmtRoles);
             // management endpoints can be accessed without an authorization

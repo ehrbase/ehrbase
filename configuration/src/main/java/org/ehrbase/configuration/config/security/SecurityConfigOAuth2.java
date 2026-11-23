@@ -45,6 +45,9 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(prefix = "security", name = "auth-type", havingValue = "oauth")
 public final class SecurityConfigOAuth2 extends SecurityConfig {
 
+    // see AuthorityAuthorizationManager.ROLE_PREFIX
+    private static final String ROLE_PREFIX = "ROLE_";
+
     private final SecurityProperties securityProperties;
 
     private final OAuth2ResourceServerProperties oAuth2Properties;
@@ -73,7 +76,11 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
         final String[] openEhrRoles = toRoleArray(securityProperties.getOauth2OpenehrRoles());
         final String[] adminRoles = toRoleArray(securityProperties.getOauth2AdminRoles());
 
-        String[] mgmtRoles = toRoleArray(adminRoles, securityProperties.getOauth2ManagementRoles());
+        String[] mgmtRoles = toRoleArray(securityProperties.getOauth2ManagementRoles());
+        // fallback to admin roles
+        if (mgmtRoles.length == 0) {
+            mgmtRoles = adminRoles;
+        }
         String[] accessRoles = toRoleArray(adminRoles, openEhrRoles, securityProperties.getOauth2AccessOnlyRoles());
         return new SecurityConfigParams(
                 BearerTokenAuthenticationFilter.class,
@@ -114,7 +121,7 @@ public final class SecurityConfigOAuth2 extends SecurityConfig {
             if (realmAccess != null && realmAccess.containsKey("roles")) {
                 authority.addAll(((List<String>) realmAccess.get("roles"))
                         .stream()
-                                .map(roleName -> "ROLE_" + roleName.toUpperCase())
+                                .map(roleName -> ROLE_PREFIX + roleName.toUpperCase())
                                 .map(SimpleGrantedAuthority::new)
                                 .toList());
             }

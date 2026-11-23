@@ -9,7 +9,13 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
 - The `application` jar and the `test-coverage` pom are no longer published to Maven Central. [#1663](https://github.com/ehrbase/ehrbase/pull/1663)
- ### Fixed 
+- Extended OAuth2 configuration [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+### Fixed 
+- OAuth2 scopes no longer treated as roles; 
+  Scope or role "profile" no longer implies user permissions. [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+  The EHRbase Project thanks kta1kri for reporting this problem.
+- Permission checks now consider customized context paths. [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+  The EHRbase Project thanks Utkarsh Choudhary for reporting this problem.
 
 ## [2.38.0]
  ### Added

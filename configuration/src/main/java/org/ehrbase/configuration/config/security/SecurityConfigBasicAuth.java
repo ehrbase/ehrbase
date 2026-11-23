@@ -58,13 +58,14 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
 
     @Override
     protected SecurityConfigParams securityConfigParams() {
+        String[] allRoles = {ADMIN, USER};
         return new SecurityConfigParams(
                 BasicAuthenticationFilter.class,
                 AuthTypes.BASIC,
                 new String[] {ADMIN},
-                new String[] {USER},
-                new String[] {ADMIN, USER},
-                new String[] {ADMIN, USER},
+                allRoles,
+                allRoles,
+                allRoles,
                 securityProperties.getAdditionalAuthorizations());
     }
 
