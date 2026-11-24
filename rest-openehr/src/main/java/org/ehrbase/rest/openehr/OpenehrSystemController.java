@@ -46,7 +46,7 @@ public class OpenehrSystemController extends BaseController implements SystemApi
     private static final String VENDOR = "Vitagroup";
     private static final String RESTAPI_SPECS_VERSION = "1.0.3";
     private static final String CONFORMANCE_PROFILE = "STANDARD";
-    private static final List<String> ENDPOINTS = List.of("/ehr", "/definition", "/query");
+    private static final List<String> BASE_ENDPOINTS = List.of("/ehr", "/definition", "/query");
     private static final String ADMIN_ENDPOINT = "/admin";
 
     private final StatusService statusService;
@@ -55,8 +55,9 @@ public class OpenehrSystemController extends BaseController implements SystemApi
     public OpenehrSystemController(StatusService statusService, AdminApiConfiguration adminApiConfiguration) {
         this.statusService = Objects.requireNonNull(statusService);
         this.endpoints = adminApiConfiguration.getActive()
-                ? Stream.concat(ENDPOINTS.stream(), Stream.of(ADMIN_ENDPOINT)).toList()
-                : ENDPOINTS;
+                ? Stream.concat(BASE_ENDPOINTS.stream(), Stream.of(ADMIN_ENDPOINT))
+                        .toList()
+                : BASE_ENDPOINTS;
     }
 
     @RequestMapping(method = RequestMethod.OPTIONS, produces = MediaType.APPLICATION_JSON_VALUE)
