@@ -15,6 +15,13 @@ The library modules and the `bom` are still published.
 To run EHRbase, use the [`ehrbase/ehrbase`](https://hub.docker.com/r/ehrbase/ehrbase) Docker image instead, see [Quick Start: Run EHRbase with Docker](README.md#quick-start-run-ehrbase-with-docker).
 Projects that build the `application` module from source and depend on it must now declare its version explicitly.
 
+### OAuth2 role configuration
+
+Due to tightened permission checks, the role configuration may have to be corrected; see [2. OAuth2](README.md#2-oauth2).
+
+If `management.endpoints.web.access` is set to `PRIVATE`, and not only administrators need access, 
+`security.oauth2ManagementRoles` needs to be configured.
+
 ## EHRbase 2.37.0
 
 ### `If-Match` header validation

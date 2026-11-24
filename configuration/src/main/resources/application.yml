@@ -85,9 +85,11 @@ security:
   authPassword: SuperSecretPassword
   authAdminUser: ehrbase-admin
   authAdminPassword: EvenMoreSecretPassword
-  oauth2UserRole: USER
-  oauth2AdminRole: ADMIN
-
+  oauth2OpenehrRoles:
+    - ${security.oauth2UserRole:USER}
+    - ${security.oauth2AdminRole:ADMIN}
+  oauth2AdminRoles:
+    - ${security.oauth2AdminRole:ADMIN}
 
 ehrbase:
   validation:
@@ -211,10 +213,10 @@ management:
       exposure:
         include: 'env, health, info, metrics, prometheus'
       # The access to management endpoints can be controlled
-      # ADMIN_ONLY - (default) endpoints are locked behind an authorization and are only available for users with the admin role
-      # PRIVATE - endpoints are locked behind an authorization, but are available to any role
-      # PUBLIC - endpoints can be accessed without an authorization
-      access: ADMIN_ONLY
+      # PRIVATE - (default) endpoints are, depending on the authType, locked behind an authorization and  are available to users with a management role
+      # ADMIN_ONLY - (deprecated) endpoints are, depending on the authType, locked behind an authorization and are only available for users with the admin role
+      # PUBLIC - endpoints can be accessed without authentication
+      access: PRIVATE
   # Per endpoint settings
   endpoint:
     # Env endpoint - Shows information on environment of EHRbase

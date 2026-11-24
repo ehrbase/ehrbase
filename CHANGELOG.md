@@ -10,7 +10,14 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - openEHR System API `OPTIONS /rest/openehr/v1` returning the options and conformance statement [#1662](https://github.com/ehrbase/ehrbase/pull/1662)
  ### Changed 
 - The `application` jar and the `test-coverage` pom are no longer published to Maven Central. [#1663](https://github.com/ehrbase/ehrbase/pull/1663)
- ### Fixed 
+- Extended OAuth2 configuration [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+- Docker base images pinned to Temurin 25.0.5.1+2, which contains the fix for CVE-2026-114938 [#1667](https://github.com/ehrbase/ehrbase/pull/1667)
+### Fixed 
+- OAuth2 scopes no longer treated as roles; 
+  Scope or role "profile" no longer implies user permissions. [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+  The EHRbase Project thanks kta1kri for reporting this problem.
+- Permission checks now consider customized context paths. [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+  The EHRbase Project thanks Utkarsh Choudhary for reporting this problem.
 
 ## [2.38.0]
  ### Added
