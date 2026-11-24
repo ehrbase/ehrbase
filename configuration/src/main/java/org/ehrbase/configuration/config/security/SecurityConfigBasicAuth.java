@@ -18,7 +18,6 @@
 package org.ehrbase.configuration.config.security;
 
 import jakarta.annotation.PostConstruct;
-import java.util.List;
 import org.ehrbase.configuration.config.security.SecurityProperties.AuthTypes;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -59,13 +58,14 @@ public final class SecurityConfigBasicAuth extends SecurityConfig {
 
     @Override
     protected SecurityConfigParams securityConfigParams() {
+        String[] allRoles = {ADMIN, USER};
         return new SecurityConfigParams(
                 BasicAuthenticationFilter.class,
                 AuthTypes.BASIC,
-                ADMIN,
-                USER,
-                List.of(ADMIN, USER),
-                List.of(ADMIN, USER),
+                new String[] {ADMIN},
+                allRoles,
+                allRoles,
+                allRoles,
                 securityProperties.getAdditionalAuthorizations());
     }
 
