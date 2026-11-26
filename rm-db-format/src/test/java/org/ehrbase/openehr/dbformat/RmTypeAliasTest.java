@@ -47,4 +47,18 @@ class RmTypeAliasTest {
             assertThat(RmTypeAlias.getRmType(rta.alias())).isEqualTo(rta.type());
         });
     }
+
+    @Test
+    void unknownType() {
+        String type = "UNKNOWN_TYPE";
+        assertThat(RmTypeAlias.getNullableAlias(type)).isNull();
+        assertThat(RmTypeAlias.optionalAlias(type)).isEmpty();
+        assertThatThrownBy(() -> RmTypeAlias.getAlias(type)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void unknownAlias() {
+        String alias = "COMPOSITION";
+        assertThatThrownBy(() -> RmTypeAlias.getRmType(alias)).isInstanceOf(IllegalArgumentException.class);
+    }
 }

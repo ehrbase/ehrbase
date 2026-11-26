@@ -76,13 +76,17 @@ import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery;
 import org.ehrbase.openehr.aqlengine.asl.model.query.AslStructureQuery.AslSourceRelation;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathCohesionAnalysis.PathCohesionTreeNode;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
+import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.RmContainsWrapper;
+import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.ComparisonConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.LogicalOperatorConditionWrapper;
 import org.ehrbase.openehr.dbformat.StructureRmType;
+import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.operand.Primitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
 import org.ehrbase.openehr.sdk.aql.dto.operand.TemporalPrimitive;
@@ -99,7 +103,7 @@ public final class AslUtils {
         private final Map<String, Integer> aliasCounters = new HashMap<>();
 
         public String uniqueAlias(String alias) {
-            return alias + "_" + aliasCounters.compute(alias, (k, v) -> v == null ? 0 : v + 1);
+            return alias + "_" + aliasCounters.compute(alias, (_, v) -> v == null ? 0 : v + 1);
         }
     }
 
@@ -141,7 +145,7 @@ public final class AslUtils {
         return switch (field) {
             case AslColumnField cf -> Stream.of(cf.getColumnName());
             case AslRmPathField pf -> Stream.of(pf.getSrcField().getColumnName());
-            case AslConstantField<?> __ -> Stream.empty();
+            case AslConstantField<?> _ -> Stream.empty();
             case AslAggregatingField af -> streamFieldNames(af.getBaseField());
             case AslComplexExtractedColumnField ecf -> ecf.getExtractedColumn().getColumns().stream();
             case AslSubqueryField sqf -> {
@@ -181,23 +185,41 @@ public final class AslUtils {
             case AslNotQueryCondition c -> streamConditionFields(c.getCondition());
             case AslNotNullQueryCondition c -> Stream.of(c.getField());
             case AslFieldValueQueryCondition<?> c -> Stream.of(c.getField());
-            case AslFalseQueryCondition __ -> Stream.empty();
-            case AslTrueQueryCondition __ -> Stream.empty();
-            case AslProvidesJoinCondition __ -> throw new IllegalArgumentException();
+            case AslFalseQueryCondition _ -> Stream.empty();
+            case AslTrueQueryCondition _ -> Stream.empty();
+            case AslProvidesJoinCondition _ -> throw new IllegalArgumentException();
             case null -> Stream.empty();
         };
     }
 
     public static Stream<ComparisonOperatorConditionWrapper> streamConditionDescriptors(ConditionWrapper condition) {
-        if (condition == null) {
-            return Stream.empty();
-        } else if (condition instanceof ComparisonOperatorConditionWrapper cd) {
-            return Stream.of(cd);
-        } else if (condition instanceof LogicalOperatorConditionWrapper ld) {
-            return ld.logicalOperands().stream().flatMap(AslUtils::streamConditionDescriptors);
-        } else {
-            throw new IllegalArgumentException("Unsupported type: " + condition);
-        }
+        return switch (condition) {
+            case null -> Stream.empty();
+            case ComparisonOperatorConditionWrapper cd -> Stream.of(cd);
+            case LogicalOperatorConditionWrapper ld ->
+                ld.logicalOperands().stream().flatMap(AslUtils::streamConditionDescriptors);
+        };
+    }
+
+    /// Every path of the SELECT, WHERE and ORDER BY clauses with the CONTAINS it is rooted at
+    public static Stream<Pair<ContainsWrapper, IdentifiedPath>> streamPathsWithRoot(
+            final AqlQueryWrapper queryWrapper) {
+        return Stream.of(
+                        // select
+                        queryWrapper
+                                .nonPrimitiveSelects()
+                                // We want to skip COUNT(*) since it does not have a path
+                                .filter(sd -> sd.type() != SelectType.AGGREGATE_FUNCTION
+                                        || sd.getIdentifiedPath().isPresent())
+                                .map(s ->
+                                        Pair.of(s.root(), s.getIdentifiedPath().orElse(null))),
+                        // where
+                        streamConditionDescriptors(queryWrapper.where())
+                                .map(ComparisonOperatorConditionWrapper::leftComparisonOperand)
+                                .map(s -> Pair.of(s.root(), s.path())),
+                        // order by
+                        queryWrapper.orderBy().stream().map(s -> Pair.of(s.root(), s.identifiedPath())))
+                .flatMap(s -> s);
     }
 
     public static OffsetDateTime toOffsetDateTime(StringPrimitive sp) {
