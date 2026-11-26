@@ -7,6 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [unreleased]
  ### Added
+- openEHR System API `OPTIONS /rest/openehr/v1` returning the options and conformance statement [#1662](https://github.com/ehrbase/ehrbase/pull/1662)
  ### Changed 
 - The `application` jar and the `test-coverage` pom are no longer published to Maven Central. [#1663](https://github.com/ehrbase/ehrbase/pull/1663)
 - Extended OAuth2 configuration [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
