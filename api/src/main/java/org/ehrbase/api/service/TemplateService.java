@@ -88,6 +88,10 @@ public interface TemplateService {
     Composition buildExample(String templateId);
 
     static OPERATIONALTEMPLATE buildOperationalTemplate(String content) throws XmlException {
+        // a UTF-8 byte-order mark (allowed by XML 1.0) is decoded to U+FEFF, which the parser rejects in a String
+        if (content.startsWith("\uFEFF")) {
+            content = content.substring(1);
+        }
         return org.openehr.schemas.v1.TemplateDocument.Factory.parse(content).getTemplate();
     }
 

@@ -9,6 +9,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
  ### Added
  ### Changed 
  ### Fixed 
+- Template upload accepts an OPT that starts with a UTF-8 byte-order mark, fixes [#1665](https://github.com/ehrbase/ehrbase/issues/1665) [#1669](https://github.com/ehrbase/ehrbase/pull/1669)
 
 ## [2.39.0]
  ### Added
