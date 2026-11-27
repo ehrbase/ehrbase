@@ -24,40 +24,32 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "security")
 public class SecurityProperties {
 
-    /**
-     * Authentication type.
-     */
+    /// Authentication type.
     private AuthTypes authType;
 
-    /**
-     * Username.
-     */
+    /// Username.
     private String authUser;
 
-    /**
-     * Password for the user.
-     */
+    /// Password for the user.
     private String authPassword;
 
-    /**
-     * Admin username.
-     */
+    /// Admin username.
     private String authAdminUser;
 
-    /**
-     * Password for the admin user.
-     */
+    /// Password for the admin user.
     private String authAdminPassword;
 
-    /**
-     * User role name used with OAuth2 authentication type.
-     */
-    private String oauth2UserRole;
+    /// Openehr user role name used with OAuth2 authentication type.
+    private String[] oauth2OpenehrRoles;
 
-    /**
-     * Admin role name used with OAuth2 authentication type.
-     */
-    private String oauth2AdminRole;
+    /// Admin role name used with OAuth2 authentication type.
+    private String[] oauth2AdminRoles;
+
+    /// Management role name used with OAuth2 authentication type.
+    private String[] oauth2ManagementRoles;
+
+    /// Access-only role name used with OAuth2 authentication type.
+    private String[] oauth2AccessOnlyRoles;
 
     private List<EndpointAuthorization> additionalAuthorizations = new ArrayList<>();
 
@@ -101,20 +93,36 @@ public class SecurityProperties {
         this.authAdminPassword = authAdminPassword;
     }
 
-    public String getOauth2UserRole() {
-        return oauth2UserRole;
+    public String[] getOauth2OpenehrRoles() {
+        return oauth2OpenehrRoles;
     }
 
-    public void setOauth2UserRole(String oauth2UserRole) {
-        this.oauth2UserRole = oauth2UserRole.toUpperCase();
+    public void setOauth2OpenehrRoles(String[] oauth2OpenehrRoles) {
+        this.oauth2OpenehrRoles = oauth2OpenehrRoles;
     }
 
-    public String getOauth2AdminRole() {
-        return oauth2AdminRole;
+    public String[] getOauth2AdminRoles() {
+        return oauth2AdminRoles;
     }
 
-    public void setOauth2AdminRole(String oauth2AdminRole) {
-        this.oauth2AdminRole = oauth2AdminRole.toUpperCase();
+    public void setOauth2AdminRoles(String[] oauth2AdminRoles) {
+        this.oauth2AdminRoles = oauth2AdminRoles;
+    }
+
+    public String[] getOauth2ManagementRoles() {
+        return oauth2ManagementRoles;
+    }
+
+    public void setOauth2ManagementRoles(String[] oauth2ManagementRoles) {
+        this.oauth2ManagementRoles = oauth2ManagementRoles;
+    }
+
+    public String[] getOauth2AccessOnlyRoles() {
+        return oauth2AccessOnlyRoles;
+    }
+
+    public void setOauth2AccessOnlyRoles(String[] oauth2AccessOnlyRoles) {
+        this.oauth2AccessOnlyRoles = oauth2AccessOnlyRoles;
     }
 
     public List<EndpointAuthorization> getAdditionalAuthorizations() {
@@ -131,35 +139,28 @@ public class SecurityProperties {
         OAUTH
     }
 
-    /**
-     * Supported values for the <code>management.endpoints.web.access</code> property value.
-     */
+    /// Supported values for the `management.endpoints.web.access` property value.
     public enum AccessType {
         ADMIN_ONLY,
         PRIVATE,
         PUBLIC
     }
 
-    /**
-     * <p>Rules are bound from configuration (see {@link SecurityProperties#getAdditionalAuthorizations()}) and applied by
-     * the matching {@code SecurityConfig} implementation.
-     *
-     * @param authType the authentication type this rule applies to; a rule is only applied on the matching auth chain
-     * @param pathPattern the ant-style request path to secure
-     * @param roles the roles allowed to access the path. The keywords {@link #ADMIN} and {@link #USER} are replaced
-     *              with the admin/user role names configured for the authentication type; any other value is used
-     *              as a literal role name
-     */
+    /// Rules are bound from configuration (see [SecurityProperties#getAdditionalAuthorizations()]) and applied by
+    /// the matching `SecurityConfig` implementation.
+    ///
+    /// @param authType the authentication type this rule applies to;
+    ///                 a rule is only applied on the matching auth chain
+    /// @param pathPattern the ant-style request path to secure
+    /// @param roles the roles allowed to access the path. The keywords [#ADMIN] and [#USER] are replaced
+    ///              with the admin/user role names configured for the authentication type; any other value is used
+    ///              as a literal role name
     public record EndpointAuthorization(AuthTypes authType, String pathPattern, List<String> roles) {
 
-        /**
-         * Keyword replaced with the admin role name configured for the authentication type.
-         */
+        /// Keyword replaced with the admin role name configured for the authentication type.
         public static final String ADMIN = "ADMIN";
 
-        /**
-         * Keyword replaced with the user role name configured for the authentication type.
-         */
+        /// Keyword replaced with the user role name configured for the authentication type.
         public static final String USER = "USER";
     }
 }

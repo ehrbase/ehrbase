@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres
 to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.39.0]
+ ### Added
+- openEHR System API `OPTIONS /rest/openehr/v1` returning the options and conformance statement [#1662](https://github.com/ehrbase/ehrbase/pull/1662)
+ ### Changed 
+- The `application` jar and the `test-coverage` pom are no longer published to Maven Central. [#1663](https://github.com/ehrbase/ehrbase/pull/1663)
+- Extended OAuth2 configuration [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+- Docker base images pinned to Temurin 25.0.5.1+2, which contains the fix for CVE-2026-114938 [#1667](https://github.com/ehrbase/ehrbase/pull/1667)
+### Fixed 
+- OAuth2 scopes no longer treated as roles; 
+  Scope or role "profile" no longer implies user permissions. [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+  The EHRbase Project thanks kta1kri for reporting this problem.
+- Permission checks now consider customized context paths. [#1666](https://github.com/ehrbase/ehrbase/pull/1666)
+  The EHRbase Project thanks Utkarsh Choudhary for reporting this problem.
+
 ## [2.38.0]
  ### Added
 - Upgrade to Spring Boot 4.1.1 [#1658](https://github.com/ehrbase/ehrbase/pull/1658)
@@ -369,3 +383,4 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [2.37.0]: https://github.com/ehrbase/ehrbase/compare/v2.36.0...v2.37.0
 [2.37.1]: https://github.com/ehrbase/ehrbase/compare/v2.37.0...v2.37.1
 [2.38.0]: https://github.com/ehrbase/ehrbase/compare/v2.37.1...v2.38.0
+[2.39.0]: https://github.com/ehrbase/ehrbase/compare/v2.38.0...v2.39.0

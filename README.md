@@ -69,9 +69,7 @@ Run `mvn package`
 
 #### 4. Run EHRbase
 
-Replace the * with the current version, e.g. `application/target/ehrbase-2.0.0.jar`
-
-`java -jar application/target/ehrbase-*.jar`
+`java -jar application/target/ehrbase.jar`
 
 ### Authentication Types
 
@@ -100,10 +98,17 @@ Environment variable `SECURITY_AUTHTYPE=OAUTH` is enabling OAuth2 authentication
 Additionally, setting the following variable to point to the existing OAuth2 server and realm is necessary:
 `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI=http://localhost:8081/auth/realms/ehrbase`
 
-Two roles are available: a user role, and admin role. By default, these roles are expected to be named `USER` and
-`ADMIN`. The names of these roles can be customised through the `SECURITY_OAUTH2USERROLE` and `SECURITY_OAUTH2ADMINROLE`
-environment variables. Users should have their roles assigned accordingly, either in the `realm_access.roles` or `scope`
-claim of the JWT used for authentication.
+API access permissions can be bound to sets of user roles: 
+| Permission           | Configuration property| Environment Variable | Fallback Property| Default roles|
+|-- | -- | --|--|--|
+| openehr (api) | `security.oauth2OpenehrRoles` | `SECURITY_OAUTH2OPENEHRROLES` | `security.oauth2UserRole` ∪ `security.oauth2AdminRole` | `USER`, ADMIN` |
+| admin | `security.oauth2AdminRoles` | `SECURITY_OAUTH2ADMINROLES`| `security.oauth2AdminRole` | `ADMIN` |
+| management | `security.oauth2ManagementRoles` | `SECURITY_OAUTH2MANAGEMENTROLES` | `security.oauth2AdminRoles` | `ADMIN` |
+| basic access only | `security.oauth2AccessOnlyRoles`| `SECURITY_OAUTH2ACCESSONLYROLES`| -| - |
+
+Admin and openehr permissions imply basic access.
+
+Users need their roles to be assigned accordingly in the `realm_access.roles` claim of the JWT used for authentication.
 
 ## Contributing
 
@@ -151,7 +156,7 @@ For integration tests please refer to the [integration-test](https://github.com/
 
 ## Deployment
 
- 1. `java -jar application/target/ehrbase-*.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
+ 1. `java -jar application/target/ehrbase.jar` You can override the application properties (like database settings) using the normal spring boot mechanism: [Command-Line Arguments in Spring Boot](https://www.baeldung.com/spring-boot-command-line-arguments)
  2. Browse to Swagger UI --> http://localhost:8080/ehrbase/swagger-ui.html
 
 ## Updating

@@ -164,5 +164,6 @@ class ConditionUtilsTest {
         assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\%"));
         assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\_"));
         assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql("\\n"));
+        assertThrows(IllegalAqlException.class, () -> ConditionUtils.translateAqlLikePatternToJsonSql(null));
     }
 }

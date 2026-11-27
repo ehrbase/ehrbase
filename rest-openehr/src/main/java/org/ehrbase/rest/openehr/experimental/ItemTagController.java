@@ -51,11 +51,13 @@ import org.springframework.web.bind.annotation.RestController;
 @ConditionalOnMissingBean(name = "primaryopenehritemtagcontroller")
 @RestController
 @RequestMapping(
-        path = "${ehrbase.rest.experimental.tags.context-path:/rest/experimental/tags}/ehr",
+        path = ItemTagController.TAGS_CONTEXT_PATH + "/ehr",
         produces = {MediaType.APPLICATION_JSON_VALUE})
 @ConditionalOnProperty(name = "ehrbase.rest.experimental.tags.enabled", havingValue = "true")
 public class ItemTagController extends BaseController implements ItemTagApiSpecification {
 
+    public static final String TAGS_CONTEXT_PATH =
+            "${ehrbase.rest.experimental.tags.context-path:/rest/experimental/tags}";
     private final ItemTagService itemTagService;
 
     public ItemTagController(ItemTagService itemTagService) {

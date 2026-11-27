@@ -18,7 +18,6 @@
 package org.ehrbase.openehr.aqlengine.asl;
 
 import static org.ehrbase.jooq.pg.Tables.AUDIT_DETAILS;
-import static org.ehrbase.openehr.aqlengine.asl.AslUtils.streamConditionDescriptors;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,8 +76,6 @@ import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo;
 import org.ehrbase.openehr.aqlengine.pathanalysis.PathInfo.JoinMode;
 import org.ehrbase.openehr.aqlengine.querywrapper.AqlQueryWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.contains.ContainsWrapper;
-import org.ehrbase.openehr.aqlengine.querywrapper.select.SelectWrapper.SelectType;
-import org.ehrbase.openehr.aqlengine.querywrapper.where.ComparisonOperatorConditionWrapper;
 import org.ehrbase.openehr.aqlengine.querywrapper.where.ConditionWrapper.LogicalConditionOperator;
 import org.ehrbase.openehr.sdk.aql.dto.operand.IdentifiedPath;
 import org.ehrbase.openehr.sdk.aql.dto.operand.StringPrimitive;
@@ -149,21 +146,7 @@ final class AslPathCreator {
             AqlQueryWrapper query,
             ContainsToOwnerProvider containsToStructureSubQuery,
             Map<IdentifiedPath, AslField> pathToField) {
-        Stream.of(
-                        // select
-                        query.nonPrimitiveSelects()
-                                // We want to skip COUNT(*) since it does not have a path
-                                .filter(sd -> sd.type() != SelectType.AGGREGATE_FUNCTION
-                                        || sd.getIdentifiedPath().isPresent())
-                                .map(s ->
-                                        Pair.of(s.root(), s.getIdentifiedPath().orElse(null))),
-                        // where
-                        streamConditionDescriptors(query.where())
-                                .map(ComparisonOperatorConditionWrapper::leftComparisonOperand)
-                                .map(s -> Pair.of(s.root(), s.path())),
-                        // order by
-                        query.orderBy().stream().map(s -> Pair.of(s.root(), s.identifiedPath())))
-                .flatMap(s -> s)
+        AslUtils.streamPathsWithRoot(query)
                 .filter(p -> RmConstants.EHR.equals(p.getLeft().getRmType()))
                 .distinct()
                 .forEach(p -> {
