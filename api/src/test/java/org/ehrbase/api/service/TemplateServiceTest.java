@@ -25,6 +25,8 @@ import java.io.InputStream;
 import org.apache.xmlbeans.XmlException;
 import org.ehrbase.openehr.sdk.test_data.operationaltemplate.OperationalTemplateTestData;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.openehr.schemas.v1.OPERATIONALTEMPLATE;
 
 class TemplateServiceTest {
@@ -41,5 +43,18 @@ class TemplateServiceTest {
         OPERATIONALTEMPLATE template = TemplateService.buildOperationalTemplate(content);
 
         assertThat(template.getTemplateId().getValue()).isEqualTo("ehrbase_multi_occurrence.de.v1");
+    }
+
+    @ParameterizedTest
+    @EnumSource(OperationalTemplateTestData.class)
+    void buildOperationalTemplateFromString(OperationalTemplateTestData testData) throws IOException, XmlException {
+        String content;
+        try (InputStream in = testData.getStream()) {
+            content = new String(in.readAllBytes(), UTF_8);
+        }
+
+        OPERATIONALTEMPLATE template = TemplateService.buildOperationalTemplate(content);
+
+        assertThat(template.getTemplateId().getValue()).isEqualTo(testData.getTemplateId());
     }
 }
