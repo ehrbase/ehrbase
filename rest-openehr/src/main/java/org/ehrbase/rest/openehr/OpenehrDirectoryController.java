@@ -73,14 +73,13 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @PostMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<Folder> createDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
             @RequestBody Folder folder) {
 
-        var createdFolder = directoryService.create(ehrId, folder);
+        var createdFolder = commitAudit(headers).call(() -> directoryService.create(ehrId, folder));
 
         return createDirectoryResponse(POST, prefer, accept, createdFolder, ehrId);
     }
@@ -96,14 +95,13 @@ public class OpenehrDirectoryController extends BaseController implements Direct
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = PREFER, defaultValue = RETURN_MINIMAL) String prefer,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestBody Folder folder) {
 
         folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
 
         // Update folder and get new version
-        Folder updatedFolder = directoryService.update(ehrId, folder, folderId);
+        Folder updatedFolder = commitAudit(headers).call(() -> directoryService.update(ehrId, folder, folderId));
 
         return createDirectoryResponse(HttpMethod.PUT, prefer, accept, updatedFolder, ehrId);
     }
@@ -115,14 +113,13 @@ public class OpenehrDirectoryController extends BaseController implements Direct
     @DeleteMapping(path = "/{ehr_id}/directory")
     public ResponseEntity<Folder> deleteDirectory(
             @PathVariable(name = "ehr_id") UUID ehrId,
-            @RequestHeader(name = OPENEHR_VERSION, required = false) String openEhrVersion,
-            @RequestHeader(name = OPENEHR_AUDIT_DETAILS, required = false) String openEhrAuditDetails,
+            @RequestHeader HttpHeaders headers,
             @RequestHeader(name = HttpHeaders.ACCEPT, defaultValue = MediaType.APPLICATION_JSON_VALUE) String accept,
             @RequestHeader(name = HttpHeaders.IF_MATCH) ObjectVersionId folderId) {
 
         folderId.setValue(parseIfMatchHeaderValue(folderId.getValue()));
 
-        directoryService.delete(ehrId, folderId);
+        commitAudit(headers).run(() -> directoryService.delete(ehrId, folderId));
 
         createRestContext(ehrId, folderId.toString());
 

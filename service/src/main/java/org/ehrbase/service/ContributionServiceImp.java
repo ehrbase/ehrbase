@@ -32,8 +32,10 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import com.nedap.archie.rminfo.ArchieRMInfoLookup;
 import com.nedap.archie.rminfo.RMTypeInfo;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.exception.StateConflictException;
@@ -49,6 +51,7 @@ import org.ehrbase.openehr.sdk.response.dto.ContributionCreateDto;
 import org.ehrbase.openehr.sdk.util.rmconstants.RmConstants;
 import org.ehrbase.repository.AbstractVersionedObjectRepository;
 import org.ehrbase.repository.AuditDetailsTargetType;
+import org.ehrbase.repository.CommitAuditRules;
 import org.ehrbase.repository.CompositionRepository;
 import org.ehrbase.repository.ContributionRepository;
 import org.ehrbase.repository.EhrFolderRepository;
@@ -118,6 +121,19 @@ public class ContributionServiceImp implements ContributionService {
         AuditDetails auditDetails = retrieveAuditDetails(ehrId, contributionId);
         List<ObjectRef<?>> objectRefs = retrieveContributionVersionRefs(ehrId, contributionId);
         return new Contribution(new HierObjectId(contributionId.toString()), objectRefs, auditDetails);
+    }
+
+    @Override
+    public void checkSystemIds(ContributionCreateDto contribution) {
+        String configured = systemService.getSystemId();
+        Stream.concat(
+                        Stream.of(contribution.getAudit()),
+                        Stream.ofNullable(contribution.getVersions())
+                                .flatMap(List::stream)
+                                .filter(Objects::nonNull)
+                                .map(OriginalVersion::getCommitAudit))
+                .filter(Objects::nonNull)
+                .forEach(audit -> CommitAuditRules.checkSystemId(audit.getSystemId(), configured));
     }
 
     @Override

@@ -43,6 +43,7 @@ import org.ehrbase.api.util.LocatableUtils;
 import org.ehrbase.rest.BaseController;
 import org.ehrbase.rest.openehr.specification.EhrStatusApiSpecification;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -115,13 +116,15 @@ public class OpenehrEhrStatusController extends BaseController implements EhrSta
             @PathVariable("ehr_id") UUID ehrId,
             @RequestHeader(name = IF_MATCH) String versionUid,
             @RequestHeader(name = PREFER, required = false) String prefer,
+            @RequestHeader HttpHeaders headers,
             @RequestBody EhrStatus ehrStatusDto) {
 
         HttpRestContext.register(EHR_ID, ehrId);
 
         // update EHR_STATUS and check for success
         ObjectVersionId targetObjId = new ObjectVersionId(parseIfMatchHeaderValue(versionUid));
-        EhrStatus ehrResult = ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null);
+        EhrStatus ehrResult =
+                commitAudit(headers).call(() -> ehrService.updateStatus(ehrId, ehrStatusDto, targetObjId, null, null));
         UIDBasedId statusUid = ehrResult.getUid();
 
         // update and prepare current version number

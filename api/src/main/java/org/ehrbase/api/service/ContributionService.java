@@ -106,6 +106,10 @@ public interface ContributionService {
      */
     UUID commitContribution(UUID ehrId, ContributionCreateDto contribution);
 
+    /// Rejects a contribution whose audits carry another system_id than this server's.
+    /// Only the REST endpoint calls it, so the Message API keeps accepting such contributions.
+    void checkSystemIds(ContributionCreateDto contribution);
+
     /**
      * Admin method to delete a Contribution from the DB. See EHRbase Admin API specification for details.
      *

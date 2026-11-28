@@ -19,6 +19,7 @@ package org.ehrbase.rest.openehr;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -33,7 +34,9 @@ import com.nedap.archie.rm.support.identification.ObjectVersionId;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
+import org.ehrbase.api.audit.CommitAuditHeaders;
 import org.ehrbase.api.exception.InvalidApiParameterException;
 import org.ehrbase.api.exception.ObjectNotFoundException;
 import org.ehrbase.api.service.EhrService;
@@ -198,7 +201,7 @@ class OpenehrEhrStatusControllerTest {
                 .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
 
         ResponseEntity<EhrStatus> response =
-                controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, ehrStatus);
+                controller().updateEhrStatus(ehrId, currentVersionId.getValue(), prefer, new HttpHeaders(), ehrStatus);
 
         var body = response.getBody();
         if (prefer.equals(BaseController.RETURN_REPRESENTATION)) {
@@ -207,6 +210,33 @@ class OpenehrEhrStatusControllerTest {
             assertResponse(HttpStatus.NO_CONTENT, response, ehrId, nextVersionId, "Tue, 16 Jul 2024 12:00:00 GMT");
             assertThat(body).isNull();
         }
+    }
+
+    @Test
+    void updateEhrStatusBindsTheAuditHeadersForTheCommit() {
+
+        UUID ehrId = UUID.fromString("d83a16ae-2644-4706-8911-282772c10137");
+        UUID ehrStatusId = UUID.fromString("305eb2fd-c228-445c-ada7-5429d852fbb2");
+        ObjectVersionId currentVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "2");
+        ObjectVersionId nextVersionId = new ObjectVersionId(ehrStatusId.toString(), "test.ehr.controller", "3");
+        EhrStatus ehrStatus = ehrStatus(nextVersionId, true, false);
+        AtomicReference<CommitAuditHeaders> sent = new AtomicReference<>();
+        doAnswer(invocation -> {
+                    sent.set(CommitAuditHeaders.SENT.get());
+                    return ehrStatus;
+                })
+                .when(mockEhrService)
+                .updateStatus(ehrId, ehrStatus, currentVersionId, null, null);
+        doReturn(Optional.of(originalVersion(
+                        nextVersionId, currentVersionId, OffsetDateTime.parse("2024-07-16T12:00:00Z"), ehrStatus)))
+                .when(mockEhrService)
+                .getEhrStatusAtVersion(ehrId, ehrStatusId, 3);
+
+        controller()
+                .updateEhrStatus(
+                        ehrId, currentVersionId.getValue(), "", OpenehrEhrControllerTest.auditHeaders(), ehrStatus);
+
+        OpenehrEhrControllerTest.assertSentOnlyDuringTheCommit(sent);
     }
 
     private void runTestWithMockResult(BiFunction<UUID, EhrStatus, ResponseEntity<EhrStatus>> consumer) {
